@@ -1,24 +1,25 @@
 # 剧本插件
 
-开宝箱工作室的团队共建项目。这里先作为“剧本插件”的项目位置，具体产品范围和技术方案由团队共同确定。
+开宝箱工作室的团队共建项目。当前框架只有一级和二级产物；下表区分已更新的插件、已上传的场记表能力和仍待上传的部分。
 
-## 当前状态
+## 当前能力
 
-项目筹备中，尚未确定功能清单、技术栈和发布时间。讨论记录放在 `docs/`，确定后的任务通过 Issue 跟踪。
+| 能力 | 状态 | 位置 |
+| --- | --- | --- |
+| `@Harness Creator` | 已更新，用于建设和维护插件 | 独立的本地项目，尚未收录到本仓库 |
+| `@剧本标准化` | 已更新，负责标准化与独立审查 | [剧本标准化插件](https://github.com/kaibaoxiang-studio/script-plugins/tree/codex/screenplay-standardizer-plugin/capabilities/01-screenplay-standardization/screenplay-standardizer)，目前在开发分支，尚未合入 `main` |
+| 场记表能力 | 团队成员已上传；与一级能力的接口待对齐 | [ai-continuity-sheet](https://github.com/kaibaoxiang-studio/ai-continuity-sheet) 独立仓库 |
 
-## 一起参与
+## 一级与二级产物
 
-1. 提想法或报告问题：新建 Issue，写清背景、目标和预期结果。
-2. 开始实现：先在 Issue 中讨论方案，再从 `main` 创建分支。
-3. 提交改动：发起 Pull Request，说明改动内容、验证方式和关联的 Issue。
-4. 合并前：请至少邀请一位团队成员检查；项目负责人确认后合并。
+| 层级 | 产物与定义 | 当前状态 |
+| --- | --- | --- |
+| 一级 | 标准化剧本：保留原文依据，生成可追溯的标准格式 | `@剧本标准化` 已更新；二级接口待对齐 |
+| 二级 | 场记表（目标包含节拍）：按场次、片段组织场记与节拍线索 | 已上传的能力以纯剧本为输入，按片段生成 13 列 Excel；尚未接入标准化剧本，13 列中也没有独立节拍字段。详见[场记表说明](https://github.com/kaibaoxiang-studio/script-plugins/blob/codex/screenplay-standardizer-plugin/capabilities/02-scene-log/README.md) |
+| 二级 | 资产表：与场记表并列，以标准化剧本中的原文为依据提炼资产，场记线索可辅助核对 | 正式能力待上传 |
 
-详细流程见 [贡献指南](CONTRIBUTING.md)。
+节拍归入场记表，不再设独立节拍表；当前框架没有三级产物。开发分支中的其他能力目录是早期归档、参考资料或试验代码，不代表正式插件已经交付。
 
-## 项目文档
+## 团队协作
 
-- [项目规划](docs/项目规划.md)：定位、范围和待讨论的问题。
-
-## 成员加入
-
-请工作室管理员邀请你的 GitHub 账号加入组织，并为你开放本仓库权限。获得权限后即可查看 Issue、提出方案和提交 Pull Request。
+新需求先讨论输入、输出、负责人和验收标准，再通过 Issue、分支与 Pull Request 提交。协作方式见[贡献指南](CONTRIBUTING.md)。剧本及人物设定等素材上传前，请确认团队拥有共享权限。
