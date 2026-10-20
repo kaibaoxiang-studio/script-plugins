@@ -1,0 +1,20 @@
+{
+  "schema_version": "SourceReceiptsV1",
+  "sources": [
+    {
+      "origin": "kaibaoxiang-studio/script-plugins:script-asset-extractor",
+      "revision": "8ba6de3561f85c5a0af6cc46ca68c23fba8b5917",
+      "adaptation": "依据分批提取、状态追踪、双向校验和四表结构重新实现 JSON 输入及证据机制；旧代码未进入插件"
+    },
+    {
+      "origin": "screenplay-standardizer plugin",
+      "revision": "standardized_screenplay_v1",
+      "adaptation": "采用其标准 JSON 的集场块、source_refs、origin 与 coverage 契约"
+    },
+    {
+      "origin": "Skill Orchestrator 0.8.0",
+      "revision": "0.8.0",
+      "adaptation": "参考证据边界与资产制作岗位视角，不复制运行时或私有岗位内容"
+    }
+  ]
+}

@@ -4,3 +4,4 @@ __pycache__/
 .pytest_cache/
 .venv/
 capabilities/01-screenplay-standardization/dist/
+capabilities/03-asset-table/dist/

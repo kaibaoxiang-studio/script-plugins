@@ -1,0 +1,22 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "screenplay-asset-extractor",
+  "version": "0.1.0",
+  "description": "从一级标准剧本 JSON 提取可追溯的剧本资产表与制作需求",
+  "author": {
+    "name": "开宝箱工作室"
+  },
+  "extensions": {
+    "com.openai": {
+      "requires_local_executor": true,
+      "interface": {
+        "displayName": "剧本资产表提取",
+        "shortDescription": "从标准剧本提取可追溯的资产表",
+        "longDescription": "从一级标准剧本 JSON 提取人物、场景、道具、关键特效和制作需求，交付资产表与独立疑点报告。",
+        "developerName": "开宝箱工作室",
+        "category": "Productivity",
+        "defaultPrompt": "Use $extract-asset-table to extract evidence-backed assets from my standardized_screenplay.json."
+      }
+    }
+  }
+}

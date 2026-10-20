@@ -1,0 +1,78 @@
+{
+  "schema_version": "CapabilityCatalogV1",
+  "capabilities": [
+    {
+      "id": "extract-asset-table",
+      "skill_name": "extract-asset-table",
+      "description": "从一级标准剧本 JSON 提取人物、场景、道具、关键特效及独立疑点",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "source_path": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "source_path"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "characters": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "locations": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "props": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "effects": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "scenes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "findings": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "characters",
+          "locations",
+          "props",
+          "effects",
+          "scenes",
+          "findings"
+        ],
+        "additionalProperties": false
+      },
+      "execution": {
+        "kind": "agent",
+        "access": "workspace-write",
+        "network": false
+      },
+      "knowledge_refs": [
+        "references/asset-rules.md",
+        "references/work-contract.md",
+        "references/source-notes.md"
+      ],
+      "required_artifacts": [
+        "assets.json",
+        "screenplay-asset-table.xlsx",
+        "asset_findings.json",
+        "asset_findings.md"
+      ]
+    }
+  ],
+  "workflows": []
+}
