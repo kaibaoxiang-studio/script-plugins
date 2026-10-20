@@ -4,7 +4,9 @@
 
 以下为早期归档和试验代码，不代表当前二级资产表已完成。
 
-[screenplay-concept-director](screenplay-concept-director/SKILL.md) 是上游完整 Skill 快照。其 catalog 命令从**已完成且来源新鲜的** screenplay_breakdown_v1 生成 AssetCatalogV1；收录角色主资产、地点主资产、场景状态和关键道具。它不是“读入场记表就自动找全所有资产”的工具。
+[screenplay-concept-director](screenplay-concept-director/SKILL.md) 是上游完整 Skill 快照。其 catalog 命令从**已完成且来源新鲜的** screenplay_breakdown_v1 生成 AssetCatalogV1；收录角色主资产、地点主资产、场景状态和关键道具。它不是”读入场记表就自动找全所有资产”的工具。
+
+[script-asset-extractor](script-asset-extractor/SKILL.md) 直接从标准化剧本 docx（含「第N集｜」「N-M 场景 内/外 时间」「人物：」「▲」格式）提取人物、场景、道具资产及其状态（换装、受伤、年龄、破坏等），输出 Excel 资产表（人物、场景、道具、场次总表四个 sheet）。流程分解析剧本、分批提取、双向校验、生成 Excel、人工抽查五步，详见 SKILL.md。
 
 scripts/export_asset_table.py 只把已有 AssetCatalogV1 导出为便于查看的 CSV，不新增资产判断：
 
