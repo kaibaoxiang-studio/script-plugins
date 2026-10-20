@@ -1,0 +1,14 @@
+flowchart TD
+    source["原始剧本：任意格式"]
+    intake["文本抽取与无损标准化"]
+    canonical["一级输出物：标准化剧本"]
+    breakdown["场记功能：逐场识别与记录"]
+    sceneSheet["二级输出物：场记表"]
+    assetWork["资产识别与归并"]
+    beatWork["节拍识别与分析"]
+    assetSheet["三级输出物：资产表"]
+    beatSheet["三级输出物：节拍表"]
+
+    source --> intake --> canonical --> breakdown --> sceneSheet
+    sceneSheet --> assetWork --> assetSheet
+    sceneSheet --> beatWork --> beatSheet
