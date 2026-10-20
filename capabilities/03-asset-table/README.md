@@ -1,7 +1,8 @@
 # 03｜资产表
 
-**当前状态：已有概念设计资产目录；完整制作资产表尚未实现。**
+**当前框架：资产表是与场记表并列的二级产物。正式制作资产表能力待上传。** 资产提炼以标准化剧本中的原文为依据，场记表可提供核对线索；二者之间不是上下级产物关系。
 
+以下为早期归档和试验代码，不代表当前二级资产表已完成。
 [screenplay-concept-director](screenplay-concept-director/SKILL.md) 是上游完整 Skill 快照。其 catalog 命令从**已完成且来源新鲜的** screenplay_breakdown_v1 生成 AssetCatalogV1；收录角色主资产、地点主资产、场景状态和关键道具。它不是“读入场记表就自动找全所有资产”的工具。
 
 scripts/export_asset_table.py 只把已有 AssetCatalogV1 导出为便于查看的 CSV，不新增资产判断：
