@@ -1,0 +1,6 @@
+interface:
+  display_name: screenplay-standardizer
+  short_description: 将 DOCX、TXT、Markdown 剧本或分集细纲转换为可追溯的标准剧本，并独立审查疑点
+  default_prompt: Use $screenplay-standardizer to complete the requested task.
+policy:
+  allow_implicit_invocation: false

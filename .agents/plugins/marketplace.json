@@ -1,0 +1,20 @@
+{
+  "name": "script-plugins",
+  "interface": {
+    "displayName": "开宝箱剧本插件"
+  },
+  "plugins": [
+    {
+      "name": "screenplay-standardizer",
+      "source": {
+        "source": "local",
+        "path": "./capabilities/01-screenplay-standardization/screenplay-standardizer"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

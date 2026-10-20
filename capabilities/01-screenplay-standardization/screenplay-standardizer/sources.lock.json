@@ -1,0 +1,15 @@
+{
+  "schema_version": "SourceReceiptsV1",
+  "sources": [
+    {
+      "origin": "local user archive: sn2s-novel-to-screenplay.zip",
+      "revision": "sha256:2c882474605c266cef8c578d21cdadc4df0c2148edf8fffc51560cc82e7ab06c",
+      "adaptation": "格式和可拍摄性方法研究；未复制代码或文档"
+    },
+    {
+      "origin": "installed Skill Orchestrator 0.8.0",
+      "revision": "0.8.0",
+      "adaptation": "仅参考导演岗位职责边界；未复制其运行时与私有知识"
+    }
+  ]
+}

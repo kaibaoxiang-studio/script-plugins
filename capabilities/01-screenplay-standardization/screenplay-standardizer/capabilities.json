@@ -1,0 +1,157 @@
+{
+  "schema_version": "CapabilityCatalogV1",
+  "capabilities": [
+    {
+      "id": "standardize-screenplay",
+      "skill_name": "standardize-screenplay",
+      "description": "把 DOCX、TXT 或 Markdown 剧本及纯细纲做成标准剧本 JSON/Markdown 与疑点报告",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "source_path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "input_kind": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "script",
+              "outline"
+            ],
+            "default": "auto"
+          },
+          "review_mode": {
+            "type": "string",
+            "enum": [
+              "light",
+              "deep"
+            ],
+            "default": "light"
+          },
+          "selected_section": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "source_path"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "input_kind": {
+            "type": "string",
+            "enum": [
+              "script",
+              "outline"
+            ]
+          },
+          "episodes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "scenes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "findings": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "selected_section": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "input_kind",
+          "episodes",
+          "scenes",
+          "findings",
+          "selected_section"
+        ],
+        "additionalProperties": false
+      },
+      "execution": {
+        "kind": "agent",
+        "access": "workspace-write",
+        "network": false
+      },
+      "knowledge_refs": [
+        "references/screenplay-standard.md",
+        "references/review-rules.md",
+        "references/source-notes.md"
+      ],
+      "required_artifacts": [
+        "standardized_screenplay.json",
+        "standardized_screenplay.md",
+        "findings.json",
+        "findings.md"
+      ]
+    },
+    {
+      "id": "review-screenplay",
+      "skill_name": "review-screenplay",
+      "description": "独立检查剧本的结构、姓名、台词和按需跨集连续性，只交证据化疑点报告",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "source_path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "review_mode": {
+            "type": "string",
+            "enum": [
+              "light",
+              "deep"
+            ],
+            "default": "light"
+          }
+        },
+        "required": [
+          "source_path"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "review_mode": {
+            "type": "string",
+            "enum": [
+              "light",
+              "deep"
+            ]
+          },
+          "findings": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "review_mode",
+          "findings"
+        ],
+        "additionalProperties": false
+      },
+      "execution": {
+        "kind": "agent",
+        "access": "workspace-write",
+        "network": false
+      },
+      "knowledge_refs": [
+        "references/review-rules.md",
+        "references/screenplay-standard.md"
+      ],
+      "required_artifacts": [
+        "findings.json",
+        "findings.md"
+      ]
+    }
+  ],
+  "workflows": []
+}

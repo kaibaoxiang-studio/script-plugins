@@ -1,12 +1,12 @@
 # 剧本插件
 
-开宝箱工作室四人共建项目。本仓库目前是**能力归档与接口讨论阶段**，尚未形成可以从任意剧本自动产出全部表格的完整插件。
+开宝箱工作室四人共建项目。一级剧本标准化已提供独立插件；其余环节仍处于能力归档与接口讨论阶段，尚未形成从任意剧本自动产出全部表格的完整流程。
 
 ## 当前状态（2026-10-20）
 
 | 环节 | 仓库目录 | 当前可用内容 | 尚未完成 |
 | --- | --- | --- | --- |
-| 一级：剧本标准化 | [01-screenplay-standardization](capabilities/01-screenplay-standardization/README.md) | 文本剧本解析器；生成场景映射、来源位置和提取警告 | 无损标准格式、原件与规范视图逐项对照、PDF/DOCX 接入 |
+| 一级：剧本标准化 | [01-screenplay-standardization](capabilities/01-screenplay-standardization/README.md) | 独立插件；DOCX/TXT/Markdown 到可追溯的剧本 JSON、Markdown 和独立审查报告 | 与后续级别的接口联调；复杂改写及深审需 Agent 复核 |
 | 二级：场记表 | [02-scene-log](capabilities/02-scene-log/README.md) | 剧本拆解 Skill 原始快照；基础场景索引 CSV 导出 | 团队定义的完整场记表字段和逐场验收 |
 | 三级 A：资产表 | [03-asset-table](capabilities/03-asset-table/README.md) | 概念设计 Skill 原始快照；已有资产目录的 CSV 导出 | 从场记表直接提取的完整制作资产表 |
 | 三级 B：节拍表 | [04-beat-table](capabilities/04-beat-table/README.md) | 节拍分析规则；已有拆解结果的 CSV 导出 | 从场记表独立生成节拍、人工复核流程 |
@@ -18,7 +18,7 @@
 
 上游剧本解析/拆解代码需要 Python 3.12+；本机系统默认的 Python 3.9 不适用。使用前先确认解释器版本。若没有 python3.12 命令，可用 Codex 桌面版提供的 bundled Python 路径替换下文命令中的解释器。
 
-1. 使用 01 的解析器处理 TXT、Markdown、Fountain 或 FDX，得到 JSON 场景映射。
+1. 在 Codex 选择 `@剧本标准化`（`screenplay-standardizer@screenplay-standardizer-local`）处理 DOCX、TXT 或 Markdown，得到标准剧本 JSON/Markdown 与疑点报告。旧解析器仍可处理 Fountain/FDX 并输出场景映射。
 2. 使用 02 的导出器得到**基础场景索引**；它不等于正式场记表。
 3. 如果已有通过校验的完整 screenplay_breakdown_v1，03 可生成 AssetCatalogV1 并导出目录表，04 可导出其中的节拍。
 
@@ -29,6 +29,7 @@
 使用 Python 3.12+，从仓库根目录运行：
 
     python3.12 -m unittest discover -s capabilities/02-scene-log/ai-script-breakdown/tests -v
+    python3.12 -m unittest discover -s capabilities/01-screenplay-standardization/creator-src/tests -v
     python3.12 -m unittest discover -s tests -v
 
 ## 来源与协作
