@@ -1,0 +1,6 @@
+interface:
+  display_name: harness-verifier
+  short_description: 检查 Harness 插件的结构、脚本、契约、真实调用和增量变化，返回具体缺陷及可复现证据。
+  default_prompt: Use $harness-verifier to complete the requested task.
+policy:
+  allow_implicit_invocation: true

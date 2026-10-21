@@ -1,0 +1,6 @@
+interface:
+  display_name: enrich-scene
+  short_description: 沿用七个辅助 Skill 为每拍提供待审制作建议
+  default_prompt: Use $enrich-scene to complete the requested task.
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,6 @@
+interface:
+  display_name: extract-asset-table
+  short_description: 从一级标准剧本 JSON 提取人物、场景、道具、关键特效及独立疑点
+  default_prompt: Use $extract-asset-table to complete the requested task.
+policy:
+  allow_implicit_invocation: true

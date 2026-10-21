@@ -1,0 +1,56 @@
+{
+  "name": "script-plugins",
+  "interface": {
+    "displayName": "开宝箱剧本插件 1.0"
+  },
+  "plugins": [
+    {
+      "name": "screenplay-standardizer",
+      "source": {
+        "source": "local",
+        "path": "./level-1/screenplay-standardization/screenplay-standardizer"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "scene-log-extractor",
+      "source": {
+        "source": "local",
+        "path": "./level-2/scene-log-extraction/scene-log-extractor"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "screenplay-asset-extractor",
+      "source": {
+        "source": "local",
+        "path": "./level-2/asset-extraction/screenplay-asset-extractor"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "harness-creator",
+      "source": {
+        "source": "local",
+        "path": "./engineering/harness-creator"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

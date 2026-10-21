@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+.pytest_cache/
+.venv/
+.harness/
+dist/
+**/.release-candidate/
+**/.validation-*/
+**/creator-src/plugin-patch.json

@@ -1,0 +1,6 @@
+interface:
+  display_name: review-continuity
+  short_description: 整剧人物与道具连续性疑点复核
+  default_prompt: Use $review-continuity to complete the requested task.
+policy:
+  allow_implicit_invocation: true

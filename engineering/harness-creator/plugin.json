@@ -1,0 +1,19 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "harness-creator",
+  "version": "0.1.0",
+  "description": "通过对话创建、改造和维护可独立运行的 Codex 业务能力插件。",
+  "author": {
+    "name": "kaibaoxiang-studio"
+  },
+  "extensions": {
+    "com.openai": {
+      "requires_local_executor": true,
+      "interface": {
+        "displayName": "Harness Creator",
+        "shortDescription": "创建、吸收、整合和维护业务能力插件",
+        "defaultPrompt": "Use $harness-creator to align my business requirements and build or improve a standalone capability plugin."
+      }
+    }
+  }
+}

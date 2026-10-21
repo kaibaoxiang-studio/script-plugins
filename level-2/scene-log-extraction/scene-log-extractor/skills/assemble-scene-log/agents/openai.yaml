@@ -1,0 +1,6 @@
+interface:
+  display_name: assemble-scene-log
+  short_description: 校验来源覆盖并生成整剧 JSON 与 13 列工作簿
+  default_prompt: Use $assemble-scene-log to complete the requested task.
+policy:
+  allow_implicit_invocation: true

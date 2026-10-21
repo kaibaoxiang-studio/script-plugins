@@ -1,0 +1,224 @@
+{
+  "schema_version": "SnapshotBaselineV1",
+  "date": "2026-10-21",
+  "timezone": "Asia/Shanghai",
+  "project_release": "1.0",
+  "purpose": "将本次已安装并经具体业务样例验证的组件快照作为发布基线，刷新构建后增量维护留下的历史 files 哈希；不修改运行逻辑或组件版本。",
+  "hash_algorithm": "SHA-256",
+  "scope": "仅 generation-lock.json 中既有 files 条目；锁文件自身不纳入其 files，防止自引用。",
+  "plugins": [
+    {
+      "plugin": "screenplay-standardizer",
+      "version": "0.1.0",
+      "plugin_path": "level-1/screenplay-standardization/screenplay-standardizer",
+      "lock_path": "level-1/screenplay-standardization/screenplay-standardizer/generation-lock.json",
+      "locked_file_count": 34,
+      "installed_snapshot_match": true,
+      "historical_drift_count": 7,
+      "changes": [
+        {
+          "path": ".codex-plugin/plugin.json",
+          "old_sha256": "0236c8d488de35b567423cbd90cf35af5c249d9a5c462e9caf0499332d1ef71e",
+          "new_sha256": "9b52ed92a83f75fc49d222f69c6aca27b9b5481e29162a90e640b4226cf795fb",
+          "reason": "已安装的 0.1.0 插件与发布候选逐文件一致；该文件在最初构建后经增量维护，但 generation-lock.json 未同步。本次仅重设当前已验收快照的哈希基线。"
+        },
+        {
+          "path": "harness-blueprint.json",
+          "old_sha256": "ac5f360f04a30553b64b558259330fdb2eb884cf9cba15c8f015c5dbe06fe95b",
+          "new_sha256": "a2c96d557d7b20158cfdf36458c2e27e64313fd5a4121e7dccf34630090a88ea",
+          "reason": "已安装的 0.1.0 插件与发布候选逐文件一致；该文件在最初构建后经增量维护，但 generation-lock.json 未同步。本次仅重设当前已验收快照的哈希基线。"
+        },
+        {
+          "path": "plugin.json",
+          "old_sha256": "d302def7f3b9b6a556fd05d2acd77b706749b3472836aff50cd1a4c724e82b3f",
+          "new_sha256": "7246cea36a545cf0b764133a26088a5d5893f834c1f2391351e6b7ff35fa35fc",
+          "reason": "已安装的 0.1.0 插件与发布候选逐文件一致；该文件在最初构建后经增量维护，但 generation-lock.json 未同步。本次仅重设当前已验收快照的哈希基线。"
+        },
+        {
+          "path": "references/screenplay-standard.md",
+          "old_sha256": "786038099ae6161c9e5acea09207649b946f742a33bf01f317098918d08e2cf2",
+          "new_sha256": "a65d5d15a382b9cf63d17243627178de6a9ed993bc0ff05f2cb271be017e0920",
+          "reason": "已安装的 0.1.0 插件与发布候选逐文件一致；该文件在最初构建后经增量维护，但 generation-lock.json 未同步。本次仅重设当前已验收快照的哈希基线。"
+        },
+        {
+          "path": "scripts/screenplay_core.py",
+          "old_sha256": "18b2672688a81e194609e3bc898c4559930016aa48b9d487a770e9464a9bad6b",
+          "new_sha256": "8e7f8a9ad2e493bb21c4c4537465a8dbbf8fb9f62a183ef6415d12d195123829",
+          "reason": "已安装的 0.1.0 插件与发布候选逐文件一致；该文件在最初构建后经增量维护，但 generation-lock.json 未同步。本次仅重设当前已验收快照的哈希基线。"
+        },
+        {
+          "path": "skills/review-screenplay/SKILL.md",
+          "old_sha256": "5e439e28b6bdd75f831b3e190e23d1c00526581bc92585419b194e59802a7b54",
+          "new_sha256": "8fadc5e0a5ee77ac07bb2a98127bcb857fa70b60b569d5436d6f046eb0c286f5",
+          "reason": "已安装的 0.1.0 插件与发布候选逐文件一致；该文件在最初构建后经增量维护，但 generation-lock.json 未同步。本次仅重设当前已验收快照的哈希基线。"
+        },
+        {
+          "path": "skills/standardize-screenplay/SKILL.md",
+          "old_sha256": "e9a72c1b1a9005dbfcfb80e34b8a732bf5d60f46fbe03519a6fbd80683076cf1",
+          "new_sha256": "dfa1113eeca1f5bf043521d348cdb98ea09b120f99925fa8f20fdba72dca0552",
+          "reason": "已安装的 0.1.0 插件与发布候选逐文件一致；该文件在最初构建后经增量维护，但 generation-lock.json 未同步。本次仅重设当前已验收快照的哈希基线。"
+        }
+      ]
+    },
+    {
+      "plugin": "scene-log-extractor",
+      "version": "0.1.0",
+      "plugin_path": "level-2/scene-log-extraction/scene-log-extractor",
+      "lock_path": "level-2/scene-log-extraction/scene-log-extractor/generation-lock.json",
+      "locked_file_count": 58,
+      "installed_snapshot_match": true,
+      "historical_drift_count": 2,
+      "changes": [
+        {
+          "path": "plugin.json",
+          "old_sha256": "018df847b0bde6547af6162a6b172a57eee82d9099df697744d76dbd70f9d794",
+          "new_sha256": "92b0b054101519243687e5bff2d428ce68349774e664b53e176171352511cfe8",
+          "reason": "已安装的 0.1.0 插件与发布候选逐文件一致；该文件在最初构建后经增量维护，但 generation-lock.json 未同步。本次仅重设当前已验收快照的哈希基线。"
+        },
+        {
+          "path": "requirements.lock",
+          "old_sha256": "fdb593a9be41a44ca3905ec822e10c4b32e362edb85adc32d7bf6d943558c252",
+          "new_sha256": "d7d19909441e4dbb805555dee73a6f54c4f7c038ec12e7dd5a1ce7f38b403e6f",
+          "reason": "已安装的 0.1.0 插件与发布候选逐文件一致；该文件在最初构建后经增量维护，但 generation-lock.json 未同步。本次仅重设当前已验收快照的哈希基线。"
+        }
+      ]
+    },
+    {
+      "plugin": "screenplay-asset-extractor",
+      "version": "0.1.0",
+      "plugin_path": "level-2/asset-extraction/screenplay-asset-extractor",
+      "lock_path": "level-2/asset-extraction/screenplay-asset-extractor/generation-lock.json",
+      "locked_file_count": 36,
+      "installed_snapshot_match": true,
+      "historical_drift_count": 0,
+      "changes": []
+    }
+  ],
+  "distribution_adjustments": [
+    {
+      "plugin": "scene-log-extractor",
+      "version": "0.1.0",
+      "date": "2026-10-21",
+      "kind": "standalone-package-documentation",
+      "reason": "为独立解压安装提供中文 README，并将文档纳入可复现构建；不修改业务逻辑、Skill 规则或组件版本。既有快照对齐记录保持原样。",
+      "plugin_path": "level-2/scene-log-extraction/scene-log-extractor",
+      "maintained_document": "level-2/scene-log-extraction/creator-src/PLUGIN-README.md",
+      "build_source": "level-2/scene-log-extraction/creator-src/build_blueprint.py",
+      "blueprint_sources": [
+        "level-2/scene-log-extraction/creator-src/blueprint.json",
+        "level-2/scene-log-extraction/scene-log-extractor/harness-blueprint.json"
+      ],
+      "business_files_unchanged": true,
+      "current_locked_file_count": 59,
+      "changes": [
+        {
+          "path": "README.md",
+          "old_sha256": null,
+          "new_sha256": "5a4e0e5fdd9c0a1c8b7331f48976206f0826c381d45f25cb60a43323e3852fbf",
+          "reason": "新增独立包中文说明与包内运行命令。"
+        },
+        {
+          "path": "harness-blueprint.json",
+          "old_sha256": "2f59070b2833a229d56f4a81e3775c1fe47c5322c8fe591f771546d667a81998",
+          "new_sha256": "b3c2a27d90b7f9004689f4683ac52347290619a3941192b5b59c78264cb1e3dd",
+          "reason": "仅在 files 增加 README.md 文档，确保后续构建携带安装入口。"
+        },
+        {
+          "path": "generation-lock.json",
+          "old_sha256": "16ed0383a8cbf157a904e335580b9f97b845409c0acd4749ee4739a4137a703f",
+          "new_sha256": "ddc1627b99ece31ec61612641e06f92c54f9b614f54fb25cd272790b328db81b",
+          "reason": "新增 README.md 条目并更新 harness-blueprint.json 哈希；锁自身仍不纳入 files。"
+        }
+      ]
+    },
+    {
+      "plugin": "screenplay-standardizer",
+      "version": "0.1.0",
+      "date": "2026-10-21",
+      "kind": "standalone-package-documentation",
+      "reason": "将独立安装包 README 与可维护源码说明分开，提供中文能力、安装、运行和验收边界；构建读取 PLUGIN-README.md。仅更新文档及蓝图 files.README.md，不修改业务逻辑、Skill 规则或组件版本。既有快照对齐记录保持原样。",
+      "plugin_path": "level-1/screenplay-standardization/screenplay-standardizer",
+      "maintained_document": "level-1/screenplay-standardization/creator-src/PLUGIN-README.md",
+      "build_source": "level-1/screenplay-standardization/creator-src/build_blueprint.py",
+      "blueprint_sources": [
+        "level-1/screenplay-standardization/creator-src/blueprint.json",
+        "level-1/screenplay-standardization/screenplay-standardizer/harness-blueprint.json"
+      ],
+      "business_files_unchanged": true,
+      "current_locked_file_count": 34,
+      "changes": [
+        {
+          "path": "README.md",
+          "old_sha256": "62171bef19ee588db509ad4a6b9f10d6815c4b929964bec01273c44c7999d90c",
+          "new_sha256": "b9237c65c9b85bc914d71519ee78d148470f22c7036ec10f706dee224a45a90f",
+          "reason": "用独立安装包说明替换误称包内含蓝图生成器和测试的源码说明。"
+        },
+        {
+          "path": "harness-blueprint.json",
+          "old_sha256": "a2c96d557d7b20158cfdf36458c2e27e64313fd5a4121e7dccf34630090a88ea",
+          "new_sha256": "391574c366adf354712506dc1d13cc8f7c5a3a400fdd7395a8a066c1da2c3b50",
+          "reason": "仅替换 files.README.md，保证后续构建携带同一份独立包说明。"
+        },
+        {
+          "path": "generation-lock.json",
+          "old_sha256": "8473512b8239ee42ce35698050974fc1aa0d56125e76529c7faec74b7856115c",
+          "new_sha256": "6c36defe359c3f75f23ec9108d105578078cd68d98e28b9e284731614ec23aaa",
+          "reason": "更新 README.md 与 harness-blueprint.json 哈希；锁自身仍不纳入 files。"
+        }
+      ]
+    },
+    {
+      "plugin": "harness-creator",
+      "version": "0.1.0",
+      "date": "2026-10-21",
+      "kind": "standalone-package-documentation",
+      "reason": "使用仓库根 script-plugins 统一市场，移除独立工程内不存在的局部市场和预生成 dist 声明；补充返回运行时 Python 的用法。不修改运行代码、Skill 规则或组件版本。",
+      "plugin_path": "engineering/harness-creator",
+      "business_files_unchanged": true,
+      "changes": [
+        {
+          "path": "docs/install.md",
+          "old_sha256": "b305f02070997442e16b29ded3eaba5fb3e5ad4fd249b4fffdd9c12b1574a871",
+          "new_sha256": "99ab3534903ecc32d35f3dbf08b7718ce73cd722bb7222228b9dad63e60eda0e",
+          "reason": "修复独立 ZIP 和工程文档中的安装入口。"
+        }
+      ]
+    },
+    {
+      "plugin": "screenplay-asset-extractor",
+      "version": "0.1.0",
+      "date": "2026-10-21",
+      "kind": "standalone-package-documentation",
+      "reason": "将独立安装包 README 与源码维护说明分开，提供中文独立运行、四项交付、按需特效与验收边界；构建读取 PLUGIN-README.md。仅更新文档及蓝图 files.README.md，不修改业务逻辑、Skill 规则或组件版本。既有快照对齐记录保持原样。",
+      "plugin_path": "level-2/asset-extraction/screenplay-asset-extractor",
+      "maintained_document": "level-2/asset-extraction/creator-src/PLUGIN-README.md",
+      "build_source": "level-2/asset-extraction/creator-src/build_blueprint.py",
+      "blueprint_sources": [
+        "level-2/asset-extraction/creator-src/blueprint.json",
+        "level-2/asset-extraction/screenplay-asset-extractor/harness-blueprint.json"
+      ],
+      "business_files_unchanged": true,
+      "current_locked_file_count": 36,
+      "changes": [
+        {
+          "path": "README.md",
+          "old_sha256": "e13bce7daec052fafd0fcfea38c4d6a83367e30f1f5677fff2a45a3c5580531e",
+          "new_sha256": "8744fda8ffc30c110e730e9b011e5edc514d425b1eb0619a22d5927654f2cb11",
+          "reason": "用独立安装包说明替换引用包外构建脚本、测试与旧 Skill 的源码说明。"
+        },
+        {
+          "path": "harness-blueprint.json",
+          "old_sha256": "5e1d8147b4e7d1e0106e62dfbf683d37958b6a06dacbe558c3c112d2efb31259",
+          "new_sha256": "dd17ba7cdd4cf253a1b951fe6fbd27574f868abb76dba4d082ab7af6efcfed97",
+          "reason": "仅替换 files.README.md，保证后续构建携带同一份独立包说明。"
+        },
+        {
+          "path": "generation-lock.json",
+          "old_sha256": "141bc1fcff07f65d6df6dcca6e9658f931029a4ab5486785783a4e67b81646fa",
+          "new_sha256": "ef764eca2e7c2ce14e8bb50b73af1258e6b297608781d5c88a58330d2b0333c1",
+          "reason": "更新 README.md 与 harness-blueprint.json 哈希；锁自身仍不纳入 files。"
+        }
+      ]
+    }
+  ]
+}

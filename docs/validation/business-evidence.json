@@ -1,0 +1,507 @@
+{
+  "schema_version": "business_evidence_v1",
+  "release_label": "剧本插件 1.0",
+  "verified_on": "2026-10-21",
+  "timezone": "Asia/Shanghai",
+  "privacy": {
+    "case_ids_are_anonymous": true,
+    "artifact_paths_use_basenames_only": true,
+    "raw_business_files_included": false,
+    "raw_runtime_logs_included": false
+  },
+  "evidence_policy": [
+    "既有真实模型执行与本次确定性复核分别标注；本次未重新运行业务模型。",
+    "哈希记录用于核对本机保留的文件，不意味着业务原文或运行日志随仓库发布。",
+    "数量及结构通过不等于人工语义核定或全自动零修改；需结合各项范围与补记记录理解。"
+  ],
+  "business_cases": [
+    {
+      "case_id": "business-case-001",
+      "real_model_execution_evidence": {
+        "kind": "existing_interactive_model_execution",
+        "chat_ids": [
+          "01a159ff-c5be-72f0-9409-2607adb21fb6",
+          "01a15a09-5447-7a90-be39-62703d368fae"
+        ],
+        "harness_run_id": null,
+        "note": "测试聊天记录及实际交付文件可核验；此项未定位到独立 Harness run ID。"
+      },
+      "stage": "level-1-standardization",
+      "input": {
+        "basename": "source.docx",
+        "sha256": "7beca6c90b234a59ba870437b11bad2201a02f6a224cf56bbf2e12a2494349de",
+        "source_units": 830
+      },
+      "result": {
+        "episodes": 10,
+        "scenes": 28,
+        "findings": 1
+      },
+      "artifacts": [
+        {
+          "basename": "standardized_screenplay.json",
+          "sha256": "202e7a6798969736b4cb59b907796d8b815a593cdd983bf634df27191aca6e88"
+        },
+        {
+          "basename": "standardized_screenplay.md",
+          "sha256": "72592ba8e070a11fd5b5ac51bc5c90cd42b0c34c42a5bfce236522932e326152"
+        },
+        {
+          "basename": "findings.json",
+          "sha256": "c53d01730119f71d8955063d9f399566efcc9b8c7e29fe01c288fd55c19a3f4b"
+        },
+        {
+          "basename": "findings.md",
+          "sha256": "2e7ba4fc54f2b8958484100285ec854ccc8e5c5a71da353ea774b7170be24755"
+        }
+      ],
+      "interventions": [
+        "测试执行中修正了自动抽取的分集边界并复核来源，最终结果不是零修改自动抽取结果。"
+      ],
+      "current_deterministic_recheck": {
+        "status": "passed",
+        "checks": [
+          "原始输入文件 SHA-256 与一级 source_manifest 一致",
+          "JSON 集场数及疑点数与交付记录一致",
+          "四个交付文件存在且已计算 SHA-256"
+        ]
+      }
+    },
+    {
+      "case_id": "business-case-001",
+      "stage": "level-2-asset-table",
+      "input": {
+        "basename": "standardized_screenplay.json",
+        "sha256": "202e7a6798969736b4cb59b907796d8b815a593cdd983bf634df27191aca6e88"
+      },
+      "real_model_execution_evidence": {
+        "kind": "existing_interactive_model_execution",
+        "chat_ids": [
+          "01a159ff-c5be-72f0-9409-2607adb21fb6"
+        ],
+        "harness_run_id": null,
+        "note": "测试聊天记录与全剧交付文件可核验；此项未定位到独立 Harness run ID。"
+      },
+      "result": {
+        "characters": 22,
+        "locations": 17,
+        "props": 26,
+        "effects": 0,
+        "scenes": 28,
+        "findings": 3
+      },
+      "artifacts": [
+        {
+          "basename": "assets.json",
+          "sha256": "df44dfca508333bd37a2b7e99be728eb39222e216a097ab0284e5f69138f9806"
+        },
+        {
+          "basename": "screenplay-asset-table.xlsx",
+          "sha256": "20e51db4b691532afbe591e811b4de8366d76cee50c8b5185f6f8c30966aa868"
+        },
+        {
+          "basename": "asset_findings.json",
+          "sha256": "b7e12aeb8be5043f78a5f2f0873187d5a29becf47b81fdd4cb11c2b743b6266a"
+        },
+        {
+          "basename": "asset_findings.md",
+          "sha256": "a36a9fd2ee2cbd6ea8b35282a2d009505c42a1b9ab6d0cd4ae396f705ade8e31"
+        }
+      ],
+      "current_deterministic_recheck": {
+        "status": "passed",
+        "checks": [
+          "一级输入 SHA-256 与资产 source 记录一致",
+          "用当前 validate_work 对输出资产、疑点及原始一级结构进行内存复核",
+          "Excel 含四张核心表且场次总表覆盖 28 场",
+          "四个交付文件存在且已计算 SHA-256"
+        ]
+      },
+      "limitations": [
+        "本次复核验证来源、结构和数量，未逐项进行人工语义资产核定。"
+      ]
+    },
+    {
+      "case_id": "business-case-001",
+      "stage": "level-2-scene-log",
+      "input": {
+        "basename": "standardized_screenplay.json",
+        "sha256": "202e7a6798969736b4cb59b907796d8b815a593cdd983bf634df27191aca6e88",
+        "selected_episodes": [
+          1,
+          2
+        ]
+      },
+      "real_model_execution_evidence": {
+        "kind": "existing_real_model_harness_run",
+        "test_chat_id": "01a15a09-5447-7a90-be39-62703d368fae",
+        "construction_chat_id": "01a1589e-ec8f-7452-a5b1-ca6f1e4e47fe",
+        "run_id": "run-1fb99a1248984dc5",
+        "status": "completed",
+        "agent_nodes": 11,
+        "all_nodes_succeeded": true,
+        "original_finalize_result": {
+          "episodes": 2,
+          "scenes": 5,
+          "beats": 28,
+          "findings": 35
+        },
+        "original_finalize_artifacts": [
+          {
+            "basename": "scene_log.json",
+            "sha256": "34fd63e45f28067b7b8056d93909dcd1f832d8a3ccdb515491c13791f872fc6b"
+          },
+          {
+            "basename": "scene_log.xlsx",
+            "sha256": "36c388f0c65e2a46ab1e23ed7eb50caa7c15123d1553356a3a3bc085489b188a"
+          },
+          {
+            "basename": "scene_log_report.json",
+            "sha256": "03ccad8cb668e3b98a4b2add4e07dc9a727e5afac64ef2927ae233d5a8126b18"
+          },
+          {
+            "basename": "scene_log_report.md",
+            "sha256": "360daa1b43169d563cf120a5db75969753c809afc65cba45589f4cf6b67b2c86"
+          }
+        ],
+        "original_artifact_hash_verification": "passed"
+      },
+      "delivered_result_after_review": {
+        "episodes": 2,
+        "scenes": 5,
+        "beats": 28,
+        "review_items": 31,
+        "review_item_codes": {
+          "generated_source": 9,
+          "creative_uncertainty": 22
+        },
+        "corrected_beats": 3,
+        "review_status": "pending_human_review"
+      },
+      "delivered_artifacts": [
+        {
+          "basename": "scene_log.json",
+          "sha256": "8a385f423c4ed49a2feb2e9040a3569f5d1e1675ac2f884338430c9854201686"
+        },
+        {
+          "basename": "scene_log.xlsx",
+          "sha256": "5a9717568fb5858ed3fa8024109eb4c59a04490bd953d730e64c282ff058cf6c"
+        },
+        {
+          "basename": "scene_log_report.json",
+          "sha256": "d01500a87541d65bc9155b185fd691774399776d1fe3575172bdf54a74c15130"
+        },
+        {
+          "basename": "scene_log_report.md",
+          "sha256": "9d4305d80549635cc59b0e6735e7b10ed3952c78388fbbf40d1b76f52eca552e"
+        }
+      ],
+      "interventions": [
+        "真实运行产出后，根据原文复核对 3 拍补记动作或道具，并同步修正 JSON、Excel 和独立报告。",
+        "原运行 finalize 记录 35 条提示，复核交付为 31 条；交付文件与原运行文件的哈希分别保留，不能视为相同版本。",
+        "9 条 generated_source 为一级格式规范化提示，22 条为待审制作不确定项，不等于 31 处剧本错误。"
+      ],
+      "current_deterministic_recheck": {
+        "status": "passed",
+        "checks": [
+          "两集五场及 28 拍的数量一致",
+          "每个原文块按顺序覆盖一次，台词原文完整",
+          "EP01/EP02 两页均为 13 列，单元格内容与 JSON 逐项一致",
+          "报告含 31 条待核提示及 3 条补记记录",
+          "原运行产物哈希全部匹配，最终交付四文件另行计算哈希"
+        ]
+      }
+    }
+  ],
+  "asset_sample_validation": [
+    {
+      "case_id": "structural-sample-001",
+      "construction_chat_id": "01a159bd-4e93-7b92-a405-438645d8caf8",
+      "whole_script_structural_check": {
+        "input": {
+          "basename": "standardized_screenplay.json",
+          "sha256": "10f52ab549de43593e2209ecd99637a3eb14cc4d4a0fd2e066564bcd7e0e5c98",
+          "source_document_sha256": "f7f2cd379309b2c442050e701ea5cfd98d41aee6145dc8920b8511ff88e9a6b2"
+        },
+        "result": {
+          "episodes": 53,
+          "scenes": 71,
+          "conservative_characters": 70,
+          "conservative_locations": 16
+        },
+        "artifacts": [
+          {
+            "basename": "assets.json",
+            "sha256": "40b4cda7a7a8e76520b6fe13fb864faf24bd55ba440afcde1197652fa1b63f2f"
+          },
+          {
+            "basename": "screenplay-asset-table.xlsx",
+            "sha256": "71d789809e290754125eaaca2cfa9ae6ca5507f9c74eae6013a9da5e8f022aae"
+          },
+          {
+            "basename": "asset_findings.json",
+            "sha256": "1187769d841319dc1b3acb7761a9f13003fa34b38a3d1ab7e4e99087aaeb3296"
+          },
+          {
+            "basename": "asset_findings.md",
+            "sha256": "927571f2dd692033dff9442c42352b2a29ca5d8ff52572a0683674973e7575c8"
+          }
+        ],
+        "current_deterministic_recheck": {
+          "status": "passed",
+          "checks": [
+            "输入集场数与导出场次数一致",
+            "当前 validate_work 复核现有保守工作稿通过",
+            "四个产物存在且已计算 SHA-256"
+          ]
+        },
+        "scope": "整稿结构验收；保守底稿不能视为全剧语义资产提取完成。"
+      },
+      "first_two_episodes_real_model_run": {
+        "kind": "existing_real_model_harness_run",
+        "run_id": "run-2fb234bfebec4255",
+        "status": "completed",
+        "capability_status": "succeeded",
+        "agent_thread_id": "01a159f3-a048-7023-965f-3bacd8dbbeb9",
+        "input": {
+          "basename": "standardized_screenplay.json",
+          "sha256": "93ee385978fe611cd6ac8be36a65cc6eccb8ef09fd0dc18b40f919dc2d8b1dae"
+        },
+        "artifacts": [
+          {
+            "basename": "assets.json",
+            "sha256": "bfa9a6c7718dd1031e066c6ade80a86e8dd16c52044e504fd4d9a56817065e35"
+          },
+          {
+            "basename": "screenplay-asset-table.xlsx",
+            "sha256": "6d729ed1bf241fdba3dbabad8ade32ed43c36dc91409cd91eed9bd46bc5a91cb"
+          },
+          {
+            "basename": "asset_findings.json",
+            "sha256": "be0dc85ea00d9a7972d3273514af445e5b4c0114f8d01cdfef960ad091464157"
+          },
+          {
+            "basename": "asset_findings.md",
+            "sha256": "719b26219016614e8fb39e2317eaa1aab13735487a384c41af156e49e935841c"
+          }
+        ],
+        "result": {
+          "characters": 14,
+          "locations": 6,
+          "props": 8,
+          "effects": 1,
+          "scenes": 5,
+          "findings": 4
+        },
+        "current_artifact_hash_verification": "passed"
+      }
+    },
+    {
+      "case_id": "structural-sample-002",
+      "construction_chat_id": "01a159bd-4e93-7b92-a405-438645d8caf8",
+      "whole_script_structural_check": {
+        "input": {
+          "basename": "standardized_screenplay.json",
+          "sha256": "08efb66e7adc7a1780c6f79c6fcbdcd7200891bfe61865764f74cac2649b18ea",
+          "source_document_sha256": "fae53a9b7c431e302a4501260e17079d09f51870103516c0e846fa840178a021"
+        },
+        "result": {
+          "episodes": 50,
+          "scenes": 100,
+          "conservative_characters": 123,
+          "conservative_locations": 55
+        },
+        "artifacts": [
+          {
+            "basename": "assets.json",
+            "sha256": "99380b91aa1a1c9eb2deceaa0b66b868f18b6603fe1f78952cc2d784f75f6374"
+          },
+          {
+            "basename": "screenplay-asset-table.xlsx",
+            "sha256": "0bf8ff31522197ceab788c96398326bdc4b2371f64d4ec26b283d1c85458860d"
+          },
+          {
+            "basename": "asset_findings.json",
+            "sha256": "31c64c622fb62011d626f1d82d2687b77861862b77d740b690899b6a1716e803"
+          },
+          {
+            "basename": "asset_findings.md",
+            "sha256": "c863a7141cc16be2de216b45bf61dbd9ddf8c637e980782a64abd803facca383"
+          }
+        ],
+        "current_deterministic_recheck": {
+          "status": "passed",
+          "checks": [
+            "输入集场数与导出场次数一致",
+            "当前 validate_work 复核现有保守工作稿通过",
+            "四个产物存在且已计算 SHA-256"
+          ]
+        },
+        "scope": "整稿结构验收；保守底稿不能视为全剧语义资产提取完成。"
+      },
+      "first_two_episodes_real_model_run": {
+        "kind": "existing_real_model_harness_run",
+        "run_id": "run-3d56ebbd4e8f4988",
+        "status": "completed",
+        "capability_status": "succeeded",
+        "agent_thread_id": "01a159f3-a047-73a1-a508-a04627826f1c",
+        "input": {
+          "basename": "standardized_screenplay.json",
+          "sha256": "c1d1b61d9ff36aac0d935c799e508b4c82daf3c5e2c2e1d4098917b3f7fa9e03"
+        },
+        "artifacts": [
+          {
+            "basename": "assets.json",
+            "sha256": "2c5fc1820ac1308bfd1262a50bf8648d63134f59bc023ba5a77e13c2c9e43664"
+          },
+          {
+            "basename": "screenplay-asset-table.xlsx",
+            "sha256": "3fa4878c45c7cb0b479929f093c1dd6b078275cef39c1ad43069d0c4d03028d3"
+          },
+          {
+            "basename": "asset_findings.json",
+            "sha256": "d383f132960e38f03e6dd67bc0b9bbc4a54d99b58de84e150090abb7c5bb596e"
+          },
+          {
+            "basename": "asset_findings.md",
+            "sha256": "de1d33ea6b2a70a70757128d1a74540f23fea2f0fb6d2442fdc5c16bd0f9d093"
+          }
+        ],
+        "result": {
+          "characters": 5,
+          "locations": 3,
+          "props": 12,
+          "effects": 1,
+          "scenes": 4,
+          "findings": 3
+        },
+        "current_artifact_hash_verification": "passed"
+      }
+    },
+    {
+      "case_id": "structural-sample-003",
+      "construction_chat_id": "01a159bd-4e93-7b92-a405-438645d8caf8",
+      "whole_script_structural_check": {
+        "input": {
+          "basename": "standardized_screenplay.json",
+          "sha256": "dcff4b79cce7c44a289eb661c67267b4a43ec965bde92f93d2a3ea7ec7b370f6",
+          "source_document_sha256": "12b99f212c505e46546ca8aa8a92e1d10392d92266246e5654b152040ce903b8"
+        },
+        "result": {
+          "episodes": 25,
+          "scenes": 37,
+          "conservative_characters": 25,
+          "conservative_locations": 24
+        },
+        "artifacts": [
+          {
+            "basename": "assets.json",
+            "sha256": "999a94675a03fcfd5031286fdba56ff2faf205bcd4904d1b5aba0354d014a941"
+          },
+          {
+            "basename": "screenplay-asset-table.xlsx",
+            "sha256": "7c8d4fe21f937956398fc87503f4a07214ab60f0f2e744409cdd5a8b615d2b96"
+          },
+          {
+            "basename": "asset_findings.json",
+            "sha256": "4ca4aad9c5ad4bc82f906aca4ba8c19c23b1b098235565e1c0f0f41605f7d677"
+          },
+          {
+            "basename": "asset_findings.md",
+            "sha256": "1e98652bbb6197168e61cf5bb0f581410a3a6b6eff8be35ebd817e68fd54a190"
+          }
+        ],
+        "current_deterministic_recheck": {
+          "status": "passed",
+          "checks": [
+            "输入集场数与导出场次数一致",
+            "当前 validate_work 复核现有保守工作稿通过",
+            "四个产物存在且已计算 SHA-256"
+          ]
+        },
+        "scope": "整稿结构验收；保守底稿不能视为全剧语义资产提取完成。"
+      },
+      "first_two_episodes_real_model_run": {
+        "kind": "existing_real_model_harness_run",
+        "run_id": "run-79be2ae5c14a4b28",
+        "status": "completed",
+        "capability_status": "succeeded",
+        "agent_thread_id": "01a159f3-a047-72e1-b018-cce88cbd45fb",
+        "input": {
+          "basename": "standardized_screenplay.json",
+          "sha256": "931fed33be4f82f4375c33cfea8fca15b71292a36239ce2e7446d28d6f5181b8"
+        },
+        "artifacts": [
+          {
+            "basename": "assets.json",
+            "sha256": "d46e7e88f38e254163e7ebed96e716cca73f3404c03e80becc004294d0525d2b"
+          },
+          {
+            "basename": "screenplay-asset-table.xlsx",
+            "sha256": "ec99dd6d6f892fcbcf8c23c71fa2508c37ae6824fb15276cf3acf7fe55710586"
+          },
+          {
+            "basename": "asset_findings.json",
+            "sha256": "40a993c62a6f4b1d9969172c88ec712feb53b86f5977a8e1c798fbae288e8f1f"
+          },
+          {
+            "basename": "asset_findings.md",
+            "sha256": "04f122f81f9eb8390559200654b19060261ef90f0150d079d72467987d3bdc12"
+          }
+        ],
+        "result": {
+          "characters": 7,
+          "locations": 1,
+          "props": 2,
+          "effects": 2,
+          "scenes": 2,
+          "findings": 3
+        },
+        "current_artifact_hash_verification": "passed"
+      }
+    }
+  ],
+  "asset_synthetic_real_model_run": {
+    "kind": "existing_real_model_harness_run",
+    "run_id": "run-3e77b6f0814a40ea",
+    "status": "completed",
+    "capability_status": "succeeded",
+    "agent_thread_id": "01a159ef-cc1a-7522-9649-4e4baecc5b7d",
+    "input": {
+      "basename": "standardized_screenplay.json",
+      "sha256": "8b75369065fed657c338380548253503aa28683a1dfac024daee331ab5bb52e6"
+    },
+    "artifacts": [
+      {
+        "basename": "assets.json",
+        "sha256": "472ad1eac4fb00e1537067d46ac4f1c934d49dc37715025ce1f12f45f0996690"
+      },
+      {
+        "basename": "screenplay-asset-table.xlsx",
+        "sha256": "33044aaa27abb81a46b61c6b0114ed51c4055ac7bfd2249e0de43e41f09e7204"
+      },
+      {
+        "basename": "asset_findings.json",
+        "sha256": "1fe6ebd855fe8c6734c6ec7e39c57cd832c2e64b50202c8ca3f5a9f3ea073738"
+      },
+      {
+        "basename": "asset_findings.md",
+        "sha256": "be776b817e5d851653fed40198d1ed51153897d2c624ee460e1771c04591b474"
+      }
+    ],
+    "result": {
+      "characters": 3,
+      "locations": 1,
+      "props": 1,
+      "effects": 1,
+      "scenes": 3,
+      "findings": 1
+    },
+    "current_artifact_hash_verification": "passed"
+  },
+  "remaining_limits": [
+    "三个长稿完成整稿结构验收与各前两集真实语义提取，未对三部全剧逐集完成人工语义资产核定。",
+    "场记业务案例只覆盖第 1、2 集；制作建议及待核提示保留人工审阅状态。",
+    "插件包版本保持各自 0.1.0；剧本插件 1.0 是仓库整套业务发布标识。"
+  ]
+}

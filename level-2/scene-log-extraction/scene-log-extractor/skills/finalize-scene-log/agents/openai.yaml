@@ -1,0 +1,6 @@
+interface:
+  display_name: finalize-scene-log
+  short_description: 合并疑点报告并发布四个交付物
+  default_prompt: Use $finalize-scene-log to complete the requested task.
+policy:
+  allow_implicit_invocation: true

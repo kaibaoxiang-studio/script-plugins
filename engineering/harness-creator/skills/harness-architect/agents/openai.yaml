@@ -1,0 +1,6 @@
+interface:
+  display_name: harness-architect
+  short_description: 将已对齐的业务需求设计成能力目录、职责边界、输入输出和最小 Agent 结构，供 Harness Creator 建设插件。
+  default_prompt: Use $harness-architect to complete the requested task.
+policy:
+  allow_implicit_invocation: true

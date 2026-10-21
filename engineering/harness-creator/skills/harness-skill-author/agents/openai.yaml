@@ -1,0 +1,6 @@
+interface:
+  display_name: harness-skill-author
+  short_description: 为 Harness 插件编写和修改聚焦的 Agent Skills、references、Python 辅助脚本及真实验收样例。
+  default_prompt: Use $harness-skill-author to complete the requested task.
+policy:
+  allow_implicit_invocation: true

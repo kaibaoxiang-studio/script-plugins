@@ -1,0 +1,22 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "screenplay-standardizer",
+  "version": "0.1.0",
+  "description": "将 DOCX、TXT、Markdown 剧本或分集细纲转换为可追溯的标准剧本，并独立审查疑点",
+  "author": {
+    "name": "开宝箱工作室"
+  },
+  "extensions": {
+    "com.openai": {
+      "requires_local_executor": true,
+      "interface": {
+        "displayName": "剧本标准化",
+        "shortDescription": "剧本标准化与证据化问题审查",
+        "longDescription": "将 DOCX、TXT 或 Markdown 剧本及分集细纲整理为可追溯的标准剧本，并可独立审查疑似问题。",
+        "developerName": "开宝箱工作室",
+        "category": "Productivity",
+        "defaultPrompt": "Use $screenplay-standardizer to select $standardize-screenplay or $review-screenplay for my request. Preserve source evidence and report uncertain findings separately."
+      }
+    }
+  }
+}

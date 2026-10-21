@@ -1,0 +1,6 @@
+interface:
+  display_name: harness-source-integrator
+  short_description: 检查已有开源 Skill、Agent 或完整 Harness，拆解方法与依赖并迁移为统一的 Codex 能力插件格式。
+  default_prompt: Use $harness-source-integrator to complete the requested task.
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,170 @@
+{
+  "schema_version": "EngineeringChecksV1",
+  "date": "2026-10-21",
+  "timezone": "Asia/Shanghai",
+  "project_release": "1.0",
+  "component_versions": "0.1.0",
+  "environment": {
+    "python": "3.12.14",
+    "codex_cli": "0.163.0-alpha.10.2",
+    "platform": "macOS",
+    "interpreter_label": "python3.12 表示本机已锁定依赖的 Python 3.12.14 运行时；公开记录省略用户目录和解释器绝对路径。"
+  },
+  "checks": [
+    {
+      "id": "harness-creator-unit-tests",
+      "working_directory": "engineering/harness-creator",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3.12 -m unittest discover -s tests -v",
+      "execution_scope": "发布工作区的独立工程副本",
+      "exit_code": 0,
+      "discovered": 24,
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0,
+      "classification": "确定性代码、模拟协议与合成业务样例；未调用真实模型",
+      "coverage": [
+        "插件构建、可搬迁打包及真实 Python 文件输出",
+        "DAG 依赖、并行、重试、等待答复、恢复和取消",
+        "输入和产物变化拦截、用户修改保护",
+        "来源哈希、许可证保留、知识定点更新",
+        "完整 Harness 来源转换合成样例",
+        "Creator 独立升级候选的生成、校验和原版本保护",
+        "App Server 模拟协议中 completion 不带消息 items 的情况"
+      ],
+      "limitations": [
+        "不证明任意真实业务或外部框架都可正确转换",
+        "不证明真实模型通用创建和自身升级安装已全面验收"
+      ]
+    },
+    {
+      "id": "screenplay-standardizer-unit-tests",
+      "working_directory": "level-1/screenplay-standardization/creator-src",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3.12 -m unittest discover -s tests -v",
+      "execution_scope": "发布工作区的可维护源码副本",
+      "exit_code": 0,
+      "discovered": 10,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 1,
+      "classification": "确定性抽取、来源和渲染契约的合成样例；未调用真实模型",
+      "skipped_tests": [
+        {
+          "name": "test_private_user_samples_when_available",
+          "reason": "本次未设置 SCREENPLAY_FIXTURE_DIR；原稿不随仓库分发。"
+        }
+      ],
+      "coverage": [
+        "已有剧本与双语对白保留",
+        "DOCX 标色范围和来源位置",
+        "纯细纲必须完成创作后才能输出",
+        "生成块契约和轻审深审边界",
+        "合法改名、疑似错名、空对白、动作对白不符",
+        "主稿选择、同级版本歧义、跨场闪回"
+      ],
+      "limitations": [
+        "本次未重跑私有原稿 fixture",
+        "不能将合成生成块测试视为真实模型细纲创作或深审验收"
+      ]
+    },
+    {
+      "id": "scene-log-extractor-unit-tests",
+      "working_directory": "level-2/scene-log-extraction",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3.12 -m unittest discover -s creator-src/tests -v",
+      "execution_scope": "发布工作区的可维护源码副本",
+      "exit_code": 0,
+      "discovered": 6,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "classification": "确定性场记结构、来源及工作簿的合成样例；未调用真实模型",
+      "test_names": [
+        "test_action_quote_kept_whole",
+        "test_long_text_and_two_episode_sheets",
+        "test_missing_body_actionable",
+        "test_reject_missing_or_duplicate_source_units",
+        "test_reject_unbased_character_and_report_upstream_gap",
+        "test_source_fidelity_and_one_beat_per_p"
+      ],
+      "coverage": [
+        "动作引号分句保持完整",
+        "每拍一行、双语 OS 台词和跨集连续场号",
+        "长正文分段与每集工作表",
+        "缺正文、重复或漏原文单元拒绝",
+        "无依据人物拒绝、上游未映射来源进入报告"
+      ],
+      "limitations": [
+        "测试使用合成分拍及填充结果，不证明真实模型分拍和制作建议质量",
+        "不证明断电中途恢复或业务连续性已全面验收"
+      ]
+    },
+    {
+      "id": "screenplay-asset-extractor-acceptance-script",
+      "working_directory": "level-2/asset-extraction",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3.12 creator-src/tests/run_acceptance.py",
+      "execution_scope": "发布工作区的可维护源码副本",
+      "exit_code": 0,
+      "status": "passed",
+      "classification": "现有确定性资产验收脚本；使用合成剧本及预置资产判断，未调用真实模型",
+      "result": {
+        "characters": 3,
+        "locations": 1,
+        "props": 1,
+        "effects": 1,
+        "scenes": 3,
+        "findings": 1,
+        "sheets": [
+          "人物",
+          "场景",
+          "道具",
+          "场次总表",
+          "特效"
+        ]
+      },
+      "coverage": [
+        "合法别名与生成来源保留",
+        "换装状态、主要动物、群演组与声音制作需求",
+        "主子场景归并、资产状态与场次总表一致",
+        "JSON 与 Excel 核心表和可选特效表一致",
+        "错误来源引用和无原文依据的外观事实阻止导出"
+      ],
+      "limitations": [
+        "脚本不是 unittest 测试集合，未将内部 assert 数量宣传为独立测试数",
+        "不证明真实模型语义提取完整，也未在此脚本中覆盖车辆分类或无特效四表分支"
+      ]
+    }
+  ],
+  "additional_source_snapshot_checks": [
+    {
+      "component": "harness-creator",
+      "command": "python3.12 harness.py validate",
+      "working_directory": "engineering/harness-creator (复制前相同运行代码的可维护快照)",
+      "result": {
+        "valid": true,
+        "errors": [],
+        "capabilities": 6,
+        "skills": 7
+      }
+    },
+    {
+      "component": "harness-creator",
+      "command": "python3.12 harness.py doctor",
+      "working_directory": "engineering/harness-creator (复制前相同运行代码的可维护快照)",
+      "result": {
+        "python_supported": true,
+        "plugin_valid": true
+      }
+    },
+    {
+      "component": "screenplay-standardizer",
+      "command": "python3.12 harness.py validate",
+      "working_directory": "level-1/screenplay-standardization/screenplay-standardizer (复制前相同运行代码的可维护快照)",
+      "result": {
+        "valid": true,
+        "errors": [],
+        "capabilities": 2,
+        "skills": 3
+      }
+    }
+  ],
+  "privacy": "仅记录相对目录、匿名环境和测试统计；不包含用户路径、业务原稿或真实产物正文。"
+}

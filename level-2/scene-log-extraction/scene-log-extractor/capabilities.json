@@ -1,0 +1,609 @@
+{
+  "schema_version": "CapabilityCatalogV1",
+  "capabilities": [
+    {
+      "id": "extract-scene-log",
+      "skill_name": "ai-continuity-sheet",
+      "description": "从一级标准化 JSON 一次提取整剧场记表与审查报告",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "source_path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "selected_episodes": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "preferences": {
+            "type": "object",
+            "properties": {
+              "model": {
+                "type": "string"
+              },
+              "aspect_ratio": {
+                "type": "string"
+              },
+              "lighting_preference": {
+                "type": "string"
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "source_path"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "episodes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "scenes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "beats": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "findings": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "run_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "episodes",
+          "scenes",
+          "beats",
+          "findings",
+          "run_id"
+        ],
+        "additionalProperties": false
+      },
+      "execution": {
+        "kind": "python",
+        "script": "scripts/extract_capability.py"
+      },
+      "knowledge_refs": [
+        "references/source-adaptation.md"
+      ],
+      "required_artifacts": [
+        "scene_log.json",
+        "scene_log.xlsx",
+        "scene_log_report.json",
+        "scene_log_report.md"
+      ]
+    },
+    {
+      "id": "segment-scene",
+      "skill_name": "segment-scene",
+      "description": "按文本证据将一场剧本切成连续叙事拍",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "scene": {
+            "type": "object"
+          },
+          "preferences": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "scene",
+          "preferences"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "episode_id": {
+            "type": "string"
+          },
+          "scene_id": {
+            "type": "string"
+          },
+          "groups": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "unit_ids": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "unit_ids",
+                "reason"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "episode_id",
+          "scene_id",
+          "groups"
+        ],
+        "additionalProperties": false
+      },
+      "execution": {
+        "kind": "agent",
+        "access": "read-only",
+        "network": false
+      },
+      "knowledge_refs": [],
+      "required_artifacts": []
+    },
+    {
+      "id": "enrich-scene",
+      "skill_name": "enrich-scene",
+      "description": "沿用七个辅助 Skill 为每拍提供待审制作建议",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "scene": {
+            "type": "object"
+          },
+          "segmentation": {
+            "type": "object",
+            "properties": {
+              "episode_id": {
+                "type": "string"
+              },
+              "scene_id": {
+                "type": "string"
+              },
+              "groups": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "unit_ids": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "unit_ids",
+                    "reason"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "episode_id",
+              "scene_id",
+              "groups"
+            ],
+            "additionalProperties": false
+          },
+          "preferences": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "scene",
+          "segmentation",
+          "preferences"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "segmentation": {
+            "type": "object",
+            "properties": {
+              "episode_id": {
+                "type": "string"
+              },
+              "scene_id": {
+                "type": "string"
+              },
+              "groups": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "unit_ids": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "unit_ids",
+                    "reason"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "episode_id",
+              "scene_id",
+              "groups"
+            ],
+            "additionalProperties": false
+          },
+          "enrichment": {
+            "type": "object",
+            "properties": {
+              "beats": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "unit_ids": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "characters": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "props": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "camera": {
+                      "type": "string"
+                    },
+                    "lighting": {
+                      "type": "string"
+                    },
+                    "duration_estimate": {
+                      "type": "object",
+                      "properties": {
+                        "seconds": {
+                          "type": "number",
+                          "exclusiveMinimum": 0
+                        },
+                        "basis": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "seconds",
+                        "basis"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "micro_expression": {
+                      "type": "string"
+                    },
+                    "action_performance": {
+                      "type": "string"
+                    },
+                    "synopsis": {
+                      "type": "string"
+                    },
+                    "rationale": {
+                      "type": "string"
+                    },
+                    "uncertainties": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "unit_ids",
+                    "characters",
+                    "props",
+                    "camera",
+                    "lighting",
+                    "duration_estimate",
+                    "micro_expression",
+                    "action_performance",
+                    "synopsis",
+                    "rationale",
+                    "uncertainties"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "beats"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "segmentation",
+          "enrichment"
+        ],
+        "additionalProperties": false
+      },
+      "execution": {
+        "kind": "agent",
+        "access": "read-only",
+        "network": false
+      },
+      "knowledge_refs": [],
+      "required_artifacts": []
+    },
+    {
+      "id": "assemble-scene-log",
+      "skill_name": "assemble-scene-log",
+      "description": "校验来源覆盖并生成整剧 JSON 与 13 列工作簿",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "source_path": {
+            "type": "string"
+          },
+          "selected_episodes": {
+            "type": "array"
+          }
+        },
+        "required": [
+          "source_path"
+        ],
+        "additionalProperties": true
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "scene_log_path": {
+            "type": "string"
+          },
+          "workbook_path": {
+            "type": "string"
+          },
+          "episodes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "scenes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "beats": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "scene_log_path",
+          "workbook_path",
+          "episodes",
+          "scenes",
+          "beats"
+        ],
+        "additionalProperties": false
+      },
+      "execution": {
+        "kind": "python",
+        "script": "scripts/assemble_node.py"
+      },
+      "knowledge_refs": [],
+      "required_artifacts": [
+        "scene_log.json",
+        "scene_log.xlsx"
+      ]
+    },
+    {
+      "id": "review-continuity",
+      "skill_name": "review-continuity",
+      "description": "整剧人物与道具连续性疑点复核",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "scene_log_path": {
+            "type": "string"
+          },
+          "source_path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "scene_log_path",
+          "source_path"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "findings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "beat_id": {
+                  "type": "string"
+                },
+                "source_refs": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "confidence": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message",
+                "beat_id",
+                "source_refs",
+                "confidence"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "findings"
+        ],
+        "additionalProperties": false
+      },
+      "execution": {
+        "kind": "agent",
+        "access": "read-only",
+        "network": false
+      },
+      "knowledge_refs": [],
+      "required_artifacts": []
+    },
+    {
+      "id": "finalize-scene-log",
+      "skill_name": "finalize-scene-log",
+      "description": "合并疑点报告并发布四个交付物",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "scene_log_path": {
+            "type": "string"
+          },
+          "workbook_path": {
+            "type": "string"
+          },
+          "review": {
+            "type": "object",
+            "properties": {
+              "findings": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "beat_id": {
+                      "type": "string"
+                    },
+                    "source_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "confidence": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "beat_id",
+                    "source_refs",
+                    "confidence"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "findings"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "scene_log_path",
+          "workbook_path",
+          "review"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "episodes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "scenes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "beats": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "findings": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "episodes",
+          "scenes",
+          "beats",
+          "findings"
+        ],
+        "additionalProperties": false
+      },
+      "execution": {
+        "kind": "python",
+        "script": "scripts/finalize_node.py"
+      },
+      "knowledge_refs": [],
+      "required_artifacts": [
+        "scene_log.json",
+        "scene_log.xlsx",
+        "scene_log_report.json",
+        "scene_log_report.md"
+      ]
+    }
+  ],
+  "workflows": []
+}

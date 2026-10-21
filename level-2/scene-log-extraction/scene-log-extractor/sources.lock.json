@@ -1,0 +1,10 @@
+{
+  "schema_version": "SourceReceiptsV1",
+  "sources": [
+    {
+      "origin": "https://github.com/kaibaoxiang-studio/ai-continuity-sheet",
+      "revision": "0c0750115477a6881e1b10650a5266aa9a665fdd",
+      "adaptation": "在同团队原仓库增量改造主 Skill、七个辅助 Skill 和转换流程；保留来源追溯"
+    }
+  ]
+}
