@@ -151,6 +151,35 @@ def validate(scenes_data, assets):
         if sid not in covered:
             warnings.append(f'{sid} 没有分配场景资产')
 
+    # 检查 note 是否包含判断过程（应该只写需要人工确认的不确定内容）
+    note_keywords = ['因此', '所以', '按规则', '已判断', '归类为', '因为']
+    for kind, label, _, _ in KINDS:
+        for a in assets.get(kind, []):
+            # 检查资产级别的 note
+            note = a.get('note', '')
+            if note and any(kw in note for kw in note_keywords):
+                warnings.append(f'[{label}] {a.get("id")} {a.get("name")} 的 note 疑似包含判断过程，应只写需要人工确认的不确定内容')
+            # 检查状态级别的 note
+            for st in a.get('states', []):
+                st_note = st.get('note', '')
+                if st_note and any(kw in st_note for kw in note_keywords):
+                    warnings.append(f'[{label}] {a.get("id")}-{st.get("id")} 的 note 疑似包含判断过程，应只写需要人工确认的不确定内容')
+
+    # 检查主角和主要配角的 description 完整性
+    desc_keywords = ['岁', '发', '眼', '衣', '裙', '袍', '甲', '气质', '装']
+    for a in assets.get('characters', []):
+        if a.get('role') in ['主角', '主要配角']:
+            desc = a.get('description', '')
+            if len(desc) < 50:
+                warnings.append(f'[人物] {a.get("id")} {a.get("name")} 的基础描述字数过少（{len(desc)}字），可能不完整')
+            elif not any(kw in desc for kw in desc_keywords):
+                warnings.append(f'[人物] {a.get("id")} {a.get("name")} 的基础描述缺少关键外观要素，建议检查是否完整')
+            # 检查状态描述
+            for st in a.get('states', []):
+                st_desc = st.get('description', '')
+                if len(st_desc) < 50:
+                    warnings.append(f'[人物] {a.get("id")}-{st.get("id")} {a.get("name")}·{st.get("name")} 的状态描述字数过少（{len(st_desc)}字），可能不完整')
+
     return errors, warnings
 
 

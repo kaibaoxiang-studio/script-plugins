@@ -18,7 +18,7 @@ import sys
 
 import docx
 
-RE_EPISODE = re.compile(r'^第\s*(\d+)\s*集\s*[｜|]\s*(.*)$')
+RE_EPISODE = re.compile(r'^第\s*(\d+)\s*集(?:\s*[｜|]\s*(.*))?$')
 RE_SUMMARY = re.compile(r'^本集概要[：:]\s*(.*)$')
 RE_SCENE = re.compile(r'^(\d+)-(\d+)\s+(.+?)\s+(内|外|内外)\s+(\S+)$')
 RE_CHARS = re.compile(r'^人物[：:]\s*(.*)$')
