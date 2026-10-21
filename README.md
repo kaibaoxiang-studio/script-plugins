@@ -1,25 +1,70 @@
-# 剧本插件
+# 开宝箱工作室 · 剧本插件 1.0
 
-开宝箱工作室的团队共建项目。当前框架只有一级和二级产物；下表区分已更新的插件、已上传的场记表能力和仍待上传的部分。
+团队共建的三个业务插件：**剧本标准化（一级）**、**场记表提取（二级）**、**剧本资产表提取（二级）**。两项二级能力直接读取同一份一级标准 JSON，可分别运行；节拍归入场记表。
 
-## 当前能力
+项目版本为 **1.0.0（2026-10-21）**，四个插件组件保留实际版本 **0.1.0**。仓库包含完整插件、维护源码、统一安装目录、独立 ZIP 和脱敏测试证据。
 
-| 能力 | 状态 | 位置 |
+## 功能与交付
+
+| 层级 | 插件 / 入口 | 输入 | 交付 |
+| --- | --- | --- | --- |
+| 一级 | [剧本标准化](level-1/screenplay-standardization/README.md) · standardize-screenplay / review-screenplay | DOCX、TXT、Markdown 剧本；纯细纲需经 Agent 创作 | 标准剧本 JSON / Markdown、独立疑点报告 |
+| 二级 | [场记表提取](level-2/scene-log-extraction/README.md) · extract-scene-log | 完成的 standardized_screenplay_v1 JSON | 按叙事拍组织的 JSON、每集一页的 13 列 Excel、独立审查报告 |
+| 二级 | [剧本资产表提取](level-2/asset-extraction/README.md) · extract-asset-table | 同一份一级 JSON | 人物 / 场景 / 道具 / 按需特效资产 JSON、Excel、独立疑点报告 |
+| 额外工程 | [Harness Creator](engineering/README.md) · harness-creator | 业务需求、已有插件或知识 | 能力设计、源码、插件构建、维护与验证 |
+
+**Harness Creator 是额外的通用工程，不属于一级或二级节点。** 三个业务插件均自带运行代码与知识，使用时无需另装 Creator。
+
+```mermaid
+flowchart TD
+    A["原始剧本 / 细纲"] --> B["一级：剧本标准化"]
+    B --> C["标准剧本 JSON"]
+    C --> D["二级：场记表提取（含叙事拍）"]
+    C --> E["二级：剧本资产表提取"]
+    D --> F["场记表 + 独立审查报告"]
+    E --> G["资产表 + 独立疑点报告"]
+```
+
+框架只有一级和二级产物。资产提取以标准剧本原文为依据，不以场记表作为必需输入。
+
+## 安装与使用
+
+添加固定的 1.0 市场：
+
+```sh
+codex plugin marketplace add https://github.com/kaibaoxiang-studio/script-plugins.git --ref v1.0.0
+```
+
+在 Codex 插件目录选择「开宝箱剧本插件 1.0」，分别安装三个业务插件；维护插件时再选装 Creator。[安装说明](docs/installation.md)包含 CLI 命令、Python 运行时及调用示例。
+
+1. 用「剧本标准化」得到 standardized_screenplay.json、standardized_screenplay.md 和独立疑点报告。
+2. 将 **JSON** 分别交给两个二级插件。Markdown 用于阅读；二级正式输入为 JSON。
+3. 复核二级报告。摄影、灯光、表演、时长和制作需求须由制作方确认。
+
+## 测试结果与范围
+
+| 测试 | 已交付结果 | 边界 |
 | --- | --- | --- |
-| `@Harness Creator` | 已更新，用于建设和维护插件 | 独立的本地项目，尚未收录到本仓库 |
-| `@剧本标准化` | 已更新，负责标准化与独立审查 | [剧本标准化插件](https://github.com/kaibaoxiang-studio/script-plugins/tree/codex/screenplay-standardizer-plugin/capabilities/01-screenplay-standardization/screenplay-standardizer)，目前在开发分支，尚未合入 `main` |
-| 场记表能力 | 团队成员已上传；与一级能力的接口待对齐 | [ai-continuity-sheet](https://github.com/kaibaoxiang-studio/ai-continuity-sheet) 独立仓库 |
+| 一级真实业务样例 | 10 集、28 场、1 条疑点 | 经 Agent 整理和脚本校验，含定点修订 |
+| 场记表第 1–2 集 | 5 场、28 拍、110 个原文单元、43 段对白；2 页各 13 列 | 交付前补记 3 处细节；最终 31 条提示：9 条上游来源提示、22 条制作不确定项 |
+| 资产表全剧 | 28 场；22 人物、17 场景、26 道具、0 单列特效；3 条疑点 | 来源、结构和工作簿核对通过，仍需人工核定资产语义与遗漏 |
+| 三份长稿资产验证 | 整稿结构验证；各前两集真实 Agent 提取 | 未逐集人工核定三部全剧 |
+| 确定性检查 | Creator 24 通过；一级 9 通过 / 1 私有样稿跳过；场记 6 通过；资产验收脚本通过 | 与既有真实模型调用分开记录 |
 
-## 一级与二级产物
+细节、修正记录、匿名运行编号和产物哈希见[1.0 验证记录](docs/validation-v1.0.md)。真实剧本、完整业务产物和原始日志留在本地；本仓库保存统计证据和合成验收材料。
 
-| 层级 | 产物与定义 | 当前状态 |
-| --- | --- | --- |
-| 一级 | 标准化剧本：保留原文依据，生成可追溯的标准格式 | `@剧本标准化` 已更新；二级接口待对齐 |
-| 二级 | 场记表（目标包含节拍）：按场次、片段组织场记与节拍线索 | 已上传的能力以纯剧本为输入，按片段生成 13 列 Excel；尚未接入标准化剧本，13 列中也没有独立节拍字段。详见[场记表说明](https://github.com/kaibaoxiang-studio/script-plugins/blob/codex/screenplay-standardizer-plugin/capabilities/02-scene-log/README.md) |
-| 二级 | 资产表：与场记表并列，以标准化剧本中的原文为依据提炼资产，场记线索可辅助核对 | 正式能力待上传 |
+## 目录与维护
 
-节拍归入场记表，不再设独立节拍表；当前框架没有三级产物。开发分支中的其他能力目录是早期归档、参考资料或试验代码，不代表正式插件已经交付。
+```text
+level-1/screenplay-standardization/   一级：维护源码 + 独立插件
+level-2/scene-log-extraction/         二级：原仓源码快照 + 独立插件
+level-2/asset-extraction/             二级：维护源码 + 独立插件
+engineering/harness-creator/         额外工程：通用插件建设与维护
+.agents/plugins/marketplace.json     四个插件的统一安装目录
+docs/validation/                     脱敏证据与版本基线
+scripts/                            仓库检查与 ZIP 打包
+```
 
-## 团队协作
+creator-src 保存维护脚本、规则、蓝图和测试；同级插件目录是独立安装快照。场记源码来自团队 [ai-continuity-sheet](https://github.com/kaibaoxiang-studio/ai-continuity-sheet) 的固定版本，维护关系见其组件 README。
 
-新需求先讨论输入、输出、负责人和验收标准，再通过 Issue、分支与 Pull Request 提交。协作方式见[贡献指南](CONTRIBUTING.md)。剧本及人物设定等素材上传前，请确认团队拥有共享权限。
+旧 capabilities/01–05 归档和三级设计保留在 Git 历史中。见 [CHANGELOG](CHANGELOG.md)、[开发说明](docs/development.md)、[贡献指南](CONTRIBUTING.md)和[来源说明](NOTICE.md)。

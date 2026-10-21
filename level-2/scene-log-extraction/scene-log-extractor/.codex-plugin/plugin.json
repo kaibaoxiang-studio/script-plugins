@@ -1,0 +1,10 @@
+{
+  "name": "scene-log-extractor",
+  "version": "0.1.0",
+  "description": "从一级标准化剧本提取可追溯场记表与审查报告",
+  "author": {
+    "name": "开宝箱工作室"
+  },
+  "skills": "./skills/",
+  "requires_local_executor": true
+}

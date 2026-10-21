@@ -1,0 +1,36 @@
+{
+  "schema_version": "SourceReceiptsV1",
+  "sources": [
+    {
+      "origin": "https://github.com/eggshrt/Bird-s-Nest",
+      "revision": "3f5a5f348c2f71b3c5c046128e0c679089ab801a",
+      "license": "MIT",
+      "license_file": "licenses/Bird-s-Nest-MIT.txt",
+      "selected_files": [
+        {
+          "path": "plugins/skill-orchestrator/skills/grill-me/SKILL.md",
+          "sha256": "4e14035b7c23d8f4fb92c1bad4e53eb92c9539cbc9184851d007263c060d1eb7"
+        },
+        {
+          "path": "plugins/skill-orchestrator/skills/skill-orchestrator/scripts/orchestrator_runtime.py",
+          "sha256": "d5d18cc4615f8bf46c1c45387fafb47256c448993561a46f7217f79d33642b76"
+        }
+      ],
+      "adaptation": "Grill Me随包收录；事件存储、DAG和App Server设计改写为通用运行核心，去除业务耦合，增加文件校验与建设维护工具。"
+    },
+    {
+      "origin": "Codex bundled skill-creator/SKILL.md",
+      "revision": "sha256:6656e54755638e8efcf275a472b9672eaa8a9a1b9e59dc210e275b03b59e1e66",
+      "license": "Apache-2.0",
+      "license_file": "licenses/skill-creator-Apache-2.0.txt",
+      "selected_files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "6656e54755638e8efcf275a472b9672eaa8a9a1b9e59dc210e275b03b59e1e66",
+          "mode": "method-reference"
+        }
+      ],
+      "adaptation": "参考渐进加载与增量维护方法；未复制系统Skill作为运行依赖。"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+interface:
+  display_name: segment-scene
+  short_description: 按文本证据将一场剧本切成连续叙事拍
+  default_prompt: Use $segment-scene to complete the requested task.
+policy:
+  allow_implicit_invocation: true

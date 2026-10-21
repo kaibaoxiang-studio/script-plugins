@@ -1,0 +1,6 @@
+interface:
+  display_name: harness-knowledge-maintainer
+  short_description: 为指定插件或 Skill 定点补充、替换和整理知识资料，维护集中来源、版本、加载关系和独立插件知识快照。
+  default_prompt: Use $harness-knowledge-maintainer to complete the requested task.
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,57 @@
+{
+  "schema_version": "ArchiveChecksV1",
+  "date": "2026-10-21",
+  "project_version": "1.0.0",
+  "method": "scripts/release.py package: every archive extracted, file SHA-256 compared, standalone validate executed",
+  "status": "passed",
+  "components": [
+    {
+      "id": "screenplay-standardizer",
+      "archive": "screenplay-standardizer-0.1.0.zip",
+      "sha256": "6601c0b1cdcc9b5a81170f23c293a8efef009f2ba93413b6a3969d5d31c21c84",
+      "files": 35,
+      "unpacked_validation": {
+        "valid": true,
+        "errors": [],
+        "capabilities": 2,
+        "skills": 3
+      }
+    },
+    {
+      "id": "scene-log-extractor",
+      "archive": "scene-log-extractor-0.1.0.zip",
+      "sha256": "03a9f3776e176ac2a4c1f2e7e8828032d747e0ed41e213dc39c48191d93cfe9b",
+      "files": 60,
+      "unpacked_validation": {
+        "valid": true,
+        "errors": [],
+        "capabilities": 6,
+        "skills": 14
+      }
+    },
+    {
+      "id": "screenplay-asset-extractor",
+      "archive": "screenplay-asset-extractor-0.1.0.zip",
+      "sha256": "5cab623843340e69d7c2bd71437e02f1262bc42fcc2cebe381da7433baf54c54",
+      "files": 37,
+      "unpacked_validation": {
+        "valid": true,
+        "errors": [],
+        "capabilities": 1,
+        "skills": 2
+      }
+    },
+    {
+      "id": "harness-creator",
+      "archive": "harness-creator-0.1.0.zip",
+      "sha256": "30c343ef88cad5d80e95572348580f743041a534f959421596d595eea0469814",
+      "files": 50,
+      "unpacked_validation": {
+        "valid": true,
+        "errors": [],
+        "capabilities": 6,
+        "skills": 7
+      }
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+interface:
+  display_name: harness-creator
+  short_description: 通过 Grill Me 创建、改造、整合和升级可独立运行的 Codex 业务能力插件；支持从零建设、开源能力吸收和 Creato
+  default_prompt: Use $harness-creator to complete the requested task.
+policy:
+  allow_implicit_invocation: false

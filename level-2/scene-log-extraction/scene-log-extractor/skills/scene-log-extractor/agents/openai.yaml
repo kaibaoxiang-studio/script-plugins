@@ -1,0 +1,6 @@
+interface:
+  display_name: scene-log-extractor
+  short_description: 从一级标准化剧本提取可追溯场记表与审查报告
+  default_prompt: Use $scene-log-extractor to complete the requested task.
+policy:
+  allow_implicit_invocation: false

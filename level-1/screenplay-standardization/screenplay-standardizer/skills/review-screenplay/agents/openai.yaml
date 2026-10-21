@@ -1,0 +1,6 @@
+interface:
+  display_name: review-screenplay
+  short_description: 独立检查剧本的结构、姓名、台词和按需跨集连续性，只交证据化疑点报告
+  default_prompt: Use $review-screenplay to complete the requested task.
+policy:
+  allow_implicit_invocation: true

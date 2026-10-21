@@ -1,0 +1,29 @@
+{
+  "schema_version": "standardized_screenplay_v1",
+  "source_manifest": {"title": "连续性验收小样"},
+  "input_kind": "script",
+  "needs_creative_pass": false,
+  "episodes": [
+    {
+      "id": "ep-001", "number": 1, "title": "改名", "summary": "顾云改名并交代钥匙。", "source_refs": ["L1"],
+      "scenes": [
+        {"id": "scn-001", "number": "1-1", "source_heading": "1-1 屋内 内 日", "location": "屋内", "interior_exterior": "内", "time": "日", "characters": ["顾云", "林深"], "source_refs": ["L2"], "blocks": [
+          {"type": "action", "text": "顾云告诉林深，她从此改名顾澜。", "source_refs": ["L3"], "origin": "source"},
+          {"type": "dialogue", "speaker": "顾云", "voice": null, "language": "mixed", "text": "以后叫我顾澜。 Call me Gulan.", "source_refs": ["L4"], "origin": "source"},
+          {"type": "action", "text": "林深把铜钥匙放进盒子。", "source_refs": ["L5"], "origin": "source"},
+          {"type": "dialogue", "speaker": "林深", "voice": "OS", "language": "zh", "text": "希望她能找到。", "source_refs": ["L6"], "origin": "source"}
+        ]}
+      ]
+    },
+    {
+      "id": "ep-002", "number": 2, "title": "门口", "summary": "顾澜召回林深。", "source_refs": ["L7"],
+      "scenes": [
+        {"id": "scn-002", "number": "2-1", "source_heading": "2-1 门口 外 夜", "location": "门口", "interior_exterior": "外", "time": "夜", "characters": ["顾澜", "林深"], "source_refs": ["L8"], "blocks": [
+          {"type": "action", "text": "林申拿着铜钥匙站在门口。", "source_refs": ["L9"], "origin": "source"},
+          {"type": "action", "text": "顾澜喊道：“回来！”", "source_refs": ["L10"], "origin": "source"},
+          {"type": "dialogue", "speaker": "顾澜", "voice": "VO", "language": "mixed", "text": "We have time. 我们还有时间。", "source_refs": ["L11"], "origin": "generated"}
+        ]}
+      ]
+    }
+  ]
+}

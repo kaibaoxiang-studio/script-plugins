@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "HarnessBlueprintV1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "plugin",
+    "goal",
+    "acceptance_criteria",
+    "capabilities",
+    "files"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "HarnessBlueprintV1"
+    },
+    "plugin": {
+      "type": "object",
+      "required": [
+        "name",
+        "version",
+        "description"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "version": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "author": {
+          "type": "object"
+        }
+      }
+    },
+    "goal": {
+      "type": "string",
+      "minLength": 1
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "open_questions": {
+      "type": "array",
+      "maxItems": 0
+    },
+    "files": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "skill_name",
+          "description",
+          "instructions",
+          "input_schema",
+          "output_schema",
+          "execution"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "skill_name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "instructions": {
+            "type": "string",
+            "minLength": 50
+          },
+          "input_schema": {
+            "type": "object"
+          },
+          "output_schema": {
+            "type": "object"
+          },
+          "execution": {
+            "type": "object",
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "python",
+                  "agent"
+                ]
+              },
+              "script": {
+                "type": "string"
+              },
+              "access": {
+                "enum": [
+                  "read-only",
+                  "workspace-write"
+                ]
+              },
+              "network": {
+                "type": "boolean"
+              }
+            }
+          },
+          "knowledge_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "required_artifacts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "workflows": {
+      "type": "array"
+    },
+    "sources": {
+      "type": "array"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+interface:
+  display_name: screenplay-asset-extractor
+  short_description: 从一级标准剧本 JSON 提取可追溯的剧本资产表与制作需求
+  default_prompt: Use $screenplay-asset-extractor to complete the requested task.
+policy:
+  allow_implicit_invocation: false

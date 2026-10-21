@@ -1,0 +1,72 @@
+{
+  "project_version": "1.0.0",
+  "date": "2026-10-21",
+  "components": [
+    {
+      "id": "screenplay-standardizer",
+      "role": "level-1",
+      "version": "0.1.0",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "capabilities": 2,
+        "skills": 3
+      },
+      "runtime": {
+        "python": "3.12.14",
+        "python_supported": true,
+        "codex_version": "codex-cli 0.163.0-alpha.10.2"
+      }
+    },
+    {
+      "id": "scene-log-extractor",
+      "role": "level-2",
+      "version": "0.1.0",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "capabilities": 6,
+        "skills": 14
+      },
+      "runtime": {
+        "python": "3.12.14",
+        "python_supported": true,
+        "codex_version": "codex-cli 0.163.0-alpha.10.2"
+      }
+    },
+    {
+      "id": "screenplay-asset-extractor",
+      "role": "level-2",
+      "version": "0.1.0",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "capabilities": 1,
+        "skills": 2
+      },
+      "runtime": {
+        "python": "3.12.14",
+        "python_supported": true,
+        "codex_version": "codex-cli 0.163.0-alpha.10.2"
+      }
+    },
+    {
+      "id": "harness-creator",
+      "role": "extra-engineering",
+      "version": "0.1.0",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "capabilities": 6,
+        "skills": 7
+      },
+      "runtime": {
+        "python": "3.12.14",
+        "python_supported": true,
+        "codex_version": "codex-cli 0.163.0-alpha.10.2"
+      }
+    }
+  ],
+  "errors": [],
+  "status": "passed"
+}

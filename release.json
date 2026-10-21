@@ -1,0 +1,62 @@
+{
+  "project": "script-plugins",
+  "display_name": "剧本插件",
+  "version": "1.0.0",
+  "date": "2026-10-21",
+  "components": [
+    {
+      "id": "screenplay-standardizer",
+      "display_name": "剧本标准化",
+      "role": "level-1",
+      "path": "level-1/screenplay-standardization/screenplay-standardizer",
+      "source_path": "level-1/screenplay-standardization/creator-src",
+      "version": "0.1.0",
+      "entry": "standardize-screenplay",
+      "origin": {
+        "repository": "kaibaoxiang-studio/script-plugins",
+        "revision": "37952eb0c109f7eb3ae17f8707b8472432c1e938",
+        "path": "capabilities/01-screenplay-standardization"
+      }
+    },
+    {
+      "id": "scene-log-extractor",
+      "display_name": "场记表提取",
+      "role": "level-2",
+      "path": "level-2/scene-log-extraction/scene-log-extractor",
+      "source_path": "level-2/scene-log-extraction",
+      "version": "0.1.0",
+      "entry": "extract-scene-log",
+      "origin": {
+        "repository": "kaibaoxiang-studio/ai-continuity-sheet",
+        "revision": "3724a2333ad93aadd8554d54e09155c80d8be54e"
+      }
+    },
+    {
+      "id": "screenplay-asset-extractor",
+      "display_name": "剧本资产表提取",
+      "role": "level-2",
+      "path": "level-2/asset-extraction/screenplay-asset-extractor",
+      "source_path": "level-2/asset-extraction/creator-src",
+      "version": "0.1.0",
+      "entry": "extract-asset-table",
+      "origin": {
+        "repository": "kaibaoxiang-studio/script-plugins",
+        "revision": "37952eb0c109f7eb3ae17f8707b8472432c1e938",
+        "path": "capabilities/03-asset-table"
+      }
+    },
+    {
+      "id": "harness-creator",
+      "display_name": "Harness Creator",
+      "role": "extra-engineering",
+      "path": "engineering/harness-creator",
+      "source_path": "engineering/harness-creator",
+      "version": "0.1.0",
+      "entry": "harness-creator",
+      "origin": {
+        "repository": "local studio engineering project",
+        "revision": "release tree hashes in snapshot manifest"
+      }
+    }
+  ]
+}

@@ -1,0 +1,276 @@
+{
+  "schema_version": "CapabilityCatalogV1",
+  "capabilities": [
+    {
+      "id": "harness-creator",
+      "skill_name": "harness-creator",
+      "description": "通过 Grill Me 创建、改造、整合和升级可独立运行的 Codex 业务能力插件；支持从零建设、开源能力吸收和 Creator 自身升级。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "request": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "request"
+        ],
+        "additionalProperties": true
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string"
+          },
+          "deliverables": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "validation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "summary",
+          "deliverables",
+          "validation"
+        ],
+        "additionalProperties": false
+      },
+      "execution": {
+        "kind": "agent",
+        "access": "workspace-write",
+        "network": true
+      }
+    },
+    {
+      "id": "harness-knowledge-maintainer",
+      "skill_name": "harness-knowledge-maintainer",
+      "description": "为指定插件或 Skill 定点补充、替换和整理知识资料，维护集中来源、版本、加载关系和独立插件知识快照。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "request": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "request"
+        ],
+        "additionalProperties": true
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string"
+          },
+          "deliverables": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "validation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "summary",
+          "deliverables",
+          "validation"
+        ],
+        "additionalProperties": false
+      },
+      "execution": {
+        "kind": "agent",
+        "access": "workspace-write",
+        "network": true
+      }
+    },
+    {
+      "id": "harness-architect",
+      "skill_name": "harness-architect",
+      "description": "将已对齐的业务需求设计成能力目录、职责边界、输入输出和最小 Agent 结构，供 Harness Creator 建设插件。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "request": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "request"
+        ],
+        "additionalProperties": true
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string"
+          },
+          "deliverables": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "validation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "summary",
+          "deliverables",
+          "validation"
+        ],
+        "additionalProperties": false
+      },
+      "execution": {
+        "kind": "agent",
+        "access": "read-only",
+        "network": false
+      }
+    },
+    {
+      "id": "harness-source-integrator",
+      "skill_name": "harness-source-integrator",
+      "description": "检查已有开源 Skill、Agent 或完整 Harness，拆解方法与依赖并迁移为统一的 Codex 能力插件格式。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "request": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "request"
+        ],
+        "additionalProperties": true
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string"
+          },
+          "deliverables": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "validation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "summary",
+          "deliverables",
+          "validation"
+        ],
+        "additionalProperties": false
+      },
+      "execution": {
+        "kind": "agent",
+        "access": "workspace-write",
+        "network": true
+      }
+    },
+    {
+      "id": "harness-skill-author",
+      "skill_name": "harness-skill-author",
+      "description": "为 Harness 插件编写和修改聚焦的 Agent Skills、references、Python 辅助脚本及真实验收样例。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "request": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "request"
+        ],
+        "additionalProperties": true
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string"
+          },
+          "deliverables": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "validation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "summary",
+          "deliverables",
+          "validation"
+        ],
+        "additionalProperties": false
+      },
+      "execution": {
+        "kind": "agent",
+        "access": "workspace-write",
+        "network": false
+      }
+    },
+    {
+      "id": "harness-verifier",
+      "skill_name": "harness-verifier",
+      "description": "检查 Harness 插件的结构、脚本、契约、真实调用和增量变化，返回具体缺陷及可复现证据。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "request": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "request"
+        ],
+        "additionalProperties": true
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string"
+          },
+          "deliverables": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "validation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "summary",
+          "deliverables",
+          "validation"
+        ],
+        "additionalProperties": false
+      },
+      "execution": {
+        "kind": "agent",
+        "access": "read-only",
+        "network": false
+      }
+    }
+  ],
+  "workflows": []
+}

@@ -1,0 +1,6 @@
+interface:
+  display_name: standardize-screenplay
+  short_description: 把 DOCX、TXT 或 Markdown 剧本及纯细纲做成标准剧本 JSON/Markdown 与疑点报告
+  default_prompt: Use $standardize-screenplay to complete the requested task.
+policy:
+  allow_implicit_invocation: true
