@@ -1,6 +1,6 @@
 # 剧情大纲提炼规则
 
-来源：jimeng-storyboard-v3/references/dramatic-staging.md + leo's/references/directing-grammar.md
+本文件规则已内置，独立可用，无需安装其他 skill。
 
 ## 导演命题思维
 
