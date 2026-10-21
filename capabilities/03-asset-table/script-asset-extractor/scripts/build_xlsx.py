@@ -41,6 +41,21 @@ def join(v):
     return '、'.join(v) if isinstance(v, list) else (v or '')
 
 
+def unit_count(asset, kind):
+    """这个资产占几行：场景按 subscenes 优先、否则按 states；人物/道具按 states。"""
+    if kind == 'scenes' and asset.get('subscenes'):
+        return len(asset['subscenes'])
+    return len(asset.get('states', []))
+
+
+def scene_units(asset):
+    """统一取出一个场景资产的可迭代单元列表：subscenes 优先，否则把 states 包成同样的形状。"""
+    if asset.get('subscenes'):
+        return asset['subscenes']
+    return [{'name': asset.get('name', ''), 'description': st.get('description', ''), 'scenes': st.get('scenes', [])}
+            for st in asset.get('states', [])] or [{'name': asset.get('name', ''), 'description': asset.get('description', ''), 'scenes': []}]
+
+
 def validate(scenes_data, assets):
     """返回 (错误列表, 警告列表)。错误会阻止生成 Excel。"""
     errors, warnings = [], []
@@ -60,6 +75,11 @@ def validate(scenes_data, assets):
                 has_states = bool(a.get('states'))
                 if not has_subscenes and not has_states:
                     errors.append(f'[{label}] {aid} {a.get("name")} 既没有子场景也没有状态')
+                # int_ext/times 是场景表的必填列，主子场景结构下最容易在手工建主场景时漏写
+                if not a.get('int_ext'):
+                    errors.append(f'[{label}] {aid} {a.get("name")} 缺少 int_ext（内/外）')
+                if not a.get('times'):
+                    errors.append(f'[{label}] {aid} {a.get("name")} 缺少 times（时间）')
                 # 检查子场景引用的场次
                 for sub in a.get('subscenes', []):
                     for sid in sub.get('scenes', []):
@@ -101,6 +121,21 @@ def validate(scenes_data, assets):
                     warnings.append(
                         f'{sid} 「{a["name"]}」的状态 {st.get("id")} 引用了此场次，'
                         f'但剧本人物行里没有「{a["name"]}」出场')
+
+    # 道具的弱反向校验：道具标了 owner 时，owner 通常该在那一场出场（允许道具脱离
+    # owner 单独出镜的情况，比如被别人捡起/收走，所以降级为提示而非强校验，
+    # 命中时不代表一定错，但值得回查原文确认）
+    for a in assets.get('props', []):
+        owner = a.get('owner')
+        if not owner:
+            continue
+        for st in a.get('states', []):
+            for sid in st.get('scenes', []):
+                scene = all_scenes.get(sid)
+                if scene and owner not in scene['characters']:
+                    warnings.append(
+                        f'{sid} 道具「{a["name"]}」的归属人物「{owner}」未在此场次人物行中出现，'
+                        f'回查原文确认该场次道具是否确由他人持有或场次号是否有误')
 
     # 每个场次都要有场景资产覆盖（检查 subscenes 和 states）
     covered = set()
@@ -292,7 +327,8 @@ def write_breakdown(wb, scenes_data, assets):
     def lookup(kind, sid):
         out = []
         for a in assets.get(kind, []):
-            for st in a['states']:
+            units = scene_units(a) if kind == 'scenes' else a.get('states', [])
+            for st in units:
                 if sid in st.get('scenes', []):
                     out.append((a, st))
         return out
@@ -342,7 +378,7 @@ def main():
         print('错误:', e)
     for w in warnings:
         print('警告:', w)
-    counts = {label: (len(assets.get(k, [])), sum(len(a['states']) for a in assets.get(k, [])))
+    counts = {label: (len(assets.get(k, [])), sum(unit_count(a, k) for a in assets.get(k, [])))
               for k, label, _, _ in KINDS}
     print('统计:', '  '.join(f'{l} {n}个/{m}状态' for l, (n, m) in counts.items()))
     print(f'错误 {len(errors)} 条，警告 {len(warnings)} 条')

@@ -27,9 +27,11 @@ def main():
                 if ln['type'] == 'action':
                     print(f'▲ {ln["text"]}')
                 elif ln['type'] == 'dialog':
-                    # 保留 VO/OS 标记：VO 画外音不代表角色在画面中
+                    # 保留情绪括号和 VO/OS 标记：情绪可能提示剧变（比如情绪剧变常伴随外观
+                    # 剧变），VO 画外音不代表角色在画面中
+                    emo = f'（{ln["emotion"]}）' if ln.get('emotion') else ''
                     tag = f' [{ln["voice"]}]' if ln['voice'] else ''
-                    print(f'{ln["speaker"]}{tag}：{ln["text"]}')
+                    print(f'{ln["speaker"]}{emo}{tag}：{ln["text"]}')
                 else:
                     print(ln['text'])
         print()
