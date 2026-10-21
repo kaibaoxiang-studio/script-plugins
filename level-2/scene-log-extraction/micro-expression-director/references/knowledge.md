@@ -1,6 +1,6 @@
 # 微表情情绪指导字段规则
 
-来源：jimeng-storyboard-v3/references/common-performance.md + leo's/references/performance-direction.md
+本文件规则已内置，独立可用，无需安装其他 skill。
 
 ## 情绪双通道 A：微表情与呼吸
 
