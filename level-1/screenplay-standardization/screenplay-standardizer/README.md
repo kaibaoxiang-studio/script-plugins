@@ -1,13 +1,13 @@
 # 剧本标准化 · 一级插件
 
-组件 `screenplay-standardizer`，版本 **0.1.0**，属于开宝箱工作室剧本插件 **1.0.0**。本目录是可独立运行的完整插件，包含 Skills、规则、Python Harness、脚本和依赖锁；使用时无需另装 Harness Creator。
+组件 `screenplay-standardizer`，版本 **0.1.2**，属于开宝箱工作室剧本插件 **1.0.1**。本目录是可独立运行的完整插件，包含 Skills、规则、Python Harness、脚本和依赖锁；使用时无需另装 Harness Creator。
 
 ## 能力与交付
 
 | 入口 | 输入与作用 | 交付 |
 | --- | --- | --- |
-| `standardize-screenplay` | DOCX、TXT、Markdown 剧本或分集细纲；选择主稿、整理集场、保留对白、双语、标色与来源 | `standardized_screenplay.json`、`standardized_screenplay.md`、`findings.json`、`findings.md` |
-| `review-screenplay` | 来源文件或标准剧本 JSON；独立检查证据明确的疑点 | `findings.json`、`findings.md` |
+| `standardize-screenplay` | DOCX、TXT、Markdown 剧本或分集细纲；选择主稿、整理集场、保留对白、双语、标色与来源 | `标准化剧本.json`、`标准化剧本.md`、`剧本疑点报告.json`、`剧本疑点报告.md` |
+| `review-screenplay` | 来源文件或标准剧本 JSON；独立检查证据明确的疑点 | `剧本疑点报告.json`、`剧本疑点报告.md` |
 
 默认 `review_mode=light`；明确选择 `deep` 时，由 Agent 做跨集连续性与细纲覆盖复核。纯细纲需要 Agent 依据来源创作；脚本拒绝直接导出尚未完成创作的占位稿。语义整理和改写保留生成标记与来源依据，疑点独立交付。
 
@@ -18,11 +18,11 @@
 团队成员接受仓库邀请，并确认本机 Git 可以读取仓库后，执行：
 
 ```sh
-codex plugin marketplace add https://github.com/kaibaoxiang-studio/script-plugins.git --ref v1.0.0
+codex plugin marketplace add https://github.com/kaibaoxiang-studio/script-plugins.git --ref v1.0.1
 codex plugin add screenplay-standardizer@script-plugins
 ```
 
-在新聊天中选择「剧本标准化」并提供文件，或明确调用 `$screenplay-standardizer`、`$standardize-screenplay`、`$review-screenplay`。完整安装说明见[项目安装文档](https://github.com/kaibaoxiang-studio/script-plugins/blob/v1.0.0/docs/installation.md)。
+在新聊天中选择「剧本标准化」并提供文件，或明确调用 `$screenplay-standardizer`、`$standardize-screenplay`、`$review-screenplay`。完整安装说明见[项目安装文档](https://github.com/kaibaoxiang-studio/script-plugins/blob/v1.0.1/docs/installation.md)。
 
 ## 独立目录与命令行
 
@@ -66,6 +66,6 @@ runtime_python="/absolute/path/returned/python"
 
 ## 验证与维护
 
-本次确定性测试为 9 项通过、1 项私有原稿测试跳过。真实业务样例经 Agent 整理及脚本校验后交付 10 集、28 场、1 条疑点；该案例含定点修订，不能据此声称任意原稿都可无干预准确转换。范围见[项目验证记录](https://github.com/kaibaoxiang-studio/script-plugins/blob/v1.0.0/docs/validation-v1.0.md)。
+本次确定性测试为 10 项通过、1 项私有原稿测试跳过。真实业务样例经 Agent 整理及脚本校验后交付 10 集、28 场、1 条疑点；该案例含定点修订，不能据此声称任意原稿都可无干预准确转换。范围见[项目验证记录](https://github.com/kaibaoxiang-studio/script-plugins/blob/v1.0.1/docs/validation-v1.0.md)。
 
-蓝图生成器和测试位于仓库的 [creator-src](https://github.com/kaibaoxiang-studio/script-plugins/tree/v1.0.0/level-1/screenplay-standardization/creator-src)，不属于独立安装包的运行依赖。本 README 由其中的 `PLUGIN-README.md` 维护并写入构建蓝图。来源与许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+蓝图生成器和测试位于仓库的 [creator-src](https://github.com/kaibaoxiang-studio/script-plugins/tree/v1.0.1/level-1/screenplay-standardization/creator-src)，不属于独立安装包的运行依赖。本 README 由其中的 `PLUGIN-README.md` 维护并写入构建蓝图。来源与许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。

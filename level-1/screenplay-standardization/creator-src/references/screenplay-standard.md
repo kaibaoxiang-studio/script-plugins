@@ -14,8 +14,13 @@
 ## JSON 来源与核对材料
 
 - `episodes[].scenes[].blocks[]` 是标准剧本正文的唯一结构来源，Markdown 由此渲染；每个内容块有 `source_refs`、`origin`、`annotations`。原稿抽取块还有 `extracted_text`；如果正文发生语义修改，保留该字段并把 `origin` 改为 `generated`，校验器拒绝将改写块继续标记为 `source`。
+- 正文块的 `text` 必须非空。原稿只有“角色：”而没有台词时，不生成空对白块，也不臆造台词；将该行记入 `coverage.omitted_source_refs`，在疑点报告中以 `empty_dialogue` 和来源位置提示补稿。`finalize` 对旧版中间 JSON 的同类空对白也做相同处理；如果一场因此没有任何正文，则拒绝交付。
 - `source_annotations` 按原稿段落/行引用保存 DOCX 的全部非黑色 run 色值、字符起止偏移和原文，包括场标题或人物表上的标色。正文块的 `annotations` 方便局部渲染；位置因规范化改变时，Markdown 提示读者以 JSON 为准。
 - `front_matter`、`support_material`、`outline_source` 与 `reference_material` 保存细纲、人物设定和非主版本作为核对依据；它们不进入标准剧本 Markdown 正文。`coverage` 列出主稿已映射与未映射来源位置。
+
+## 产物命名
+
+需要新建面向用户的产物文件夹或文件时，除非用户指定了名称，或系统路径、接口契约及协作要求必须使用其他文字，尽量采用简洁、能说明内容的中文名称。用户指定的输出路径优先；Harness 内部运行目录仍按其契约使用。本插件交付文件使用 `标准化剧本.json`、`标准化剧本.md`、`剧本疑点报告.json`、`剧本疑点报告.md`。
 
 ## 改写边界
 

@@ -5,7 +5,7 @@
 仓库当前为私有仓库。团队成员先接受 GitHub 邀请，并确保本机 Git 可以读取仓库。使用支持插件功能的 Codex：
 
 ```sh
-codex plugin marketplace add https://github.com/kaibaoxiang-studio/script-plugins.git --ref v1.0.0
+codex plugin marketplace add https://github.com/kaibaoxiang-studio/script-plugins.git --ref v1.0.1
 codex plugin add screenplay-standardizer@script-plugins
 codex plugin add scene-log-extractor@script-plugins
 codex plugin add screenplay-asset-extractor@script-plugins
@@ -17,12 +17,12 @@ codex plugin add screenplay-asset-extractor@script-plugins
 codex plugin add harness-creator@script-plugins
 ```
 
-固定标签 v1.0.0 对应本次发布。跟随团队后续主分支时改用 `--ref main`。市场结构与 Git 引用参数遵循 [Codex 官方插件文档](https://developers.openai.com/plugins/build/plugins)。
+固定标签 v1.0.1 对应本次发布。跟随团队后续主分支时改用 `--ref main`。市场结构与 Git 引用参数遵循 [Codex 官方插件文档](https://developers.openai.com/plugins/build/plugins)。
 
 ## 在聊天中使用
 
 1. 选择「剧本标准化」，提供 DOCX、TXT 或 Markdown。说明是已有剧本还是纯细纲；默认轻审，需要跨集审查时明确要求深审。
-2. 确认一级交付的 standardized_screenplay.json 和独立疑点报告。
+2. 确认一级交付的 标准化剧本.json 和独立疑点报告。
 3. 分别选择「场记表提取」和「剧本资产表提取」，提供这份一级 JSON。两个二级插件可以分别运行。
 4. 检查报告中的疑点、来源提示和待审制作建议，再确认最终业务交付。
 
@@ -77,7 +77,7 @@ runtime_python="/absolute/path/returned/python"
 ```sh
 plugin_root="/absolute/path/script-plugins/level-2/scene-log-extraction/scene-log-extractor"
 "$runtime_python" "$plugin_root/scripts/run_scene_log.py" \
-  --source /absolute/path/standardized_screenplay.json \
+  --source /absolute/path/标准化剧本.json \
   --workspace /absolute/path/scene-log-work \
   --output /absolute/path/scene-log-output
 ```
@@ -89,7 +89,7 @@ plugin_root="/absolute/path/script-plugins/level-2/scene-log-extraction/scene-lo
 切换至资产插件的 Python 环境。新建 `asset-inputs.json`：
 
 ```json
-{"source_path": "/absolute/path/standardized_screenplay.json"}
+{"source_path": "/absolute/path/标准化剧本.json"}
 ```
 
 ```sh
@@ -104,4 +104,4 @@ plugin_root="/absolute/path/script-plugins/level-2/asset-extraction/screenplay-a
 
 ## 独立下载
 
-[1.0.0 Release](https://github.com/kaibaoxiang-studio/script-plugins/releases/tag/v1.0.0) 提供四个独立 ZIP、文件清单和 SHA256SUMS.txt。ZIP 顶层是插件名，解压后包含完整运行文件；无需回到 creator-src 或另装 Harness Creator。源码和测试材料保存在仓库，独立 ZIP 侧重安装运行。
+[1.0.1 Release](https://github.com/kaibaoxiang-studio/script-plugins/releases/tag/v1.0.1) 提供四个独立 ZIP、文件清单和 SHA256SUMS.txt。ZIP 顶层是插件名，解压后包含完整运行文件；无需回到 creator-src 或另装 Harness Creator。源码和测试材料保存在仓库，独立 ZIP 侧重安装运行。

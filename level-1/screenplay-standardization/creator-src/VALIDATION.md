@@ -24,3 +24,19 @@
 - 纯细纲创作通过模拟 Agent 写入的有来源生成块验证了结构和渲染契约；真实模型创作质量仍待 Agent 运行环境恢复后验收。直接对尚未创作的纯细纲执行 `finalize` 会拒绝输出，以免把占位稿当作标准剧本。
 
 三组原稿与标准稿是用户本地验收素材，没有复制进插件 ZIP。ZIP 中仅保留独立编写的脚本与方法性 references；原 SN2S ZIP 未见许可文件，未复制其实现。
+
+## 2026-10-22｜0.1.1 中文交付名称
+
+- 按用户要求，面向用户的文件夹与文件优先采用中文名称；固定交付文件更新为 `标准化剧本.json`、`标准化剧本.md`、`剧本疑点报告.json`、`剧本疑点报告.md`。内部运行目录与 JSON schema 标识保持既有契约。
+- `creator-src/tests` 的 10 项测试运行结果为 9 项通过、1 项因未设置私有样稿目录而跳过；新增断言核对四个中文文件名。
+- Harness Creator `doctor` 确认 Python 3.12.14 与 Codex CLI 可用；`build` 和 `patch` 的验证均返回 `valid=true`，2 个能力、3 个 Skill。0.1.1 ZIP 解压后再次 `validate`，并用一集一场样稿实际执行 `prepare`、`finalize`，只产出四个中文文件。
+- `codex plugin add screenplay-standardizer@screenplay-standardizer-local` 安装 0.1.1；`codex plugin list` 返回已安装且启用，安装缓存内的 Skill、reference 与脚本均已核对。此次更新未重新验收 Agent 创作或深审路径。
+- 以当前四份中文文件调用安装版 Harness 的 `verify_result`，相对产物名、必需产物检查与 SHA-256 校验通过。
+
+## 2026-10-22｜0.1.2 空对白正文块修复
+
+- 根因：来源稿有仅含说话人标签的段落，0.1.1 将其抽成 `text=""` 的对白块；一级校验未拦截，二级场记表因此在正文块非空检查时停止。
+- `prepare` 略去空对白块，同时在 `coverage.omitted_source_refs` 和 `empty_dialogue` 疑点中保留来源；`finalize` 对旧版 `work.json` 的同类空块做相同修复。其他空正文块仍由校验器拒绝，不补造台词。
+- 11 项单元测试中 10 项通过、1 项私有样稿测试因未设置环境变量而跳过。新增回归覆盖来源空对白、旧版中间 JSON 修复、来源引用与报告去重。
+- 用户提供的实际 50 集 DOCX 在第 32 集第 2 场的空对白来源为 P1535；使用 0.1.1 生成中间 JSON，再由 0.1.2 `finalize`，该场仅保留 7 个非空正文块，疑点报告仍有一条 P1535 的 `empty_dialogue`。本次确定性抽取为 92 场；用户提供的人工标准稿为 98 场，本修复没有重做其创作性拆场。
+- Harness Creator `doctor`、新构建及 ZIP 解压后 `validate` 均通过，2 个能力、3 个 Skill。0.1.2 已安装到本地插件缓存并启用。未重新运行完整二级场记表 Agent 流水线。

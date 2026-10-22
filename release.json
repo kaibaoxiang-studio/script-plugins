@@ -1,8 +1,8 @@
 {
   "project": "script-plugins",
   "display_name": "剧本插件",
-  "version": "1.0.0",
-  "date": "2026-10-21",
+  "version": "1.0.1",
+  "date": "2026-10-22",
   "components": [
     {
       "id": "screenplay-standardizer",
@@ -10,11 +10,11 @@
       "role": "level-1",
       "path": "level-1/screenplay-standardization/screenplay-standardizer",
       "source_path": "level-1/screenplay-standardization/creator-src",
-      "version": "0.1.0",
+      "version": "0.1.2",
       "entry": "standardize-screenplay",
       "origin": {
         "repository": "kaibaoxiang-studio/script-plugins",
-        "revision": "37952eb0c109f7eb3ae17f8707b8472432c1e938",
+        "revision": "be9a0a271fe0b91b8a375867700955d0f3445908",
         "path": "capabilities/01-screenplay-standardization"
       }
     },

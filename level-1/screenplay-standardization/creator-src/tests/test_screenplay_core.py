@@ -33,6 +33,10 @@ class ScreenplayCoreTests(unittest.TestCase):
             block["text"] = "Hello."
             block["origin"] = "source"
             paths = core.write_outputs(doc, Path(temp) / "out")["paths"]
+            self.assertEqual("标准化剧本.json", Path(paths["screenplay_json"]).name)
+            self.assertEqual("标准化剧本.md", Path(paths["screenplay_markdown"]).name)
+            self.assertEqual("剧本疑点报告.json", Path(paths["findings_json"]).name)
+            self.assertEqual("剧本疑点报告.md", Path(paths["findings_markdown"]).name)
             md = Path(paths["screenplay_markdown"]).read_text(encoding="utf-8")
             self.assertIn("# 第 1 集｜", md)
             self.assertIn("KAEL [lang:en]：Hello.", md)
@@ -103,6 +107,37 @@ class ScreenplayCoreTests(unittest.TestCase):
             doc["name_changes"] = [{"from": "小明", "to": "小名", "source_refs": ["L8"]}]
             codes = [f["code"] for f in core.audit(doc)["findings"]]
             self.assertNotIn("possible_name_variant", codes)
+
+    def test_empty_source_dialogue_is_omitted_and_reported(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "blank.txt"
+            path.write_text("第1集\n1-1 后院 外 夜\n人物：甲、乙\n"
+                            "▲ 甲坐在院中。\n乙：我们赢了。\n甲：\n▲ 门被推开。\n", encoding="utf-8")
+            doc = core.prepare(path)
+            scene = doc["episodes"][0]["scenes"][0]
+            self.assertEqual(3, len(scene["blocks"]))
+            self.assertTrue(all(block["text"].strip() for block in scene["blocks"]))
+            self.assertEqual(["L6"], doc["coverage"]["omitted_source_refs"])
+            self.assertEqual([], doc["coverage"]["unassigned_source_refs"])
+            findings = [item for item in core.audit(doc)["findings"] if item["code"] == "empty_dialogue"]
+            self.assertEqual(["L6"], findings[0]["source_refs"])
+            self.assertEqual("high", findings[0]["confidence"])
+            outputs = core.write_outputs(doc, Path(temp) / "out")
+            markdown = Path(outputs["paths"]["screenplay_markdown"]).read_text(encoding="utf-8")
+            self.assertNotIn("甲：\n", markdown)
+            self.assertIn("L6", Path(outputs["paths"]["findings_markdown"]).read_text(encoding="utf-8"))
+            scene["blocks"].insert(2, {"type": "dialogue", "text": "", "speaker": "甲",
+                                        "source_refs": ["L6"], "origin": "source", "extracted_text": ""})
+            self.assertIn("1-1 第 3 个正文块为空", core.validate_document(doc))
+            doc["notices"] = [item for item in doc["notices"] if item["code"] != "empty_dialogue"]
+            doc["coverage"]["omitted_source_refs"] = []
+            repaired = core.write_outputs(doc, Path(temp) / "legacy-out")
+            self.assertEqual(3, len(scene["blocks"]))
+            self.assertEqual(["L6"], doc["coverage"]["omitted_source_refs"])
+            repaired_json = json.loads(Path(repaired["paths"]["screenplay_json"]).read_text(encoding="utf-8"))
+            self.assertTrue(all(block["text"].strip() for block in repaired_json["episodes"][0]["scenes"][0]["blocks"]))
+            repaired_report = json.loads(Path(repaired["paths"]["findings_json"]).read_text(encoding="utf-8"))
+            self.assertEqual(1, sum(item["code"] == "empty_dialogue" for item in repaired_report["findings"]))
 
     def test_multiple_versions_selects_final_script(self):
         with tempfile.TemporaryDirectory() as temp:

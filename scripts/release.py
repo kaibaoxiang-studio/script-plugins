@@ -149,7 +149,7 @@ def main():
     parser.add_argument('--output', type=Path)
     args = parser.parse_args()
     if args.command == 'package':
-        result = package((args.output or ROOT / 'dist/v1.0.0').resolve())
+        result = package((args.output or ROOT / ('dist/v' + read_json(ROOT / 'release.json')['version'])).resolve())
     else:
         result = validate()
         if args.output:

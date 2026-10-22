@@ -86,10 +86,10 @@
         "references/source-notes.md"
       ],
       "required_artifacts": [
-        "standardized_screenplay.json",
-        "standardized_screenplay.md",
-        "findings.json",
-        "findings.md"
+        "标准化剧本.json",
+        "标准化剧本.md",
+        "剧本疑点报告.json",
+        "剧本疑点报告.md"
       ]
     },
     {
@@ -148,8 +148,8 @@
         "references/screenplay-standard.md"
       ],
       "required_artifacts": [
-        "findings.json",
-        "findings.md"
+        "剧本疑点报告.json",
+        "剧本疑点报告.md"
       ]
     }
   ],
