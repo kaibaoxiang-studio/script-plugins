@@ -326,6 +326,10 @@ def _split_script(lines: list[dict], notices: list[dict]) -> tuple[list[dict], l
             source_count += 1
             continue
         block = _dialogue(row)
+        if block is not None and not block["text"].strip():
+            notices.append({"code": "empty_dialogue", "source_refs": [row["ref"]],
+                            "message": f"{scene['number']} 的“{block['speaker']}”对白在原稿中为空；已略去空正文块，请核对并补写原稿对白"})
+            continue
         if block is None:
             action = text.lstrip("▲").strip()
             block = _block("action", action, row)
@@ -406,6 +410,9 @@ def prepare(source_path: str, input_kind: str = "auto", selected_section: int | 
             used_refs.update(scene["source_refs"])
             for block in scene["blocks"]:
                 used_refs.update(block["source_refs"])
+    omitted_refs = {ref for notice in notices if notice.get("code") == "empty_dialogue"
+                    for ref in notice.get("source_refs", [])}
+    used_refs.update(omitted_refs)
     if kind == "outline":
         used_refs.update(row["ref"] for row in primary if row["text"])
     unassigned = [row["ref"] for row in primary if row["text"] and row["ref"] not in used_refs]
@@ -426,6 +433,7 @@ def prepare(source_path: str, input_kind: str = "auto", selected_section: int | 
             "needs_creative_pass": kind == "outline", "coverage": {"status": "pending" if kind == "outline" else "parsed",
             "primary_source_refs": [row["ref"] for row in primary if row["text"]],
             "support_source_refs": [row["ref"] for row in supporting_rows],
+            "omitted_source_refs": [row["ref"] for row in primary if row["ref"] in omitted_refs],
             "unassigned_source_refs": unassigned}}
 
 
@@ -486,7 +494,8 @@ def audit(document: dict, mode: str = "light") -> dict:
         raise SourceError("review_mode 只能是 light 或 deep")
     notices = [dict(n) for n in document.get("notices", []) if not n.get("source_refs")]
     findings = [_finding(n["code"], n["message"], n["source_refs"],
-                         confidence="medium", suggestion="核对后保留或修订")
+                         confidence="high" if n["code"] == "empty_dialogue" else "medium",
+                         suggestion="补入原稿对白或确认确无对白" if n["code"] == "empty_dialogue" else "核对后保留或修订")
                 for n in document.get("notices", []) if n.get("source_refs")]
     speakers: dict[str, list[tuple[int, str]]] = defaultdict(list)
     names: dict[str, set[str]] = defaultdict(set)
@@ -609,7 +618,9 @@ def validate_document(document: dict) -> list[str]:
                 errors.append(f"场号应为 {index}-{number}")
             if not sc.get("blocks"):
                 errors.append(f"{index}-{number} 缺少动作或对白")
-            for block in sc.get("blocks", []):
+            for block_number, block in enumerate(sc.get("blocks", []), 1):
+                if not isinstance(block.get("text"), str) or not block["text"].strip():
+                    errors.append(f"{index}-{number} 第 {block_number} 个正文块为空")
                 if not block.get("source_refs"):
                     errors.append(f"{index}-{number} 内容块缺少来源")
                 for ref in block.get("source_refs", []):
@@ -635,10 +646,40 @@ def validate_document(document: dict) -> list[str]:
     return errors
 
 
+def _omit_empty_dialogue_blocks(document: dict) -> None:
+    """Repair editable intermediate JSON without inventing missing dialogue."""
+    notices = document.setdefault("notices", [])
+    coverage = document.setdefault("coverage", {})
+    omitted = list(coverage.get("omitted_source_refs", []))
+    recorded = {(item.get("code"), tuple(item.get("source_refs", []))) for item in notices}
+    for ep in document.get("episodes", []):
+        for scene in ep.get("scenes", []):
+            kept = []
+            for block in scene.get("blocks", []):
+                refs = block.get("source_refs", [])
+                empty_dialogue = (block.get("type") == "dialogue" and
+                                  isinstance(block.get("text"), str) and not block["text"].strip())
+                if not empty_dialogue or not refs:
+                    kept.append(block)
+                    continue
+                key = ("empty_dialogue", tuple(refs))
+                if key not in recorded:
+                    notices.append({"code": "empty_dialogue", "source_refs": refs,
+                                    "message": f"{scene['number']} 的“{block.get('speaker', '未标说话人')}”对白正文为空；已略去空正文块，请核对来源并补写对白"})
+                    recorded.add(key)
+                omitted.extend(refs)
+            scene["blocks"] = kept
+    coverage["omitted_source_refs"] = list(dict.fromkeys(omitted))
+    if "unassigned_source_refs" in coverage:
+        coverage["unassigned_source_refs"] = [ref for ref in coverage["unassigned_source_refs"]
+                                              if ref not in coverage["omitted_source_refs"]]
+
+
 def write_outputs(document: dict, output_dir: str | Path, review_mode: str = "light",
                   report_only: bool = False) -> dict:
     out = Path(output_dir).expanduser().resolve()
     out.mkdir(parents=True, exist_ok=True)
+    _omit_empty_dialogue_blocks(document)
     errors = validate_document(document) if not report_only else []
     if errors:
         raise SourceError("；".join(errors))

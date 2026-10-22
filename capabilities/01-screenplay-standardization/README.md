@@ -11,7 +11,7 @@
 
 两项能力均默认 `review_mode=light`。标准 JSON 保存集、场、内容块、来源段落、生成标记与 DOCX 原稿标色范围；Markdown 从该 JSON 结构渲染。审查只列证据化疑点，不自动改写剧本。纯细纲的脚本化、第一人称叙述的可拍摄性改写和主动深审由 Agent 按引用规范完成；命令行脚本负责保守抽取、结构校验、渲染与可确定的轻审。
 
-解压 [安装包](screenplay-standardizer-0.1.1.zip)后，公开能力可用插件自带的 Harness 命令调用。先准备一个 JSON 输入文件，例如 `{"source_path":"/absolute/input.docx","review_mode":"light"}`，再运行：
+解压 [安装包](screenplay-standardizer-0.1.2.zip)后，公开能力可用插件自带的 Harness 命令调用。先准备一个 JSON 输入文件，例如 `{"source_path":"/absolute/input.docx","review_mode":"light"}`，再运行：
 
 ```sh
 python3.12 /absolute/screenplay-standardizer/harness.py run-capability \
