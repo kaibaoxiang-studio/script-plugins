@@ -33,6 +33,10 @@ class ScreenplayCoreTests(unittest.TestCase):
             block["text"] = "Hello."
             block["origin"] = "source"
             paths = core.write_outputs(doc, Path(temp) / "out")["paths"]
+            self.assertEqual("标准化剧本.json", Path(paths["screenplay_json"]).name)
+            self.assertEqual("标准化剧本.md", Path(paths["screenplay_markdown"]).name)
+            self.assertEqual("剧本疑点报告.json", Path(paths["findings_json"]).name)
+            self.assertEqual("剧本疑点报告.md", Path(paths["findings_markdown"]).name)
             md = Path(paths["screenplay_markdown"]).read_text(encoding="utf-8")
             self.assertIn("# 第 1 集｜", md)
             self.assertIn("KAEL [lang:en]：Hello.", md)

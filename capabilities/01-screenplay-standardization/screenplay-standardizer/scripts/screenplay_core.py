@@ -644,14 +644,14 @@ def write_outputs(document: dict, output_dir: str | Path, review_mode: str = "li
         raise SourceError("；".join(errors))
     paths: dict[str, str] = {}
     if not report_only:
-        json_path = out / "standardized_screenplay.json"
-        md_path = out / "standardized_screenplay.md"
+        json_path = out / "标准化剧本.json"
+        md_path = out / "标准化剧本.md"
         json_path.write_text(json.dumps(document, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         md_path.write_text(render_markdown(document), encoding="utf-8")
         paths.update({"screenplay_json": str(json_path), "screenplay_markdown": str(md_path)})
     report = audit(document, review_mode)
-    fj = out / "findings.json"
-    fm = out / "findings.md"
+    fj = out / "剧本疑点报告.json"
+    fm = out / "剧本疑点报告.md"
     fj.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     fm.write_text(render_findings(report), encoding="utf-8")
     paths.update({"findings_json": str(fj), "findings_markdown": str(fm)})

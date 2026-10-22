@@ -1,6 +1,6 @@
 {
   "name": "screenplay-standardizer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "将 DOCX、TXT、Markdown 剧本或分集细纲转换为可追溯的标准剧本，并独立审查疑点",
   "author": {
     "name": "开宝箱工作室"

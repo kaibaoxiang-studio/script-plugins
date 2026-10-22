@@ -6,12 +6,12 @@
 
 | 入口 | 用途 | 交付 |
 | --- | --- | --- |
-| `standardize-screenplay` | 选主稿、标准化已有剧本；纯分集细纲经创作 Agent 补成剧本 | `standardized_screenplay.json`、`standardized_screenplay.md`、`findings.json`、`findings.md` |
-| `review-screenplay` | 独立轻审；显式选择 `deep` 后做跨集连续性与细纲覆盖复核 | `findings.json`、`findings.md` |
+| `standardize-screenplay` | 选主稿、标准化已有剧本；纯分集细纲经创作 Agent 补成剧本 | `标准化剧本.json`、`标准化剧本.md`、`剧本疑点报告.json`、`剧本疑点报告.md` |
+| `review-screenplay` | 独立轻审；显式选择 `deep` 后做跨集连续性与细纲覆盖复核 | `剧本疑点报告.json`、`剧本疑点报告.md` |
 
 两项能力均默认 `review_mode=light`。标准 JSON 保存集、场、内容块、来源段落、生成标记与 DOCX 原稿标色范围；Markdown 从该 JSON 结构渲染。审查只列证据化疑点，不自动改写剧本。纯细纲的脚本化、第一人称叙述的可拍摄性改写和主动深审由 Agent 按引用规范完成；命令行脚本负责保守抽取、结构校验、渲染与可确定的轻审。
 
-解压 [安装包](screenplay-standardizer-0.1.0.zip)后，公开能力可用插件自带的 Harness 命令调用。先准备一个 JSON 输入文件，例如 `{"source_path":"/absolute/input.docx","review_mode":"light"}`，再运行：
+解压 [安装包](screenplay-standardizer-0.1.1.zip)后，公开能力可用插件自带的 Harness 命令调用。先准备一个 JSON 输入文件，例如 `{"source_path":"/absolute/input.docx","review_mode":"light"}`，再运行：
 
 ```sh
 python3.12 /absolute/screenplay-standardizer/harness.py run-capability \
@@ -38,7 +38,7 @@ codex plugin add screenplay-standardizer@script-plugins
 ```sh
 python3.12 scripts/screenplay_core.py prepare /absolute/input.docx --output /absolute/work.json
 python3.12 scripts/screenplay_core.py finalize /absolute/work.json --output-dir /absolute/out
-python3.12 scripts/screenplay_core.py review /absolute/out/standardized_screenplay.json --output-dir /absolute/review
+python3.12 scripts/screenplay_core.py review /absolute/out/标准化剧本.json --output-dir /absolute/review
 ```
 
 `prepare` 生成可供 Agent 修订的中间 JSON；纯细纲必须完成创作后才能 `finalize`。两个公开入口的输入契约见插件的 `capabilities.json`。验收记录见 [VALIDATION.md](creator-src/VALIDATION.md)。

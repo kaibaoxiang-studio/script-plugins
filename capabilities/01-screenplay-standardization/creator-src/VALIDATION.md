@@ -24,3 +24,11 @@
 - 纯细纲创作通过模拟 Agent 写入的有来源生成块验证了结构和渲染契约；真实模型创作质量仍待 Agent 运行环境恢复后验收。直接对尚未创作的纯细纲执行 `finalize` 会拒绝输出，以免把占位稿当作标准剧本。
 
 三组原稿与标准稿是用户本地验收素材，没有复制进插件 ZIP。ZIP 中仅保留独立编写的脚本与方法性 references；原 SN2S ZIP 未见许可文件，未复制其实现。
+
+## 2026-10-22｜0.1.1 中文交付名称
+
+- 按用户要求，面向用户的文件夹与文件优先采用中文名称；固定交付文件更新为 `标准化剧本.json`、`标准化剧本.md`、`剧本疑点报告.json`、`剧本疑点报告.md`。内部运行目录与 JSON schema 标识保持既有契约。
+- `creator-src/tests` 的 10 项测试运行结果为 9 项通过、1 项因未设置私有样稿目录而跳过；新增断言核对四个中文文件名。
+- Harness Creator `doctor` 确认 Python 3.12.14 与 Codex CLI 可用；`build` 和 `patch` 的验证均返回 `valid=true`，2 个能力、3 个 Skill。0.1.1 ZIP 解压后再次 `validate`，并用一集一场样稿实际执行 `prepare`、`finalize`，只产出四个中文文件。
+- `codex plugin add screenplay-standardizer@screenplay-standardizer-local` 安装 0.1.1；`codex plugin list` 返回已安装且启用，安装缓存内的 Skill、reference 与脚本均已核对。此次更新未重新验收 Agent 创作或深审路径。
+- 以当前四份中文文件调用安装版 Harness 的 `verify_result`，相对产物名、必需产物检查与 SHA-256 校验通过。
