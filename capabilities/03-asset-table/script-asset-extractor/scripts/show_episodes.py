@@ -23,17 +23,17 @@ def main():
         for s in ep['scenes']:
             print(f'\n## {s["scene_id"]} {s["location"]} {s["int_ext"]} {s["time"]}')
             print(f'人物：{"、".join(s["characters"])}')
-            for ln in s['lines']:
+            for line_no, ln in enumerate(s['lines'], 1):
                 if ln['type'] == 'action':
-                    print(f'▲ {ln["text"]}')
+                    print(f'L{line_no} ▲ {ln["text"]}')
                 elif ln['type'] == 'dialog':
                     # 保留情绪括号和 VO/OS 标记：情绪可能提示剧变（比如情绪剧变常伴随外观
                     # 剧变），VO 画外音不代表角色在画面中
                     emo = f'（{ln["emotion"]}）' if ln.get('emotion') else ''
                     tag = f' [{ln["voice"]}]' if ln['voice'] else ''
-                    print(f'{ln["speaker"]}{emo}{tag}：{ln["text"]}')
+                    print(f'L{line_no} {ln["speaker"]}{emo}{tag}：{ln["text"]}')
                 else:
-                    print(ln['text'])
+                    print(f'L{line_no} {ln["text"]}')
         print()
 
 

@@ -4,14 +4,23 @@
 用法:
     python3 build_xlsx.py <scenes.json> <assets.json> <输出.xlsx>
     python3 build_xlsx.py <scenes.json> <assets.json> --check   # 只校验不输出
+    python3 build_xlsx.py <scenes.json> <assets.json> --sync-character-scenes
+    python3 build_xlsx.py <scenes.json> <assets.json> --sync-prop-scenes
+    python3 build_xlsx.py <scenes.json> <assets.json> --warning-report
+    python3 build_xlsx.py <scenes.json> <assets.json> <输出.xlsx> --warning-approvals <确认.json>
 
 输出 4 个 sheet: 人物 / 场景 / 道具 / 场次总表
 """
 import json
 import sys
+import argparse
 
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from character_ledger import character_breakdown, segment_position, state_notes, sync_characters, validate_characters
+from asset_validation import input_errors
+from warning_approvals import apply_approvals, approval_text, warning_id, warning_report
+from prop_identity import identity_text, prop_state_notes, sync_props, validate_props
 
 KINDS = [
     # (assets.json 键, sheet 名, 名称列标题, 专属列)
@@ -57,8 +66,14 @@ def scene_units(asset):
 
 
 def validate(scenes_data, assets):
-    """返回 (错误列表, 警告列表)。错误会阻止生成 Excel。"""
+    """返回 (错误列表, 警告列表)。任一非空均阻止生成 Excel。"""
+    shape_errors = input_errors(scenes_data, assets)
+    if shape_errors:
+        return shape_errors, []
     errors, warnings = [], []
+    scene_ids = [s['scene_id'] for e in scenes_data['episodes'] for s in e['scenes']]
+    if len(scene_ids) != len(set(scene_ids)):
+        errors.append('剧本存在重复场次号，须先修正解析结果，不能覆盖同号场次')
     all_scenes = {s['scene_id']: s for e in scenes_data['episodes'] for s in e['scenes']}
 
     for kind, label, _, _ in KINDS:
@@ -110,17 +125,22 @@ def validate(scenes_data, assets):
             if not any(sid in st.get('scenes', []) for st in a['states']):
                 warnings.append(f'{sid} 「{c}」出场但没有分配到任何状态')
 
-    # 反向校验：人物状态里分配的场次，该人物行必须真的标注了出场
-    # 这能抓出「错误地把场次塞进了状态」的问题（例如状态数据手工编辑出错）
+    # 逐场记录允许人物行出场或原文动作出镜；对白提及不证明出镜。
+    ledger_errors, ledger_warnings = validate_characters(scenes_data, assets)
+    errors.extend(ledger_errors)
+    warnings.extend(ledger_warnings)
+    prop_errors, prop_warnings = validate_props(scenes_data, assets)
+    errors.extend(prop_errors)
+    warnings.extend(prop_warnings)
     for a in assets.get('characters', []):
         for st in a.get('states', []):
             for sid in st.get('scenes', []):
                 scene = all_scenes.get(sid)
-                if scene and a['name'] not in scene['characters'] and not any(
-                        al in scene['characters'] for al in a.get('aliases', [])):
+                if scene and not any(r.get('scene_id') == sid and r.get('state_id') == st.get('id')
+                                     for r in (a.get('appearances') or []) if isinstance(r, dict)):
                     warnings.append(
                         f'{sid} 「{a["name"]}」的状态 {st.get("id")} 引用了此场次，'
-                        f'但剧本人物行里没有「{a["name"]}」出场')
+                        f'但没有对应逐场出镜记录')
 
     # 道具的弱反向校验：道具标了 owner 时，owner 通常该在那一场出场（允许道具脱离
     # owner 单独出镜的情况，比如被别人捡起/收走，所以降级为提示而非强校验，
@@ -151,34 +171,11 @@ def validate(scenes_data, assets):
         if sid not in covered:
             warnings.append(f'{sid} 没有分配场景资产')
 
-    # 检查 note 是否包含判断过程（应该只写需要人工确认的不确定内容）
-    note_keywords = ['因此', '所以', '按规则', '已判断', '归类为', '因为']
-    for kind, label, _, _ in KINDS:
-        for a in assets.get(kind, []):
-            # 检查资产级别的 note
-            note = a.get('note', '')
-            if note and any(kw in note for kw in note_keywords):
-                warnings.append(f'[{label}] {a.get("id")} {a.get("name")} 的 note 疑似包含判断过程，应只写需要人工确认的不确定内容')
-            # 检查状态级别的 note
-            for st in a.get('states', []):
-                st_note = st.get('note', '')
-                if st_note and any(kw in st_note for kw in note_keywords):
-                    warnings.append(f'[{label}] {a.get("id")}-{st.get("id")} 的 note 疑似包含判断过程，应只写需要人工确认的不确定内容')
-
-    # 检查主角和主要配角的 description 完整性
-    desc_keywords = ['岁', '发', '眼', '衣', '裙', '袍', '甲', '气质', '装']
+    # 信息是否准确不以字数衡量；未知外观允许如实写未说明。
     for a in assets.get('characters', []):
-        if a.get('role') in ['主角', '主要配角']:
-            desc = a.get('description', '')
-            if len(desc) < 50:
-                warnings.append(f'[人物] {a.get("id")} {a.get("name")} 的基础描述字数过少（{len(desc)}字），可能不完整')
-            elif not any(kw in desc for kw in desc_keywords):
-                warnings.append(f'[人物] {a.get("id")} {a.get("name")} 的基础描述缺少关键外观要素，建议检查是否完整')
-            # 检查状态描述
-            for st in a.get('states', []):
-                st_desc = st.get('description', '')
-                if len(st_desc) < 50:
-                    warnings.append(f'[人物] {a.get("id")}-{st.get("id")} {a.get("name")}·{st.get("name")} 的状态描述字数过少（{len(st_desc)}字），可能不完整')
+        for st in a.get('states', []):
+            if not st.get('description', '').strip():
+                errors.append(f'[人物] {a.get("id")}-{st.get("id")} 缺少状态描述')
 
     return errors, warnings
 
@@ -210,8 +207,29 @@ def calculate_cell_height(text, width):
     return min(150, max(18, lines * 15))
 
 
-def write_asset_sheet(wb, kind, sheet_name, name_col, extra_cols, assets):
+def first_character_use(character, scene_order, state_id=None):
+    """排序依据为首次实际画面位置，状态证据不替代出场记录。"""
+    positions = [(scene_order[rec['scene_id']], rec['start_line'], rec.get('start_offset', 0))
+                 for rec in character.get('appearances', [])
+                 if rec['scene_id'] in scene_order and (state_id is None or rec['state_id'] == state_id)]
+    return min(positions, default=(float('inf'), 0, 0))
+
+
+def write_asset_sheet(wb, kind, sheet_name, name_col, extra_cols, assets, scenes_data=None):
     ws = wb.create_sheet(sheet_name)
+    ordered_assets = assets.get(kind, [])
+    scene_order = {}
+    if kind == 'characters':
+        if scenes_data is not None:
+            scene_ids = [scene['scene_id'] for ep in scenes_data['episodes'] for scene in ep['scenes']]
+        else:
+            scene_ids = sorted({rec['scene_id'] for char in ordered_assets
+                                for rec in char.get('appearances', [])}, key=scene_key)
+        scene_order = {sid: i for i, sid in enumerate(scene_ids)}
+        # 一个场次计一次；同场多状态、反复切换和多个画面实体都不重复加次数。
+        ordered_assets = sorted(ordered_assets, key=lambda char: (
+            -len({rec['scene_id'] for rec in char.get('appearances', [])}),
+            first_character_use(char, scene_order)))
 
     # 场景 sheet 特殊处理：精简列，子场景替代状态
     if kind == 'scenes':
@@ -223,10 +241,16 @@ def write_asset_sheet(wb, kind, sheet_name, name_col, extra_cols, assets):
             '基础设定', '状态ID', '状态名', '状态描述', '出现场次', '原文依据', '备注']
         # 优化列宽：描述列加宽，出现场次适当缩小
         widths = [12, 16, 18] + [12] * len(extra_cols) + [45, 18, 18, 45, 25, 50, 30]
+        if kind == 'characters':
+            headers.append('场次·阶段·时间线')
+            widths.append(55)
+        elif kind == 'props':
+            headers.append('异称与身份依据')
+            widths.append(55)
 
     style_header(ws, headers, widths)
 
-    for gi, a in enumerate(assets.get(kind, [])):
+    for gi, a in enumerate(ordered_assets):
         fill = GROUP_FILLS[gi % 2]
         start_row = ws.max_row + 1
 
@@ -299,8 +323,10 @@ def write_asset_sheet(wb, kind, sheet_name, name_col, extra_cols, assets):
         else:
             # 人物、道具按原逻辑（按状态展开）
             states = a['states']
+            if kind == 'characters':
+                states = sorted(states, key=lambda state: first_character_use(a, scene_order, state['id']))
             for i, st in enumerate(states):
-                sids = sorted(st.get('scenes', []), key=scene_key)
+                sids = st.get('scenes', []) if kind == 'characters' else sorted(st.get('scenes', []), key=scene_key)
                 if i == 0:
                     # 第一行：显示完整资产信息
                     row = [a['id'], a['name'], join(a.get('aliases', []))]
@@ -317,8 +343,15 @@ def write_asset_sheet(wb, kind, sheet_name, name_col, extra_cols, assets):
                     st.get('description', ''),
                     join(sids),
                     st.get('evidence', ''),
-                    join([x for x in [a.get('note', ''), st.get('note', '')] if x]),
+                    state_notes(a, st) if kind == 'characters' else prop_state_notes(a, st),
                 ]
+                if kind == 'characters':
+                    row.append('\n'.join(
+                        f'{r["scene_id"]} {segment_position(r)} '
+                        f'{r["timeline"]}/{r["instance"]}：{r.get("segment", "")}'
+                        for r in a.get('appearances', []) if r['state_id'] == st['id']))
+                elif kind == 'props':
+                    row.append(identity_text(a))
                 ws.append(row)
 
             # 应用样式并调整行高（人物/道具表）
@@ -348,10 +381,12 @@ def write_asset_sheet(wb, kind, sheet_name, name_col, extra_cols, assets):
     ws.auto_filter.ref = ws.dimensions
 
 
-def write_breakdown(wb, scenes_data, assets):
+def write_breakdown(wb, scenes_data, assets, approvals=None):
     ws = wb.create_sheet('场次总表')
-    headers = ['场次', '集', '集标题', '场景名(剧本)', '内/外', '时间', '场景资产·状态', '人物·状态', '道具·状态', '待处理']
-    style_header(ws, headers, [8, 6, 20, 22, 7, 7, 26, 44, 36, 30])
+    headers = ['场次', '集', '集标题', '场景名(剧本)', '内/外', '时间', '场景资产·状态', '人物·状态', '道具·状态', '待处理', '校验确认']
+    style_header(ws, headers, [8, 6, 20, 22, 7, 7, 26, 44, 36, 30, 55])
+    approvals = approvals or []
+    known_sids = {s['scene_id'] for ep in scenes_data['episodes'] for s in ep['scenes']}
 
     def lookup(kind, sid):
         out = []
@@ -382,9 +417,16 @@ def write_breakdown(wb, scenes_data, assets):
             ws.append([
                 sid, ep['episode'], ep['title'], s['location'], s['int_ext'], s['time'],
                 '\n'.join(f'{a["name"]}·{st["name"]}' for a, st in scn),
-                '\n'.join(f'{a["name"]}·{st["name"]}' for a, st in chars),
-                '\n'.join(f'{a["name"]}·{st["name"]}' for a, st in props),
+                '\n'.join(character_breakdown(a, sid) for a in assets.get('characters', [])
+                          if any(r.get('scene_id') == sid for r in a.get('appearances', []))),
+                '\n'.join(f'{a["name"]}·{st["name"]}（原文：'
+                          + '、'.join(dict.fromkeys(mention['raw_name'] for mention in a.get('mentions', [])
+                                      if mention['source']['scene_id'] == sid and mention['visibility'] == 'visible'
+                                      and mention['state_id'] == st['id'])) + '）' for a, st in props),
                 '\n'.join(todo),
+                '\n'.join(approval_text(item) for item in approvals
+                          if item['message'].startswith(sid + ' ')
+                          or (ws.max_row == 1 and not any(item['message'].startswith(x + ' ') for x in known_sids))),
             ])
             for cell in ws[ws.max_row]:
                 cell.alignment = WRAP
@@ -395,34 +437,90 @@ def write_breakdown(wb, scenes_data, assets):
 
 
 def main():
-    if len(sys.argv) != 4:
-        sys.exit(__doc__)
-    with open(sys.argv[1], encoding='utf-8') as f:
-        scenes_data = json.load(f)
-    with open(sys.argv[2], encoding='utf-8') as f:
-        assets = json.load(f)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('scenes_file')
+    parser.add_argument('assets_file')
+    parser.add_argument('output', nargs='?')
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument('--check', action='store_true')
+    modes.add_argument('--sync-character-scenes', action='store_true')
+    modes.add_argument('--sync-prop-scenes', action='store_true')
+    modes.add_argument('--warning-report', action='store_true')
+    parser.add_argument('--warning-approvals', metavar='确认文件.json')
+    args = parser.parse_args()
+    if not (args.output or args.check or args.sync_character_scenes or args.sync_prop_scenes or args.warning_report):
+        parser.error('指定输出.xlsx 或 --check/--sync-character-scenes/--sync-prop-scenes/--warning-report')
+    if args.output and (args.check or args.sync_character_scenes or args.sync_prop_scenes or args.warning_report):
+        parser.error('输出文件与校验/同步/报告模式不能同时使用')
+    if (args.sync_character_scenes or args.sync_prop_scenes) and args.warning_approvals:
+        parser.error('同步模式不使用警告确认；先同步数据，再生成确认报告')
+    if args.warning_report and args.warning_approvals:
+        parser.error('报告模式不使用警告确认文件；需要应用确认时使用 --check 或导出模式')
+    try:
+        with open(args.scenes_file, encoding='utf-8') as f:
+            scenes_data = json.load(f)
+        with open(args.assets_file, encoding='utf-8') as f:
+            assets = json.load(f)
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        parser.exit(1, f'错误: 无法读取输入 JSON：{error}\n')
+    shape_errors = input_errors(scenes_data, assets)
+    if shape_errors:
+        for error in shape_errors:
+            print('错误:', error)
+        parser.exit(1)
+
+    if args.sync_character_scenes or args.sync_prop_scenes:
+        errors, warnings = (sync_characters(scenes_data, assets) if args.sync_character_scenes
+                            else sync_props(scenes_data, assets))
+        for error in errors:
+            print('错误:', error)
+        if errors:
+            sys.exit(1)
+        with open(args.assets_file, 'w', encoding='utf-8') as f:
+            json.dump(assets, f, ensure_ascii=False, indent=2)
+        print('已同步人物场次及依据' if args.sync_character_scenes else '已从道具实物指代记录同步状态场次')
+        print('请继续执行 --check')
+        return
 
     errors, warnings = validate(scenes_data, assets)
+    if args.warning_report:
+        report = warning_report(scenes_data, assets, warnings)
+        report['errors'] = errors
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        parser.exit(1 if errors else 0)
+    document = None
+    if args.warning_approvals:
+        try:
+            with open(args.warning_approvals, encoding='utf-8') as f:
+                document = json.load(f)
+        except (OSError, UnicodeError, json.JSONDecodeError) as error:
+            parser.exit(1, f'错误: 无法读取警告确认文件：{error}\n')
+        if document is None:
+            parser.exit(1, '错误: 警告确认文件必须为对象，不能为 null\n')
+    remaining, accepted, approval_errors = apply_approvals(scenes_data, assets, warnings, document)
+    errors.extend(approval_errors)
     for e in errors:
         print('错误:', e)
-    for w in warnings:
-        print('警告:', w)
+    for w in remaining:
+        print(f'未确认警告 {warning_id(w)}:', w)
+    for item in accepted:
+        print('已确认警告:', approval_text(item))
     counts = {label: (len(assets.get(k, [])), sum(unit_count(a, k) for a in assets.get(k, [])))
               for k, label, _, _ in KINDS}
     print('统计:', '  '.join(f'{l} {n}个/{m}状态' for l, (n, m) in counts.items()))
-    print(f'错误 {len(errors)} 条，警告 {len(warnings)} 条')
-    if errors:
+    print(f'错误 {len(errors)} 条，未确认警告 {len(remaining)} 条，已确认警告 {len(accepted)} 条')
+    if errors or remaining:
         sys.exit(1)
-    if sys.argv[3] == '--check':
+    if args.check:
         return
 
     wb = Workbook()
     wb.remove(wb.active)
     for kind, sheet_name, name_col, extra in KINDS:
-        write_asset_sheet(wb, kind, sheet_name, name_col, extra, assets)
-    write_breakdown(wb, scenes_data, assets)
-    wb.save(sys.argv[3])
-    print('已生成:', sys.argv[3])
+        write_asset_sheet(wb, kind, sheet_name, name_col, extra, assets, scenes_data)
+    write_breakdown(wb, scenes_data, assets, accepted)
+    wb.save(args.output)
+    print('已生成:', args.output)
 
 
 if __name__ == '__main__':

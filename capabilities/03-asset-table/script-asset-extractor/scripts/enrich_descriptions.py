@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """
-从剧本原文中提取详细描述，补充到 assets.json
+只读回查道具/场景原文；命中只是提及候选，不自动补写或合并道具。
 """
 import json
 import sys
+from prop_identity import prop_candidates
+from asset_validation import input_errors
 
 def load_json(path):
     with open(path, 'r') as f:
@@ -77,6 +79,11 @@ def main():
     print("读取剧本和资产数据...")
     scenes_data = load_json(scenes_path)
     assets_data = load_json(assets_path)
+    errors = input_errors(scenes_data, assets_data)
+    if errors:
+        for error in errors:
+            print('错误:', error)
+        sys.exit(1)
 
     print("提取所有动作行...")
     action_by_scene = extract_action_lines(scenes_data)
@@ -90,14 +97,17 @@ def main():
         prop_name = prop['name']
         aliases = prop.get('aliases', [])
 
-        mentions = find_prop_mentions(prop_name, aliases, action_by_scene)
+        mentions = [{'scene_id': match['source']['scene_id'], 'text': match['source']['quote'],
+                     'line': match['source']['line'], 'raw_name': match['raw_name'], 'line_type': match['line_type']}
+                    for match in prop_candidates(scenes_data, prop)]
 
         if mentions:
             print(f"\n【{prop['id']} {prop_name}】")
             print(f"  当前描述: {prop.get('description', '(空)')}")
             print(f"  剧本提及 {len(mentions)} 次:")
-            for m in mentions[:3]:  # 只显示前3次
-                print(f"    {m['scene_id']}: {m['text'][:60]}...")
+            for m in mentions:
+                print(f"    {m['scene_id']}:L{m['line']} [{m['line_type']}]「{m['raw_name']}」: {m['text']}")
+            print('  名称命中不证明实物身份，须核对指代记录与异称证据。')
 
             # 合并提取详细描述
             full_desc = "\n".join([m['text'] for m in mentions])
