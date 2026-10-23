@@ -1,5 +1,9 @@
 # 剧本资产表提取 · 二级插件
 
+主要入口已更新为 [`script-asset-extractor v0.1.0`](skills/script-asset-extractor/SKILL.md)：提供标准剧本 DOCX 并调用 `$script-asset-extractor`，按 skill 自带脚本提取，交付 `assets.json` 和 `<剧名>-资产表.xlsx` 四表工作簿。包含人物逐场状态、道具实物身份与异称证据校验。该入口无需运行 `harness.py`。
+
+原 `$extract-asset-table` 继续接收一级标准 JSON；以下输入、四文件交付及 Harness 命令仅适用于该兼容入口。
+
 组件 `screenplay-asset-extractor`，版本 **0.1.0**，属于开宝箱工作室剧本插件 **1.0.0**。本目录包含独立运行所需的 Skills、规则、Python Harness、脚本和依赖锁；使用时无需另装 Harness Creator。
 
 ## 输入与功能
