@@ -180,260 +180,61 @@ def validate(scenes_data, assets):
     return errors, warnings
 
 
-def style_header(ws, headers, widths):
-    ws.append(headers)
-    for i, cell in enumerate(ws[1]):
-        cell.font = Font(bold=True, color='FFFFFF')
+def write_plan_sheet(wb, plan):
+    """标准后端也消费同一展示契约，禁止再次维护独立列结构。"""
+    from export_contract import STYLE
+    ws = wb.create_sheet(plan['name'])
+    ws.append(plan['headers'])
+    for values in plan['rows']:
+        ws.append(values)
+    for index, width in enumerate(plan['widths'], 1):
+        from openpyxl.utils import get_column_letter
+        ws.column_dimensions[get_column_letter(index)].width = width
+    for row in ws:
+        for cell in row:
+            cell.font = Font(name=STYLE['font'], size=STYLE['font_size'])
+            cell.border = BORDER
+            cell.alignment = Alignment(wrap_text=True, horizontal='left' if cell.column in plan['text_columns'] else 'center', vertical='top' if cell.column in plan['text_columns'] else 'center')
+    for cell in ws[1]:
+        cell.font = Font(name=STYLE['font'], size=STYLE['font_size'], bold=True, color='FFFFFF')
         cell.fill = HEADER_FILL
         cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
-        cell.border = BORDER
-        ws.column_dimensions[cell.column_letter].width = widths[i]
-    ws.freeze_panes = 'C2'
-    ws.row_dimensions[1].height = 24
-
-
-def calculate_cell_height(text, width):
-    """根据文本内容和列宽计算合适的行高"""
-    if not text:
-        return 15
-
-    # 中文字符约等于2个英文字符宽度
-    char_count = sum(2 if ord(c) > 127 else 1 for c in str(text))
-    # Excel列宽单位大约是8.43像素，字符宽度约7像素
-    chars_per_line = int(width * 1.2)
-    lines = max(1, char_count // chars_per_line + (1 if char_count % chars_per_line else 0))
-
-    # 每行约15点高度，最小15，最大150
-    return min(150, max(18, lines * 15))
+    ws.row_dimensions[1].height = STYLE['header_height']
+    for index, height in enumerate(plan['row_heights'], 2):
+        ws.row_dimensions[index].height = height
+    for index, group in enumerate(plan['groups']):
+        for row in ws.iter_rows(min_row=group['start'], max_row=group['end']):
+            for cell in row:
+                cell.fill = GROUP_FILLS[index % 2]
+        if group['end'] > group['start']:
+            for col in group['merge_columns']:
+                ws.merge_cells(start_row=group['start'], end_row=group['end'], start_column=col, end_column=col)
+                cell = ws.cell(group['start'], col)
+                cell.alignment = Alignment(wrap_text=True, horizontal='left' if col in plan['text_columns'] else 'center', vertical='center')
+    ws.freeze_panes = plan['freeze']
+    ws.auto_filter.ref = plan['filter']
+    ws.sheet_view.showGridLines = False
+    return ws
 
 
 def first_character_use(character, scene_order, state_id=None):
-    """排序依据为首次实际画面位置，状态证据不替代出场记录。"""
-    positions = [(scene_order[rec['scene_id']], rec['start_line'], rec.get('start_offset', 0))
-                 for rec in character.get('appearances', [])
-                 if rec['scene_id'] in scene_order and (state_id is None or rec['state_id'] == state_id)]
-    return min(positions, default=(float('inf'), 0, 0))
+    from export_contract import first_use
+    return first_use(character, scene_order, state_id)
 
 
 def write_asset_sheet(wb, kind, sheet_name, name_col, extra_cols, assets, scenes_data=None):
-    ws = wb.create_sheet(sheet_name)
-    ordered_assets = assets.get(kind, [])
-    scene_order = {}
-    if kind == 'characters':
-        if scenes_data is not None:
-            scene_ids = [scene['scene_id'] for ep in scenes_data['episodes'] for scene in ep['scenes']]
-        else:
-            scene_ids = sorted({rec['scene_id'] for char in ordered_assets
-                                for rec in char.get('appearances', [])}, key=scene_key)
-        scene_order = {sid: i for i, sid in enumerate(scene_ids)}
-        # 一个场次计一次；同场多状态、反复切换和多个画面实体都不重复加次数。
-        ordered_assets = sorted(ordered_assets, key=lambda char: (
-            -len({rec['scene_id'] for rec in char.get('appearances', [])}),
-            first_character_use(char, scene_order)))
-
-    # 场景 sheet 特殊处理：精简列，子场景替代状态
-    if kind == 'scenes':
-        headers = ['场景ID', '主场景名', '子场景名', '内/外', '时间', '子场景描述', '出现场次', '备注']
-        # 优化列宽：场景ID适当加宽，描述列加宽以容纳更多内容
-        widths = [12, 20, 20, 8, 10, 50, 25, 30]
-    else:
-        headers = ['资产ID', name_col, '别名/称谓'] + [h for _, h in extra_cols] + [
-            '基础设定', '状态ID', '状态名', '状态描述', '出现场次', '原文依据', '备注']
-        # 优化列宽：描述列加宽，出现场次适当缩小
-        widths = [12, 16, 18] + [12] * len(extra_cols) + [45, 18, 18, 45, 25, 50, 30]
-        if kind == 'characters':
-            headers.append('场次·阶段·时间线')
-            widths.append(55)
-        elif kind == 'props':
-            headers.append('异称与身份依据')
-            widths.append(55)
-
-    style_header(ws, headers, widths)
-
-    for gi, a in enumerate(ordered_assets):
-        fill = GROUP_FILLS[gi % 2]
-        start_row = ws.max_row + 1
-
-        # 场景特殊处理：按子场景展开行
-        if kind == 'scenes':
-            subscenes = a.get('subscenes', [])
-            if not subscenes:
-                # 没有子场景，从 states 获取场次
-                state_scenes = []
-                for st in a.get('states', []):
-                    state_scenes.extend(st.get('scenes', []))
-                subscenes = [{
-                    'name': a['name'],
-                    'description': a.get('description', ''),
-                    'scenes': sorted(set(state_scenes), key=scene_key)
-                }]
-
-            for i, sub in enumerate(subscenes):
-                sids = sorted(sub.get('scenes', []), key=scene_key)
-                # 子场景没有 description 字段，需要从主场景获取或留空
-                sub_desc = sub.get('description', '')
-
-                if i == 0:
-                    # 第一行：显示场景ID和主场景名
-                    row = [
-                        a['id'],
-                        a['name'],
-                        sub['name'],
-                        join(a.get('int_ext', '')),
-                        join(a.get('times', '')),
-                        sub_desc,
-                        join(sids),
-                        a.get('note', ''),
-                    ]
-                else:
-                    # 后续行：场景ID和主场景名留空
-                    row = [
-                        '',
-                        '',
-                        sub['name'],
-                        '',
-                        '',
-                        sub_desc,
-                        join(sids),
-                        '',
-                    ]
-                ws.append(row)
-
-            # 应用样式并调整行高（场景表）
-            for row_idx in range(start_row, ws.max_row + 1):
-                max_height = 18
-                for col_idx, cell in enumerate(ws[row_idx], 1):
-                    cell.fill = fill
-                    cell.alignment = WRAP
-                    cell.border = BORDER
-                    # 计算这个单元格需要的高度
-                    col_width = widths[col_idx - 1]
-                    cell_height = calculate_cell_height(cell.value, col_width)
-                    max_height = max(max_height, cell_height)
-                # 设置这一行的高度为所有单元格中的最大值
-                ws.row_dimensions[row_idx].height = max_height
-
-            # 合并单元格（场景ID、主场景名、内/外、时间、备注）
-            if len(subscenes) > 1:
-                end_row = start_row + len(subscenes) - 1
-                for col_idx in [1, 2, 4, 5, 8]:  # 场景ID、主场景名、内/外、时间、备注
-                    cell = ws.cell(start_row, col_idx)
-                    ws.merge_cells(start_row=start_row, end_row=end_row, start_column=col_idx, end_column=col_idx)
-                    cell.alignment = Alignment(wrap_text=True, vertical='center', horizontal='center')
-        else:
-            # 人物、道具按原逻辑（按状态展开）
-            states = a['states']
-            if kind == 'characters':
-                states = sorted(states, key=lambda state: first_character_use(a, scene_order, state['id']))
-            for i, st in enumerate(states):
-                sids = st.get('scenes', []) if kind == 'characters' else sorted(st.get('scenes', []), key=scene_key)
-                if i == 0:
-                    # 第一行：显示完整资产信息
-                    row = [a['id'], a['name'], join(a.get('aliases', []))]
-                    row += [join(a.get(k, '')) for k, _ in extra_cols]
-                    row += [a.get('description', '')]
-                else:
-                    # 后续行：资产基础信息留空，等待合并
-                    base_cols = 3 + len(extra_cols) + 1  # ID、名称、别名、专属列、基础设定
-                    row = [''] * base_cols
-
-                row += [
-                    f'{a["id"]}-{st["id"]}',
-                    st.get('name', ''),
-                    st.get('description', ''),
-                    join(sids),
-                    st.get('evidence', ''),
-                    state_notes(a, st) if kind == 'characters' else prop_state_notes(a, st),
-                ]
-                if kind == 'characters':
-                    row.append('\n'.join(
-                        f'{r["scene_id"]} {segment_position(r)} '
-                        f'{r["timeline"]}/{r["instance"]}：{r.get("segment", "")}'
-                        for r in a.get('appearances', []) if r['state_id'] == st['id']))
-                elif kind == 'props':
-                    row.append(identity_text(a))
-                ws.append(row)
-
-            # 应用样式并调整行高（人物/道具表）
-            for row_idx in range(start_row, ws.max_row + 1):
-                max_height = 18
-                for col_idx, cell in enumerate(ws[row_idx], 1):
-                    cell.fill = fill
-                    cell.alignment = WRAP
-                    cell.border = BORDER
-                    # 计算这个单元格需要的高度
-                    col_width = widths[col_idx - 1]
-                    cell_height = calculate_cell_height(cell.value, col_width)
-                    max_height = max(max_height, cell_height)
-                # 设置这一行的高度为所有单元格中的最大值
-                ws.row_dimensions[row_idx].height = max_height
-
-            # 合并同一资产的基础信息单元格
-            if len(states) > 1:
-                end_row = ws.max_row
-                merge_cols = 3 + len(extra_cols) + 1  # ID、名称、别名、专属列、基础设定
-                for col_idx in range(1, merge_cols + 1):
-                    cell = ws.cell(start_row, col_idx)
-                    ws.merge_cells(start_row=start_row, start_column=col_idx,
-                                  end_row=end_row, end_column=col_idx)
-                    cell.alignment = Alignment(wrap_text=True, vertical='center', horizontal='center')
-
-    ws.auto_filter.ref = ws.dimensions
+    from export_contract import build_plan
+    if scenes_data is None:
+        ids = sorted({r['scene_id'] for c in assets.get('characters', []) for r in c.get('appearances', [])}, key=scene_key)
+        scenes_data = {'episodes': [{'episode': 0, 'title': '', 'scenes': [
+            {'scene_id': sid, 'characters': [], 'location': '', 'int_ext': '', 'time': ''} for sid in ids]}]}
+    plan = build_plan(scenes_data, assets)
+    write_plan_sheet(wb, next(s for s in plan['sheets'] if s['name'] == sheet_name))
 
 
 def write_breakdown(wb, scenes_data, assets, approvals=None):
-    ws = wb.create_sheet('场次总表')
-    headers = ['场次', '集', '集标题', '场景名(剧本)', '内/外', '时间', '场景资产·状态', '人物·状态', '道具·状态', '待处理', '校验确认']
-    style_header(ws, headers, [8, 6, 20, 22, 7, 7, 26, 44, 36, 30, 55])
-    approvals = approvals or []
-    known_sids = {s['scene_id'] for ep in scenes_data['episodes'] for s in ep['scenes']}
-
-    def lookup(kind, sid):
-        out = []
-        for a in assets.get(kind, []):
-            units = scene_units(a) if kind == 'scenes' else a.get('states', [])
-            for st in units:
-                if sid in st.get('scenes', []):
-                    out.append((a, st))
-        return out
-
-    name_map = {n: a for a in assets.get('characters', []) for n in [a['name']] + a.get('aliases', [])}
-
-    for ep in scenes_data['episodes']:
-        for s in ep['scenes']:
-            sid = s['scene_id']
-            scn = lookup('scenes', sid)
-            chars = lookup('characters', sid)
-            props = lookup('props', sid)
-            todo = []
-            for c in s['characters']:
-                a = name_map.get(c)
-                if a is None:
-                    todo.append(f'人物「{c}」无资产')
-                elif not any(x[0] is a for x in chars):
-                    todo.append(f'人物「{c}」无状态')
-            if not scn:
-                todo.append('无场景资产')
-            ws.append([
-                sid, ep['episode'], ep['title'], s['location'], s['int_ext'], s['time'],
-                '\n'.join(f'{a["name"]}·{st["name"]}' for a, st in scn),
-                '\n'.join(character_breakdown(a, sid) for a in assets.get('characters', [])
-                          if any(r.get('scene_id') == sid for r in a.get('appearances', []))),
-                '\n'.join(f'{a["name"]}·{st["name"]}（原文：'
-                          + '、'.join(dict.fromkeys(mention['raw_name'] for mention in a.get('mentions', [])
-                                      if mention['source']['scene_id'] == sid and mention['visibility'] == 'visible'
-                                      and mention['state_id'] == st['id'])) + '）' for a, st in props),
-                '\n'.join(todo),
-                '\n'.join(approval_text(item) for item in approvals
-                          if item['message'].startswith(sid + ' ')
-                          or (ws.max_row == 1 and not any(item['message'].startswith(x + ' ') for x in known_sids))),
-            ])
-            for cell in ws[ws.max_row]:
-                cell.alignment = WRAP
-                cell.border = BORDER
-                if todo:
-                    cell.fill = WARN_FILL
-    ws.auto_filter.ref = ws.dimensions
+    from export_contract import build_plan
+    write_plan_sheet(wb, build_plan(scenes_data, assets, approvals)['sheets'][-1])
 
 
 def main():
@@ -446,11 +247,12 @@ def main():
     modes.add_argument('--sync-character-scenes', action='store_true')
     modes.add_argument('--sync-prop-scenes', action='store_true')
     modes.add_argument('--warning-report', action='store_true')
+    modes.add_argument('--export-spec', metavar='展示计划.json', help='验证通过后导出统一展示契约，供其他 Excel 后端消费')
     parser.add_argument('--warning-approvals', metavar='确认文件.json')
     args = parser.parse_args()
-    if not (args.output or args.check or args.sync_character_scenes or args.sync_prop_scenes or args.warning_report):
+    if not (args.output or args.check or args.sync_character_scenes or args.sync_prop_scenes or args.warning_report or args.export_spec):
         parser.error('指定输出.xlsx 或 --check/--sync-character-scenes/--sync-prop-scenes/--warning-report')
-    if args.output and (args.check or args.sync_character_scenes or args.sync_prop_scenes or args.warning_report):
+    if args.output and (args.check or args.sync_character_scenes or args.sync_prop_scenes or args.warning_report or args.export_spec):
         parser.error('输出文件与校验/同步/报告模式不能同时使用')
     if (args.sync_character_scenes or args.sync_prop_scenes) and args.warning_approvals:
         parser.error('同步模式不使用警告确认；先同步数据，再生成确认报告')
@@ -505,7 +307,7 @@ def main():
         print(f'未确认警告 {warning_id(w)}:', w)
     for item in accepted:
         print('已确认警告:', approval_text(item))
-    counts = {label: (len(assets.get(k, [])), sum(unit_count(a, k) for a in assets.get(k, [])))
+    counts = {label: (len(assets.get(k, [])), sum(len(a.get('states', [])) for a in assets.get(k, [])))
               for k, label, _, _ in KINDS}
     print('统计:', '  '.join(f'{l} {n}个/{m}状态' for l, (n, m) in counts.items()))
     print(f'错误 {len(errors)} 条，未确认警告 {len(remaining)} 条，已确认警告 {len(accepted)} 条')
@@ -514,11 +316,21 @@ def main():
     if args.check:
         return
 
+    from export_contract import build_plan
+    try:
+        plan = build_plan(scenes_data, assets, accepted)
+    except ValueError as error:
+        parser.exit(1, f'错误: {error}\n')
+    if args.export_spec:
+        with open(args.export_spec, 'w', encoding='utf-8') as f:
+            json.dump(plan, f, ensure_ascii=False, indent=2)
+        print('已生成展示计划:', args.export_spec)
+        return
+
     wb = Workbook()
     wb.remove(wb.active)
-    for kind, sheet_name, name_col, extra in KINDS:
-        write_asset_sheet(wb, kind, sheet_name, name_col, extra, assets, scenes_data)
-    write_breakdown(wb, scenes_data, assets, accepted)
+    for sheet in plan['sheets']:
+        write_plan_sheet(wb, sheet)
     wb.save(args.output)
     print('已生成:', args.output)
 

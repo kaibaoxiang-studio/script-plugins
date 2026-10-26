@@ -1,6 +1,8 @@
 # 二级 · 剧本资产表提取
 
-当前主要入口为 [`script-asset-extractor v0.1.0`](screenplay-asset-extractor/skills/script-asset-extractor/SKILL.md)。提供标准剧本 DOCX，调用 `$script-asset-extractor`，输出 `assets.json` 和 `<剧名>-资产表.xlsx`；工作簿固定包含人物、场景、道具、场次总表。新版按逐场人物记录核对造型，按实物记录核对道具身份、异称、交接与状态，错误和未确认警告会阻止导出。
+当前主要入口为 [`script-asset-extractor v0.1.1`](screenplay-asset-extractor/skills/script-asset-extractor/SKILL.md)。提供标准剧本 DOCX，调用 `$script-asset-extractor`，输出 `assets.json` 和 `<剧名>-资产表.xlsx`；工作簿固定包含人物、场景、道具、场次总表。新版按逐场人物记录核对造型，按实物记录核对道具身份、异称、交接与状态，错误和未确认警告会阻止导出。
+
+v0.1.1 统一各导出后端的 Excel 模板：人物按去重出场次数降序，组内状态按首次使用的剧本呈现顺序排列；保留逐场备注与道具局部指代证据，并验收已保存工作簿的内容、分组底色、合并、行高、冻结和筛选。详细契约见 [Excel 输出与验收](screenplay-asset-extractor/skills/script-asset-extractor/references/excel_output.md)。该 skill 的 82 项回归测试通过；自动检查不替代视觉和语义核定。
 
 完整 skill 及其脚本、规则、测试均位于 `screenplay-asset-extractor/skills/script-asset-extractor/`。该入口直接执行 skill 自带脚本，无需旧 JSON Harness。原 `extract-asset-table` 保留用于一级标准 JSON 输入；下文说明该兼容入口。
 

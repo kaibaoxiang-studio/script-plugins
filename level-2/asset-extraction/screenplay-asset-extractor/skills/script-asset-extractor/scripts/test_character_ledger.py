@@ -308,7 +308,7 @@ class LedgerTests(unittest.TestCase):
         write_breakdown(wb, self.data, self.assets)
         self.assertIn(marker, wb['人物'].cell(3, 11).value)
         self.assertIn('1-4', wb['人物'].cell(3, 11).value)
-        self.assertIn(marker, wb['场次总表'].cell(5, 8).value)
+        self.assertIn(marker, wb['场次总表'].cell(5, 13).value)
 
     def test_exact_warning_approval_expires_with_source_change(self):
         self.sync()

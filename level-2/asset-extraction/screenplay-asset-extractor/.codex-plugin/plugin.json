@@ -10,7 +10,7 @@
   "interface": {
     "displayName": "剧本资产表提取",
     "shortDescription": "从标准剧本提取可追溯的资产表",
-    "longDescription": "主要入口 script-asset-extractor v0.1.0 从标准 DOCX 提取人物、场景、道具与逐场状态，交付资产 JSON 和四表 Excel；保留一级 JSON 的兼容入口。",
+    "longDescription": "主要入口 script-asset-extractor v0.1.1 从标准 DOCX 提取人物、场景、道具与逐场状态，统一四表 Excel 模板、人物排序和保存后验收；保留一级 JSON 的兼容入口。",
     "developerName": "开宝箱工作室",
     "category": "Productivity",
     "defaultPrompt": "Use $script-asset-extractor to extract evidence-backed assets from my standardized screenplay DOCX."
