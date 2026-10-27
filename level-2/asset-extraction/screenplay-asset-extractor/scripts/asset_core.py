@@ -31,6 +31,12 @@ def write_json(path: Path, value: dict) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def assets_digest(assets: dict) -> str:
+    """Bind a semantic review to the exact reviewed work assets, including states."""
+    encoded = json.dumps(assets, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
+
 def scene_order(scene_id: str) -> tuple[int, int]:
     match = re.fullmatch(r"(\d+)-(\d+)", scene_id)
     if not match:
@@ -133,14 +139,19 @@ def initial_work(source_path: Path) -> dict:
             locations[loc]["subscenes"][0]["scenes"].append(sid)
             locations[loc]["states"][0]["scenes"].append(sid)
             locations[loc]["evidence"].append(ev)
+    assets = {"characters": list(characters.values()), "locations": list(locations.values()),
+              "props": [], "effects": []}
+    source_hash = hashlib.sha256(source_path.read_bytes()).hexdigest()
     return {"schema_version": "asset_extraction_work_v1",
             "source": {"path": str(source_path.resolve()),
-                       "sha256": hashlib.sha256(source_path.read_bytes()).hexdigest(),
+                       "sha256": source_hash,
                        "source_manifest": source.get("source_manifest", {}),
                        "input_kind": source.get("input_kind", "script")},
             "scenes": scenes,
-            "assets": {"characters": list(characters.values()), "locations": list(locations.values()),
-                       "props": [], "effects": []},
+            "assets": assets,
+            "semantic_review": {"schema_version": "asset_semantic_review_v1",
+                                "source_sha256": source_hash,
+                                "assets_sha256": assets_digest(assets), "scenes": []},
             "findings": [],
             "source_coverage": source.get("coverage", {})}
 
@@ -177,6 +188,93 @@ def validate_evidence(entries: list[dict], label: str, scene_map: dict[str, dict
         require(supported, f"{label} 证据文字或 origin 与 {sid} 内容不符")
 
 
+def validate_semantic_review(work: dict, scene_map: dict[str, dict]) -> None:
+    """Reject an unreviewed seed; validate coverage, evidence and current asset links.
+
+    This checks a review record, not the correctness of an Agent's interpretation.
+    It deliberately does not guess prop nouns or require a positive prop count.
+    """
+    review = work.get("semantic_review")
+    require(isinstance(review, dict) and review.get("schema_version") == "asset_semantic_review_v1",
+            "缺少逐场 semantic_review；旧工作文件须回查原文补审，不能直接正式导出")
+    require(review.get("source_sha256") == work["source"]["sha256"], "semantic_review 来源已变化，须重新审核")
+    require(review.get("assets_sha256") == assets_digest(work["assets"]),
+            "semantic_review 资产快照已变化，须复核受影响记录并更新 assets_sha256")
+    entries = review.get("scenes")
+    require(isinstance(entries, list), "semantic_review.scenes 须为逐场审核记录")
+    kinds = {key for key, _, _ in KINDS}
+    by_id = {a["id"]: a for key in kinds for a in work["assets"][key]}
+    seen: set[str] = set()
+    for entry in entries:
+        require(isinstance(entry, dict), "语义审核场次格式无效")
+        sid = entry.get("scene_id")
+        require(isinstance(sid, str) and sid in scene_map and sid not in seen,
+                f"语义审核场次无效或重复：{sid}")
+        seen.add(sid)
+        scene = scene_map[sid]
+        categories = entry.get("categories")
+        require(isinstance(categories, dict) and set(categories) == kinds,
+                f"{sid} 须分别审核 characters/locations/props/effects 四类")
+        assigned: set[str] = set()
+        for key in sorted(kinds):
+            decision = categories[key]
+            require(isinstance(decision, dict), f"{sid} {key} 审核结论格式无效")
+            linked = decision.get("asset_ids")
+            require(isinstance(linked, list) and all(isinstance(aid, str) for aid in linked)
+                    and len(linked) == len(set(linked)), f"{sid} {key} asset_ids 格式无效或重复")
+            expected = {a["id"] for a in work["assets"][key]
+                        if any(sid in st["scenes"] for st in a["states"])}
+            require(set(linked) == expected,
+                    f"{sid} {key} 审核资产与实际状态场次不一致；缺少或多出 {sorted(set(linked) ^ expected)}")
+            conclusion = decision.get("conclusion")
+            require(isinstance(conclusion, str) and bool(conclusion.strip()),
+                    f"{sid} {key} 缺少具体结论；零结果也须说明本场判定依据")
+            assigned.update(linked)
+        blocks = entry.get("blocks")
+        require(isinstance(blocks, list), f"{sid} 缺少逐内容块审核记录")
+        block_seen: set[int] = set()
+        block_assets: set[str] = set()
+        for item in blocks:
+            require(isinstance(item, dict), f"{sid} 内容块审核格式无效")
+            index = item.get("block_index")
+            require(type(index) is int and 0 <= index < len(scene["blocks"]) and index not in block_seen,
+                    f"{sid} 内容块索引无效或重复：{index}")
+            block_seen.add(index)
+            block = scene["blocks"][index]
+            refs = item.get("source_refs")
+            require(isinstance(refs, list) and refs and all(isinstance(r, str) for r in refs)
+                    and len(refs) == len(set(refs)) and set(refs) == set(block["source_refs"]),
+                    f"{sid} 内容块 {index} 审核来源位置不符")
+            text = item.get("text")
+            displayed = (block.get("speaker", "") + "：" if block.get("type") == "dialogue" else "") + block.get("text", "")
+            require(isinstance(text, str) and bool(text.strip()) and text in displayed
+                    and item.get("origin") == block["origin"], f"{sid} 内容块 {index} 审核引文或 origin 不符")
+            linked = item.get("asset_ids")
+            require(isinstance(linked, list) and all(isinstance(aid, str) for aid in linked)
+                    and len(linked) == len(set(linked)) and set(linked) <= assigned,
+                    f"{sid} 内容块 {index} 引用了未登记或未分配本场的资产")
+            require(all(aid in by_id for aid in linked), f"{sid} 内容块 {index} 资产不存在")
+            conclusion = item.get("conclusion")
+            require(isinstance(conclusion, str) and bool(conclusion.strip()), f"{sid} 内容块 {index} 缺少具体判读结论")
+            block_assets.update(linked)
+        require(block_seen == set(range(len(scene["blocks"]))), f"{sid} 内容块审核未全覆盖")
+        for key in ("props", "effects"):
+            require(set(categories[key]["asset_ids"]) <= block_assets,
+                    f"{sid} {key} 缺少对应内容块的实际判读记录")
+        exclusions = entry.get("exclusions", [])
+        require(isinstance(exclusions, list), f"{sid} exclusions 格式无效")
+        for item in exclusions:
+            require(isinstance(item, dict) and item.get("category") in kinds,
+                    f"{sid} 排除项类别无效")
+            reason = item.get("reason")
+            require(isinstance(reason, str) and bool(reason.strip()), f"{sid} 排除项缺少理由")
+            evidence_entries = item.get("evidence", [])
+            validate_evidence(evidence_entries, f"{sid} 排除项", scene_map,
+                              work["source"].get("input_kind", "script"))
+            require(all(ev["scene_id"] == sid for ev in evidence_entries), f"{sid} 排除项引用了其他场次")
+    require(seen == set(scene_map), f"逐场语义审核未完成；尚缺场次 {sorted(set(scene_map) - seen, key=scene_order)}")
+
+
 def validate_work(work: dict) -> tuple[dict[str, dict], list[dict]]:
     require(work.get("schema_version") == "asset_extraction_work_v1", "工作文件版本错误")
     source_path = Path(work["source"]["path"])
@@ -204,11 +302,7 @@ def validate_work(work: dict) -> tuple[dict[str, dict], list[dict]]:
             if key == "characters":
                 require(asset.get("asset_type") in {"人物", "主要动物", "群演组"}, f"{aid} 人物类型无效")
                 tier = asset.get("tier", "")
-                require(tier in TIERS | {""}, f"{aid} 层级无效")
-                if not tier:
-                    warnings.append({"code": "tier_unset", "asset_id": aid,
-                                     "message": f"{name} 尚未判定角色层级；制作套件暂按实际发声需求登记",
-                                     "source_refs": asset["evidence"][0]["source_refs"]})
+                require(tier in TIERS, f"{aid} 角色层级未完成或无效，须经语义判读后正式导出")
             for fact in asset.get("script_facts", []):
                 validate_evidence(fact.get("evidence", []), f"{aid} 事实", scene_map, input_kind)
                 require(isinstance(fact.get("text"), str) and fact["text"].strip(), f"{aid} 事实文字为空")
@@ -283,6 +377,7 @@ def validate_work(work: dict) -> tuple[dict[str, dict], list[dict]]:
                 f"{sid} 地点未分配唯一状态")
     for finding in work.get("findings", []):
         validate_evidence(finding.get("evidence", []), "疑点", scene_map, input_kind)
+    validate_semantic_review(work, scene_map)
     return scene_map, warnings
 
 
@@ -329,25 +424,30 @@ def requirements_for(asset: dict, scene_map: dict[str, dict]) -> list[dict]:
     return requirements
 
 
-def finalize(work_path: Path, output_dir: Path) -> dict:
-    work = read_json(work_path)
-    scene_map, warnings = validate_work(work)
+def asset_payload(work: dict, scene_map: dict[str, dict]) -> dict:
     assets = deepcopy(work["assets"])
     for asset in assets["characters"]:
         asset["requirements"] = requirements_for(asset, scene_map)
-    report = {"schema_version": "asset_findings_v1", "source": work["source"],
-              "findings": [*work.get("findings", []), *warnings]}
-    coverage = work.get("source_coverage", {})
-    if coverage.get("unassigned_source_refs"):
-        report["source_unassigned_refs"] = coverage["unassigned_source_refs"]
-    result = {"schema_version": "screenplay_assets_v1", "source": work["source"],
+    return {"schema_version": "screenplay_assets_v1", "source": work["source"],
               "characters": assets["characters"], "locations": assets["locations"],
               "props": assets["props"], "effects": assets["effects"],
+              "semantic_review": deepcopy(work["semantic_review"]),
               "scenes": [{"scene_id": s["scene_id"], "episode": s["episode"],
                           "episode_title": s["episode_title"], "location": s["location"],
                           "interior_exterior": s["interior_exterior"], "time": s["time"],
                           "characters": s["characters"], "source_refs": s["source_refs"]}
                          for s in scene_map.values()]}
+
+
+def finalize(work_path: Path, output_dir: Path) -> dict:
+    work = read_json(work_path)
+    scene_map, warnings = validate_work(work)
+    report = {"schema_version": "asset_findings_v1", "source": work["source"],
+              "findings": [*work.get("findings", []), *warnings]}
+    coverage = work.get("source_coverage", {})
+    if coverage.get("unassigned_source_refs"):
+        report["source_unassigned_refs"] = coverage["unassigned_source_refs"]
+    result = asset_payload(work, scene_map)
     output_dir.mkdir(parents=True, exist_ok=True)
     write_json(output_dir / "assets.json", result)
     write_json(output_dir / "asset_findings.json", report)

@@ -1,0 +1,120 @@
+{
+  "schema_version": "AssetExtractionPatchValidationV1",
+  "date": "2026-10-27",
+  "suite_version": "1.0.2",
+  "plugin_version": "0.1.1",
+  "docx_skill_version": "0.1.2",
+  "regressions": {
+    "json_review": 16,
+    "docx": 96,
+    "ephemeral_dispatch": 2,
+    "delivery_postcondition": 4,
+    "failed": 0
+  },
+  "json_business_acceptance": {
+    "passed": true,
+    "characters": 3,
+    "locations": 1,
+    "props": 1,
+    "effects": 1,
+    "scenes": 3,
+    "findings": 1
+  },
+  "structure_and_runtime": {
+    "valid": true,
+    "python": "3.12.14",
+    "skills": 3,
+    "capabilities": 1
+  },
+  "real_skill_cases": [
+    {
+      "case": "json-props",
+      "invocation": "Real Codex AppServer, ephemeral server acknowledgment required",
+      "status": "passed",
+      "counts": {
+        "characters": 2,
+        "locations": 1,
+        "props": 2,
+        "effects": 0,
+        "scenes": 2,
+        "findings": 0
+      },
+      "reviewed_scenes": 2,
+      "plugin_fingerprint": "90e13475f81bf863e5d6c1a942abb32f5370e50f568dc4c83a5fd79ce5b37474",
+      "output_sha256": {
+        "assets.json": "3df57044f250204b4f38f52d48e5eed48e43974322d15b46e180bda0ca6d6d52",
+        "screenplay-asset-table.xlsx": "06e9fd56a28db0c0668382d2ff6e9a0619d69dcbc3bf3ab6e84b3cd2f0ebc4b2",
+        "asset_findings.json": "32e3b89e468c2f9365aee278d3f05df4eece5b1f698cabc172d81b3bcefac64f",
+        "asset_findings.md": "4b260824cd4d59ef474c5a2ce13b38244a4579ed525b4ea24495395e794c9e8a"
+      },
+      "duration_seconds": 254.642
+    },
+    {
+      "case": "json-no-props",
+      "invocation": "Real Codex AppServer, ephemeral server acknowledgment required",
+      "status": "passed",
+      "counts": {
+        "characters": 1,
+        "locations": 1,
+        "props": 0,
+        "effects": 0,
+        "scenes": 1,
+        "findings": 0
+      },
+      "reviewed_scenes": 1,
+      "plugin_fingerprint": "90e13475f81bf863e5d6c1a942abb32f5370e50f568dc4c83a5fd79ce5b37474",
+      "output_sha256": {
+        "assets.json": "fb1245ae8b02d8915677c5ab76c9763e071b4513515c740ef8aab0ce66b4f92b",
+        "screenplay-asset-table.xlsx": "e3d531c6e3a50d650e391484997cf3b6f99731c3d52a560084f994795d1faadd",
+        "asset_findings.json": "8534f11f2bcbaf99b569e3eb466eb557a3e51b9fadecc1ece53e7d74560fab29",
+        "asset_findings.md": "4b260824cd4d59ef474c5a2ce13b38244a4579ed525b4ea24495395e794c9e8a"
+      },
+      "duration_seconds": 240.412
+    },
+    {
+      "case": "docx-props-case",
+      "invocation": "Real codex exec --ephemeral with exact Skill file, default user model settings",
+      "status": "passed",
+      "counts": {
+        "characters": 2,
+        "scenes": 1,
+        "props": 2
+      },
+      "reviewed_scenes": 1,
+      "data_and_saved_workbook_check": "zero errors, zero unconfirmed warnings",
+      "output_sha256": {
+        "道具使用小样-资产表.xlsx": "07d2ccd05c911e9bc40e38543f5f00c8d1faf4bbea0929349059e34208a28795",
+        "assets.json": "d55596a43bd45f986cc7b1cd291c88fc7638d34ca3c2531db32afc2e98eac3b3"
+      },
+      "manual_application_visual_check": "not performed"
+    },
+    {
+      "case": "docx-no-props-case",
+      "invocation": "Real codex exec --ephemeral with exact Skill file, default user model settings",
+      "status": "passed",
+      "counts": {
+        "characters": 0,
+        "scenes": 1,
+        "props": 0
+      },
+      "reviewed_scenes": 1,
+      "data_and_saved_workbook_check": "zero errors, zero unconfirmed warnings",
+      "output_sha256": {
+        "空房间小样-资产表.xlsx": "0d4ed3c8a1cf906b71fe591a9047fb5b6f46e56b6ba7bd004b4b01ecdd5de770",
+        "assets.json": "886bd650b83c3cd55593e97a84be654c1bfa1f2e12e4c0a3f4538f4f373d8f2f"
+      },
+      "manual_application_visual_check": "not performed"
+    }
+  ],
+  "source_binding_correction": {
+    "initial_same_name_cache_calls": "excluded from passing evidence: outputs lacked the new review field",
+    "resolution": "explicit exact Skill file and plugin root plus current-version delivery postcondition",
+    "retested": true
+  },
+  "limits": [
+    "Synthetic cases do not prove full screenplay recall.",
+    "Manual spreadsheet application visual interaction was not performed.",
+    "No image generation or visual quality claim.",
+    "Raw source material and full call logs remain local."
+  ]
+}

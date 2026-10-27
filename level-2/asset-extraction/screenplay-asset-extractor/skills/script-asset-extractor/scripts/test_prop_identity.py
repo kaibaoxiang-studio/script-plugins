@@ -10,6 +10,7 @@ from pathlib import Path
 from openpyxl import Workbook, load_workbook
 from prop_identity import prop_candidates, related_props, sync_props, validate_props
 from build_xlsx import validate, write_asset_sheet, write_breakdown
+from test_semantic_review import record_test_review
 
 
 def fixture():
@@ -58,6 +59,7 @@ class PropIdentityTests(unittest.TestCase):
 
     def sync(self):
         self.assertEqual(sync_props(self.data, self.assets), ([], []))
+        record_test_review(self.data, self.assets)
 
     def rejected(self, phrase):
         errors, _ = validate_props(self.data, self.assets, check_derived=False)
@@ -348,6 +350,7 @@ class PropIdentityTests(unittest.TestCase):
         self.assertEqual(wb['场次总表'].cell(6, 9).value, '')
 
     def test_cli_sync_and_export(self):
+        self.sync()
         with tempfile.TemporaryDirectory(prefix='prop-identity-') as temp:
             root = Path(temp)
             script, assets, output = root / 'scenes.json', root / 'assets.json', root / 'assets.xlsx'

@@ -21,6 +21,7 @@ from character_ledger import character_breakdown, segment_position, state_notes,
 from asset_validation import input_errors
 from warning_approvals import apply_approvals, approval_text, warning_id, warning_report
 from prop_identity import identity_text, prop_state_notes, sync_props, validate_props
+from semantic_review import validate_semantic_review
 
 KINDS = [
     # (assets.json 键, sheet 名, 名称列标题, 专属列)
@@ -177,6 +178,7 @@ def validate(scenes_data, assets):
             if not st.get('description', '').strip():
                 errors.append(f'[人物] {a.get("id")}-{st.get("id")} 缺少状态描述')
 
+    errors.extend(validate_semantic_review(scenes_data, assets))
     return errors, warnings
 
 

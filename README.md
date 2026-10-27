@@ -1,8 +1,8 @@
 # 开宝箱工作室 · 剧本插件 1.0
 
-团队共建的三个业务插件：**剧本标准化（一级）**、**场记表提取（二级）**、**剧本资产表提取（二级）**。两项二级能力直接读取同一份一级标准 JSON，可分别运行；节拍归入场记表。
+团队共建的三个业务插件：**剧本标准化（一级）**、**场记表提取（二级）**、**剧本资产表提取（二级）**。两项二级能力直接读取同一份一级标准 JSON，可分别运行；资产提取另支持标准 DOCX 独立入口。节拍归入场记表。
 
-项目版本为 **1.0.1（2026-10-22）**。剧本标准化组件为 **0.1.2**，其他三个组件仍为 **0.1.0**。仓库包含完整插件、维护源码、统一安装目录、独立 ZIP 和脱敏测试证据。
+项目版本为 **1.0.2（2026-10-27）**。剧本标准化组件为 **0.1.2**，资产表提取组件为 **0.1.1**（DOCX Skill **0.1.2**），场记及 Creator 为 **0.1.0**。仓库包含完整插件、维护源码、统一安装目录、独立 ZIP 和脱敏测试证据。
 
 ## 功能与交付
 
@@ -10,7 +10,7 @@
 | --- | --- | --- | --- |
 | 一级 | [剧本标准化](level-1/screenplay-standardization/README.md) · standardize-screenplay / review-screenplay | DOCX、TXT、Markdown 剧本；纯细纲需经 Agent 创作 | 标准剧本 JSON / Markdown、独立疑点报告 |
 | 二级 | [场记表提取](level-2/scene-log-extraction/README.md) · extract-scene-log | 完成的 standardized_screenplay_v1 JSON | 按叙事拍组织的 JSON、每集一页的 13 列 Excel、独立审查报告 |
-| 二级 | [剧本资产表提取](level-2/asset-extraction/README.md) · extract-asset-table | 同一份一级 JSON | 人物 / 场景 / 道具 / 按需特效资产 JSON、Excel、独立疑点报告 |
+| 二级 | [剧本资产表提取](level-2/asset-extraction/README.md) · extract-asset-table | 同一份一级 JSON；标准 DOCX 独立入口 | 人物 / 场景 / 道具 / 按需特效资产 JSON、Excel、独立疑点报告 |
 | 额外工程 | [Harness Creator](engineering/README.md) · harness-creator | 业务需求、已有插件或知识 | 能力设计、源码、插件构建、维护与验证 |
 
 **Harness Creator 是额外的通用工程，不属于一级或二级节点。** 三个业务插件均自带运行代码与知识，使用时无需另装 Creator。
@@ -25,6 +25,8 @@ flowchart TD
     E --> G["资产表 + 独立疑点报告"]
 ```
 
+本次修复未完成提取也能导出的漏洞：JSON 与 DOCX 入口都要求覆盖原文的逐场语义审核，正式导出校验来源和资产快照；合法零道具仍可通过。底稿、字段校验与全文提取明确区分，缺审核不能正式交付。内部任务使用临时会话。[补丁验证与兼容说明](docs/validation-v1.0.2.md)。
+
 框架只有一级和二级产物。资产提取以标准剧本原文为依据，不以场记表作为必需输入。
 
 ## 安装与使用
@@ -32,7 +34,7 @@ flowchart TD
 添加固定的 1.0 市场：
 
 ```sh
-codex plugin marketplace add https://github.com/kaibaoxiang-studio/script-plugins.git --ref v1.0.1
+codex plugin marketplace add https://github.com/kaibaoxiang-studio/script-plugins.git --ref v1.0.2
 ```
 
 在 Codex 插件目录选择「开宝箱剧本插件 1.0」，分别安装三个业务插件；维护插件时再选装 Creator。[安装说明](docs/installation.md)包含 CLI 命令、Python 运行时及调用示例。

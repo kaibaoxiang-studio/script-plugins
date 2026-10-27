@@ -5,7 +5,7 @@
 仓库当前为私有仓库。团队成员先接受 GitHub 邀请，并确保本机 Git 可以读取仓库。使用支持插件功能的 Codex：
 
 ```sh
-codex plugin marketplace add https://github.com/kaibaoxiang-studio/script-plugins.git --ref v1.0.1
+codex plugin marketplace add https://github.com/kaibaoxiang-studio/script-plugins.git --ref v1.0.2
 codex plugin add screenplay-standardizer@script-plugins
 codex plugin add scene-log-extractor@script-plugins
 codex plugin add screenplay-asset-extractor@script-plugins
@@ -17,7 +17,7 @@ codex plugin add screenplay-asset-extractor@script-plugins
 codex plugin add harness-creator@script-plugins
 ```
 
-固定标签 v1.0.1 对应本次发布。跟随团队后续主分支时改用 `--ref main`。市场结构与 Git 引用参数遵循 [Codex 官方插件文档](https://developers.openai.com/plugins/build/plugins)。
+固定标签 v1.0.2 对应本次发布。跟随团队后续主分支时改用 `--ref main`。市场结构与 Git 引用参数遵循 [Codex 官方插件文档](https://developers.openai.com/plugins/build/plugins)。
 
 ## 在聊天中使用
 
@@ -100,8 +100,10 @@ plugin_root="/absolute/path/script-plugins/level-2/asset-extraction/screenplay-a
   --workspace /absolute/path/asset-work --confirmed
 ```
 
+JSON 入口要求逐场、逐块审核后才能导出；DOCX 使用本插件内 `$script-asset-extractor` 0.1.2，同样需要逐行审核。旧工作文件须补审，不用空字段或未定层级的底稿冒充完成。
+
 四个交付物及范围见[资产组件 README](../level-2/asset-extraction/README.md)。
 
 ## 独立下载
 
-[1.0.1 Release](https://github.com/kaibaoxiang-studio/script-plugins/releases/tag/v1.0.1) 提供四个独立 ZIP、文件清单和 SHA256SUMS.txt。ZIP 顶层是插件名，解压后包含完整运行文件；无需回到 creator-src 或另装 Harness Creator。源码和测试材料保存在仓库，独立 ZIP 侧重安装运行。
+[1.0.2 Release](https://github.com/kaibaoxiang-studio/script-plugins/releases/tag/v1.0.2) 提供四个独立 ZIP、文件清单和 SHA256SUMS.txt。ZIP 顶层是插件名，解压后包含完整运行文件；无需回到 creator-src 或另装 Harness Creator。源码和测试材料保存在仓库，独立 ZIP 侧重安装运行。

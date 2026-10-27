@@ -1,10 +1,12 @@
 # 剧本资产表提取 · 二级插件
 
-组件 `screenplay-asset-extractor`，版本 **0.1.0**，属于开宝箱工作室剧本插件 **1.0.0**。本目录包含独立运行所需的 Skills、规则、Python Harness、脚本和依赖锁；使用时无需另装 Harness Creator。
+组件 `screenplay-asset-extractor`，版本 **0.1.1**，属于开宝箱工作室剧本插件 **1.0.2**。本目录包含独立运行所需的 Skills、规则、Python Harness、脚本和依赖锁；使用时无需另装 Harness Creator。
 
 ## 输入与功能
 
-公开能力为 `extract-asset-table`。输入是一级「剧本标准化」已完成的 `standardized_screenplay_v1` JSON；本插件与场记表提取并列，可直接读取同一份一级 JSON。
+入口 `$screenplay-asset-extractor` 按输入选择本插件内的两个流程：标准 DOCX 使用 `$script-asset-extractor` 0.1.2，输出资产 JSON 与四表 Excel；一级 JSON 使用下述 Harness 能力 `extract-asset-table`，交付四件套。DOCX 规则见 [Skill](skills/script-asset-extractor/SKILL.md)。
+
+JSON 能力输入是一级「剧本标准化」已完成的 `standardized_screenplay_v1` JSON；本插件与场记表提取并列，可直接读取同一份一级 JSON。
 
 - 提取人物、主要动物、群演组、场景与子场景、道具，以及需要单独制作的关键特效。
 - 根据剧本证据整理合法别名和持续状态变化，记录来源位置；一级生成内容保留 `origin=generated`。
@@ -29,11 +31,11 @@
 团队成员接受仓库邀请，并确认本机 Git 可以读取仓库后，执行：
 
 ```sh
-codex plugin marketplace add https://github.com/kaibaoxiang-studio/script-plugins.git --ref v1.0.0
+codex plugin marketplace add https://github.com/kaibaoxiang-studio/script-plugins.git --ref v1.0.2
 codex plugin add screenplay-asset-extractor@script-plugins
 ```
 
-在新聊天中选择「剧本资产表提取」，提供一级 `standardized_screenplay.json`，或明确调用 `$extract-asset-table`。完整安装说明见[项目安装文档](https://github.com/kaibaoxiang-studio/script-plugins/blob/v1.0.0/docs/installation.md)。
+在新聊天中选择「剧本资产表提取」，提供一级 `standardized_screenplay.json`，或明确调用 `$extract-asset-table`。完整安装说明见[项目安装文档](https://github.com/kaibaoxiang-studio/script-plugins/blob/v1.0.2/docs/installation.md)。
 
 ## 独立目录与命令行
 
@@ -64,12 +66,12 @@ runtime_python="/absolute/path/returned/python"
   --workspace /absolute/path/asset-work --confirmed
 ```
 
-运行结果中的 `artifacts` 指向实际四个交付文件，运行记录保存在指定 workspace 中。Agent 先读取保守底稿，再依据原文补充资产判断并运行导出校验；单独执行 `prepare` / `finalize` 不会自动完成语义提取。结构、证据、状态或场次引用无效会阻止导出；来源文件变化后应重新开始。更多运行约束见 [RUNTIME.md](RUNTIME.md)。
+运行结果中的 `artifacts` 指向实际四个交付文件，运行记录保存在指定 workspace 中。Agent 先读取保守底稿，再依据原文补充资产判断并运行导出校验；`prepare` 只是底稿；缺少逐场、逐块审核时 `finalize` 会阻止正式导出。审核绑定来源、资产快照及原文，见 [语义审核契约](references/semantic-review.md)。零道具、零独立特效须有逐场依据，不强制数量大于零。结构、证据、状态或场次引用无效会阻止导出；来源文件变化后应重新开始。内部派发只用已确认的临时会话，恢复从工作区记录继续，不恢复持久派发聊天。更多运行约束见 [RUNTIME.md](RUNTIME.md)。
 
 ## 验证范围与维护
 
-现有确定性验收脚本通过，覆盖合法别名、换装状态、主要动物、群演、生成来源、工作簿一致性，以及错误引用和无依据外观事实的拒绝。另有真实合成调用、三份长稿整稿结构验收及各前两集真实提取。全剧业务案例交付 28 场、22 人物、17 场景、26 道具、0 单列特效和 3 条疑点；来源、结构与工作簿复核通过。
+本次补丁验证记录见 [1.0.2 验证](https://github.com/kaibaoxiang-studio/script-plugins/blob/v1.0.2/docs/validation-v1.0.2.md)。以下为历史验证范围：现有确定性验收脚本通过，覆盖合法别名、换装状态、主要动物、群演、生成来源、工作簿一致性，以及错误引用和无依据外观事实的拒绝。另有真实合成调用、三份长稿整稿结构验收及各前两集真实提取。全剧业务案例交付 28 场、22 人物、17 场景、26 道具、0 单列特效和 3 条疑点；来源、结构与工作簿复核通过。
 
-结构和数量通过不能代替人工语义核定。三份长稿未逐集完成人工资产核定；身份、场景归并、道具与特效的制作必要性及遗漏仍需结合独立报告审阅。范围见 [VALIDATION.md](VALIDATION.md) 和[项目验证记录](https://github.com/kaibaoxiang-studio/script-plugins/blob/v1.0.0/docs/validation-v1.0.md)。
+结构和数量通过不能代替人工语义核定。三份长稿未逐集完成人工资产核定；身份、场景归并、道具与特效的制作必要性及遗漏仍需结合独立报告审阅。范围见 [VALIDATION.md](VALIDATION.md) 和[项目验证记录](https://github.com/kaibaoxiang-studio/script-plugins/blob/v1.0.2/docs/validation-v1.0.md)。
 
-蓝图生成器和测试位于仓库的 [creator-src](https://github.com/kaibaoxiang-studio/script-plugins/tree/v1.0.0/level-2/asset-extraction/creator-src)，不属于独立包运行依赖。本 README 由其中的 `PLUGIN-README.md` 维护并写入构建蓝图。来源与许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+蓝图生成器和测试位于仓库的 [creator-src](https://github.com/kaibaoxiang-studio/script-plugins/tree/v1.0.2/level-2/asset-extraction/creator-src)，不属于独立包运行依赖。本 README 由其中的 `PLUGIN-README.md` 维护并写入构建蓝图。来源与许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。

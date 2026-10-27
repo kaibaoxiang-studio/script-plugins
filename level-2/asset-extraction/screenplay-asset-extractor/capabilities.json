@@ -64,7 +64,8 @@
       "knowledge_refs": [
         "references/asset-rules.md",
         "references/work-contract.md",
-        "references/source-notes.md"
+        "references/source-notes.md",
+        "references/semantic-review.md"
       ],
       "required_artifacts": [
         "assets.json",

@@ -1,8 +1,8 @@
 {
   "project": "script-plugins",
   "display_name": "剧本插件",
-  "version": "1.0.1",
-  "date": "2026-10-22",
+  "version": "1.0.2",
+  "date": "2026-10-27",
   "components": [
     {
       "id": "screenplay-standardizer",
@@ -37,7 +37,7 @@
       "role": "level-2",
       "path": "level-2/asset-extraction/screenplay-asset-extractor",
       "source_path": "level-2/asset-extraction/creator-src",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "entry": "extract-asset-table",
       "origin": {
         "repository": "kaibaoxiang-studio/script-plugins",

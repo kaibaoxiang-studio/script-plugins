@@ -43,6 +43,13 @@ def verify_result(result, capability, artifact_dir):
         for required in capability.get('required_artifacts',[]):
             if required not in result['artifacts']:
                 raise ValueError(f'Required artifact not declared: {required}')
+    if result['status'] == 'succeeded' and capability['id'] == 'extract-asset-table':
+        verifier = Path(__file__).resolve().parents[2] / 'scripts/verify_delivery.py'
+        checked = subprocess.run([sys.executable, str(verifier), str(Path(artifact_dir).resolve()),
+                                  '--expected-counts', json.dumps(result['result'])],
+                                 capture_output=True, text=True)
+        if checked.returncode:
+            raise ValueError('Asset completion postcondition failed: ' + (checked.stderr or checked.stdout).strip())
     return artifacts
 
 class Executor:

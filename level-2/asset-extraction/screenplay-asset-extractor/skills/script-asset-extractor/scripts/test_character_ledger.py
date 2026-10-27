@@ -17,6 +17,7 @@ from character_changes import change_candidates, covers
 from warning_approvals import apply_approvals, warning_report
 from show_character import candidates
 from parse_script import parse
+from test_semantic_review import record_test_review
 
 
 def fixture():
@@ -98,6 +99,7 @@ def add_warning_prop(data, assets):
                                       'start_offset': low, 'end_offset': low + 2,
                                       'source': {'scene_id': '1-5', 'line': 1, 'quote': text},
                                       'holder': '路人', 'note': ''}]}]
+    record_test_review(data, assets)
 
 
 class LedgerTests(unittest.TestCase):
@@ -108,6 +110,7 @@ class LedgerTests(unittest.TestCase):
     def sync(self):
         errors, _ = sync_characters(self.data, self.assets)
         self.assertEqual(errors, [])
+        record_test_review(self.data, self.assets)
 
     def rejected(self, phrase):
         errors, _ = validate_characters(self.data, self.assets, check_derived=False)

@@ -1,12 +1,12 @@
 ---
 name: script-asset-extractor
 metadata:
-  version: "0.1.1"
+  version: "0.1.2"
 description: 从标准化剧本 docx 提取人物、场景、道具及其外观状态，按原文逐场核对人物状态归属，输出 Excel 资产表。用户提到剧本资产表、拆资产、提取人物场景道具或制作资产清单时使用。
 ---
 # 剧本资产表提取
 
-当前版本：`v0.1.1`。
+当前版本：`v0.1.2`。
 
 输入标准剧本 docx，输出 `assets.json` 和 `<剧名>-资产表.xlsx`，Excel 保留人物、场景、道具、场次总表四个 sheet。人物、道具一行对应一个状态；场景有主子结构时按子场景展示。
 
@@ -24,13 +24,15 @@ python3 $S/parse_script.py <剧本.docx> <工作目录>/scenes.json
 
 ## 2. 提取资产
 
-先读 [references/asset_schema.md](references/asset_schema.md)。人物提取还必须读 [references/character_states.md](references/character_states.md)，包括逐场记录格式、状态继承、同场多阶段和迁移规则。道具提取必须读 [references/prop_identity.md](references/prop_identity.md)，按实物身份处理异称、泛称、交接和同名不同物。
+先读 [references/asset_schema.md](references/asset_schema.md) 与 [references/semantic_review.md](references/semantic_review.md)。人物提取还必须读 [references/character_states.md](references/character_states.md)，包括逐场记录格式、状态继承、同场多阶段和迁移规则。道具提取必须读 [references/prop_identity.md](references/prop_identity.md)，按实物身份处理异称、泛称、交接和同名不同物。
 
 ```bash
 python3 $S/show_episodes.py <工作目录>/scenes.json 1 5
 ```
 
 普通阅读按每批约 5 集进行；输出中 `L1` 等编号指该场 `lines` 数组中的第几行，从 1 开始，不是 docx 段落号。原始剧本结构或文本修改后须重新定位，不沿用旧行号。
+
+阅读时为每场每行保存具体语义判读结论，并汇总本场人物、场景、道具的取舍；零道具也须有本场原文依据。解析器只提供原文结构，不会代替这一步。不把输出空数组解释成没有资产，更不能从最终清单反推“全部已读”。
 
 ### 人物：先记录全部出场，再生成状态场次
 
@@ -60,6 +62,7 @@ python3 $S/show_episodes.py <工作目录>/scenes.json 1 5
 
 - 同空间异称合并；场景按可共用搭建的主子空间组织，主场景 `int_ext` 和 `times` 从所有实际场次汇总。
 - 原文没有出现的资产或关键陈设不得补造。固定陈设归场景；服装归人物；可独立出镜、推动剧情的可移动物品归道具。
+- 拿起、递交、实际使用、特写等均可构成物件登记依据，不要求这些条件同时出现；剧情实际使用的车辆也按道具处理。没有写所有者、没有发生交接或损坏，不是剔除物件的理由；未知字段留空，以常态登记已有依据的物件。
 - 道具/场景仅对需重新制作或明显修改的持续外观变化拆状态；日夜、灯光、摆放位置和使用者变化不单独拆。
 - 道具先汇总原文称呼，再按实物身份归一：明确同义说明、连续交接链或独特特征一致可支持合并，记录 alias_evidence；同类型、同持有人、颜色相近本身不支持合并。证据不足的关系分开保留，并用 identity_relations 和 note 说明待确认。
 - 已确认同一实物用一个 ID，稳定展示主名写 name；展示名有身份限定时，原文主称呼单独写 source_name，确定的特指异称写 aliases。泛称、代词按单次 mentions 记录，不作为全局别名。谁持有写 holder，主要归属写 owner；转手不新建道具，破损归同一道具的新状态。
@@ -84,7 +87,7 @@ python3 $S/show_episodes.py <工作目录>/scenes.json 1 5
 {"props": [{"id": "PRP-001", "name": "...", "aliases": [], "owner": "...", "description": "...", "note": "", "alias_evidence": [], "identity_relations": [], "mentions": [], "states": []}]}
 ```
 
-人物任务必须附 `character_states.md` 的完整 state/appearance/change_reviews 骨架，道具任务附 `prop_identity.md` 的异称证据、实物指代和身份关系骨架。分别输出 `characters.json`、`scenes_extracted.json`、`props.json`，避开解析脚本使用的 `scenes.json`。提前分配编号范围；检查顶层结构不对就退回重做。主 agent 合并为仅有 `characters`、`scenes`、`props` 的 `assets.json` 后统一校验，各 subagent 不单独跑 `--check`。合并后统一回查道具身份，不能只拼接各部分数组。
+人物任务必须附 `character_states.md` 的完整 state/appearance/change_reviews 骨架，道具任务附 `prop_identity.md` 的异称证据、实物指代和身份关系骨架；各任务还须交付对应原文的逐场判读结论。分别输出 `characters.json`、`scenes_extracted.json`、`props.json`，避开解析脚本使用的 `scenes.json`。提前分配编号范围；检查顶层结构不对就退回重做。主 agent 合并 `characters`、`scenes`、`props` 三类数组，在统一 `assets.json` 中附 `semantic_review` 后校验，各 subagent 不单独跑 `--check`。合并后统一回查道具身份和逐场审核，不能只拼接各部分数组。
 
 ## 3. 生成场次归属并校验
 
@@ -95,6 +98,8 @@ python3 $S/build_xlsx.py <工作目录>/scenes.json <工作目录>/assets.json -
 ```
 
 同步先检查记录的可计算约束；人物同步写回状态场次和展示引文，道具同步从 visible 实物记录写回状态场次。它们不会自动选择状态、合并疑似道具、修复指代链或改变原文记录。同步完成仍须执行全资产 `--check`。
+
+首次 `--check` 前，按 `semantic_review.md` 把阅读时的审核记录整合到 `assets.json.semantic_review`，核对每场每行、三类资产集合与原文排除依据，再绑定当前来源及三类资产的哈希。正式校验/导出会拒绝缺失、漏行、空结论、错引用和过期审核；刷新哈希不能代替重新判读。同步操作若改了数据，须先复核受影响记录，再绑定新快照。旧项目必须回到原文补审核，不能由旧表自动宣告完成。
 
 检查重复 ID/场次、别名冲突、原文定位与引文、出镜依据、同场阶段重叠、状态继承来源、时间线边界和派生列表一致性。旧版人物只有 `states[].scenes` 时必须回查原文补逐场记录，不可从旧列表伪造记录后宣布校验通过。
 
