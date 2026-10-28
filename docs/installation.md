@@ -2,7 +2,7 @@
 
 ## 从团队仓库安装
 
-仓库当前为私有仓库。团队成员先接受 GitHub 邀请，并确保本机 Git 可以读取仓库。使用支持插件功能的 Codex：
+仓库现已公开，可直接从本源仓库安装，无需 GitHub 团队邀请。使用支持插件功能的 Codex：
 
 ```sh
 codex plugin marketplace add https://github.com/kaibaoxiang-studio/script-plugins.git --ref v1.0.2
