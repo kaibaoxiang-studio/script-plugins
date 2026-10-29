@@ -1,6 +1,6 @@
 # Excel 输出与验收
 
-本地 `0.2.1-local` 使用 `workflow.py export/finalize` 作为生成与交付入口。底层 `build_xlsx.py` 会自动重开保存文件验收，通过后才替换工作簿；四表实际视觉检查完成后仍须 finalize 绑定交付哈希。以下模板与排序规则沿用 v0.1.1，执行阶段、台账参数和其他后端交付方式见 [执行契约](execution_contract.md)。
+本地 `0.3.2` 使用 `workflow.py export/finalize` 作为生成与交付入口。底层 `build_xlsx.py` 会自动重开保存文件验收，通过后才替换工作簿；四表实际视觉检查完成后仍须 finalize 绑定交付哈希。以下模板与排序规则沿用 v0.1.1，执行阶段、台账参数和其他后端交付方式见 [执行契约](execution_contract.md)。
 
 ## 统一模板
 

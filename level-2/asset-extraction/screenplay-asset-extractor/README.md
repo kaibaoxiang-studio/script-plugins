@@ -1,6 +1,6 @@
 # 剧本资产表提取 · 二级插件
 
-组件 `screenplay-asset-extractor`，版本 **0.3.1**，属于开宝箱工作室剧本插件 **1.0.0**。本目录包含独立运行所需的 Skills、规则、Python Harness、脚本和依赖锁；使用时无需另装 Harness Creator。
+组件 `screenplay-asset-extractor`，版本 **0.3.2**，属于开宝箱工作室剧本插件 **1.0.0**。本目录包含独立运行所需的 Skills、规则、Python Harness、脚本和依赖锁；使用时无需另装 Harness Creator。
 
 ## 输入与功能
 

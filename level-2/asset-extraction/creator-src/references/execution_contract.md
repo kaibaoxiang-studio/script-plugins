@@ -1,6 +1,6 @@
 # 执行台账与完成标准
 
-此文件定义本地 `0.3.1-local` 工作流程，业务资产仍沿用 v0.1.1 的三类结构。`review.json`、`progress.json`、预览图片和 `acceptance.json` 是工作文件，不新增正式交付文件。
+此文件定义本地 `0.3.2` 工作流程，业务资产仍沿用 v0.1.1 的三类结构。`review.json`、`progress.json`、预览图片和 `acceptance.json` 是工作文件，不新增正式交付文件。
 
 ## 阶段与状态
 

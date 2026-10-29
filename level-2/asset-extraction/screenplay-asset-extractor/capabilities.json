@@ -4,7 +4,7 @@
     {
       "id": "extract-asset-table",
       "skill_name": "extract-asset-table",
-      "description": "强制使用插件内置 0.3.1 workflow.py，从 DOCX/Markdown/standardized_screenplay_v1 提取并完成逐场、工作簿、视觉和交付验收",
+      "description": "强制使用插件内置 0.3.2 workflow.py，从 DOCX/Markdown/standardized_screenplay_v1 提取并完成逐场、工作簿、视觉和交付验收",
       "input_schema": {
         "type": "object",
         "properties": {

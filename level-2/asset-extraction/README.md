@@ -1,6 +1,6 @@
 # 二级 · 剧本资产表提取
 
-组件 `screenplay-asset-extractor` **0.3.1**，提供标准剧本资产提取能力。插件支持三类输入：
+组件 `screenplay-asset-extractor` **0.3.2**，提供标准剧本资产提取能力。插件支持三类输入：
 
 - 标准剧本 DOCX
 - 结构化 Markdown（`.md` / `.markdown`）

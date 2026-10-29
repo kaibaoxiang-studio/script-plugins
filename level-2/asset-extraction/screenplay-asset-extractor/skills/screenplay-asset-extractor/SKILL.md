@@ -1,10 +1,10 @@
 ---
 name: screenplay-asset-extractor
 metadata:
-  version: "0.3.1"
+  version: "0.3.2"
 description: 从标准剧本 DOCX、结构化 Markdown 或 standardized_screenplay_v1 JSON 提取经逐场审核并通过交付验收的剧本资产表。
 ---
-# 剧本资产表提取 · 0.3.1
+# 剧本资产表提取 · 0.3.2
 
 这是本插件唯一的总入口。必须根据输入类型选择本插件内的流程，不能调用电脑上同名的个人 Skill，也不能直接手写最终 Excel。
 

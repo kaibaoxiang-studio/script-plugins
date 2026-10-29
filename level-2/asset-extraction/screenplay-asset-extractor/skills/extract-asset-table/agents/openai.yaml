@@ -1,6 +1,6 @@
 interface:
-  display_name: extract-asset-table
-  short_description: 从一级标准剧本 JSON 提取人物、场景、道具、关键特效及独立疑点
-  default_prompt: Use $extract-asset-table to complete the requested task.
+  display_name: 剧本资产表提取
+  short_description: 从 DOCX、Markdown 或标准 JSON 提取并验收资产表
+  default_prompt: 使用插件内置 extract-asset-table workflow，从提供的剧本生成经逐场复核和保存后验收的资产表。
 policy:
   allow_implicit_invocation: true
