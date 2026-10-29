@@ -71,7 +71,113 @@
         "assets.json",
         "screenplay-asset-table.xlsx"
       ]
+    },
+    {
+      "id": "asset-pipeline-gate",
+      "skill_name": "extract-asset-table",
+      "description": "由插件内置 Python 固定编排执行 prepare 和 postcheck，禁止跳过阶段",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "source_path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "phase": {
+            "type": "string",
+            "enum": [
+              "prepare",
+              "postcheck"
+            ]
+          }
+        },
+        "required": [
+          "source_path",
+          "phase"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "artifact_dir": {
+            "type": "string"
+          },
+          "artifacts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "status",
+          "artifact_dir"
+        ],
+        "additionalProperties": false
+      },
+      "execution": {
+        "kind": "python",
+        "script": "scripts/pipeline_gate.py",
+        "access": "workspace-write",
+        "network": false
+      }
     }
   ],
-  "workflows": []
+  "workflows": [
+    {
+      "id": "extract-asset-table-pipeline",
+      "max_concurrency": 1,
+      "nodes": [
+        {
+          "id": "prepare",
+          "capability": "asset-pipeline-gate",
+          "depends_on": [],
+          "idempotent": true,
+          "retries": 0,
+          "timeout_seconds": 600,
+          "bindings": {
+            "source_path": {
+              "from": "inputs.source_path"
+            },
+            "phase": "prepare"
+          }
+        },
+        {
+          "id": "semantic-review",
+          "capability": "extract-asset-table",
+          "depends_on": [
+            "prepare"
+          ],
+          "idempotent": false,
+          "retries": 0,
+          "timeout_seconds": 86400,
+          "bindings": {
+            "source_path": {
+              "from": "inputs.source_path"
+            }
+          }
+        },
+        {
+          "id": "postcheck",
+          "capability": "asset-pipeline-gate",
+          "depends_on": [
+            "semantic-review"
+          ],
+          "idempotent": true,
+          "retries": 0,
+          "timeout_seconds": 600,
+          "bindings": {
+            "source_path": {
+              "from": "inputs.source_path"
+            },
+            "phase": "postcheck"
+          }
+        }
+      ]
+    }
+  ]
 }

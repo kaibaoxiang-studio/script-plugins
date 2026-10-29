@@ -12,7 +12,7 @@ INSTRUCTIONS = """# 剧本资产表提取
 
 这是插件唯一的资产提取能力。输入支持标准剧本 DOCX、结构化 Markdown 和一级 standardized_screenplay_v1 JSON。严格使用本插件内置的 `skills/extract-asset-table/SKILL.md` 与 `scripts/`，不得调用个人目录中的同名 Skill。
 
-1. 所有输出写入本次 `artifact_dir`。DOCX/Markdown 必须运行 `python3 <插件根>/scripts/workflow.py prepare <source_path> <artifact_dir>`，随后逐场填写审核台账。
+1. 所有输出写入本次 `artifact_dir`。入口工作流先由插件内置 Python gate 创建并锁定 artifact_dir，再运行 `workflow.py prepare`；Agent 只填写结构化 review.json/assets.json，不得自行改变阶段顺序。
 2. 继续运行 `bind → export → check → visual-review`，实际查看四表预览并填写视觉结论；最后运行 `python3 <插件根>/scripts/workflow.py finalize <artifact_dir> --output <artifact_dir>/screenplay-asset-table.xlsx`。
 3. standardized_screenplay_v1 JSON 可使用兼容 JSON 流程，但仍须完成逐场审核和保存后验收。
 4. 只有 `progress.json.stage=complete`、`acceptance.json` 存在、工作簿通过保存后验收、视觉证据已登记且 postcheck 通过时，才返回 succeeded；否则返回 failed 或 blocked。
@@ -49,11 +49,21 @@ def main() -> None:
             "execution": {"kind": "agent", "access": "workspace-write", "network": False},
             "knowledge_refs": ["references/asset-rules.md", "references/work-contract.md",
                                "references/source-notes.md", "references/semantic-review.md"],
-            "required_artifacts": ["assets.json", "screenplay-asset-table.xlsx"]}],
+            "required_artifacts": ["assets.json", "screenplay-asset-table.xlsx"]},
+            {"id": "asset-pipeline-gate", "skill_name": "extract-asset-table",
+             "description": "由插件内置 Python 固定编排执行 prepare 和 postcheck，禁止跳过阶段",
+             "instructions": "这是内部固定编排能力，由工作流调用，不直接面向用户。它负责在语义审核前创建当前 artifact_dir，并在语义审核完成后执行保存后验收；禁止 Agent 直接跳过这些阶段。",
+             "input_schema": {"type":"object", "properties":{"source_path":{"type":"string","minLength":1},"phase":{"type":"string","enum":["prepare","postcheck"]}}, "required":["source_path","phase"], "additionalProperties":False},
+             "output_schema": {"type":"object", "properties":{"status":{"type":"string"},"artifact_dir":{"type":"string"},"artifacts":{"type":"array","items":{"type":"string"}}}, "required":["status","artifact_dir"], "additionalProperties":False},
+             "execution": {"kind":"python", "script":"scripts/pipeline_gate.py", "access":"workspace-write", "network":False}}],
         "files": {str(path.relative_to(ROOT)): path.read_text(encoding="utf-8")
                   for folder in (ROOT / "scripts", ROOT / "references")
                   for path in folder.rglob("*") if path.is_file() and path.name != "bootstrap.py" and path.suffix in {".py", ".md"}},
-        "workflows": [],
+        "workflows": [{"id":"extract-asset-table-pipeline","max_concurrency":1,"nodes":[
+            {"id":"prepare","capability":"asset-pipeline-gate","depends_on":[],"idempotent":True,"retries":0,"timeout_seconds":600,"bindings":{"source_path":{"from":"inputs.source_path"},"phase":"prepare"}},
+            {"id":"semantic-review","capability":"extract-asset-table","depends_on":["prepare"],"idempotent":False,"retries":0,"timeout_seconds":86400,"bindings":{"source_path":{"from":"inputs.source_path"}}},
+            {"id":"postcheck","capability":"asset-pipeline-gate","depends_on":["semantic-review"],"idempotent":True,"retries":0,"timeout_seconds":600,"bindings":{"source_path":{"from":"inputs.source_path"},"phase":"postcheck"}}
+        ]}],
         "sources": [
             {"origin": "kaibaoxiang-studio/script-plugins:script-asset-extractor",
              "revision": "8ba6de3561f85c5a0af6cc46ca68c23fba8b5917",
