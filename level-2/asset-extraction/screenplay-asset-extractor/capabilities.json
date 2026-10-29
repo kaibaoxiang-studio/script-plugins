@@ -4,7 +4,7 @@
     {
       "id": "extract-asset-table",
       "skill_name": "extract-asset-table",
-      "description": "从标准剧本 DOCX、结构化 Markdown 或一级标准 JSON 提取人物、场景、道具、状态及场次总表",
+      "description": "强制使用插件内置 0.3.1 workflow.py，从 DOCX/Markdown/standardized_screenplay_v1 提取并完成逐场、工作簿、视觉和交付验收",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -70,9 +70,7 @@
       ],
       "required_artifacts": [
         "assets.json",
-        "screenplay-asset-table.xlsx",
-        "asset_findings.json",
-        "asset_findings.md"
+        "screenplay-asset-table.xlsx"
       ]
     }
   ],
