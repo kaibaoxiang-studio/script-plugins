@@ -4,13 +4,14 @@
     {
       "id": "extract-asset-table",
       "skill_name": "extract-asset-table",
-      "description": "从一级标准剧本 JSON 提取人物、场景、道具、关键特效及独立疑点",
+      "description": "从标准剧本 DOCX、结构化 Markdown 或一级标准 JSON 提取人物、场景、道具、状态及场次总表",
       "input_schema": {
         "type": "object",
         "properties": {
           "source_path": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "description": "标准 DOCX、结构化 Markdown（.md/.markdown）或 standardized_screenplay_v1 JSON 路径"
           }
         },
         "required": [

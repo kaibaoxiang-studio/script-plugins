@@ -1,153 +1,114 @@
 ---
 name: script-asset-extractor
 metadata:
-  version: "0.1.2"
-description: 从标准化剧本 docx 提取人物、场景、道具及其外观状态，按原文逐场核对人物状态归属，输出 Excel 资产表。用户提到剧本资产表、拆资产、提取人物场景道具或制作资产清单时使用。
+  version: "0.3.1-local"
+description: 从标准化剧本 docx 提取人物、场景、道具及外观状态，通过逐场审查、原文候选复核和保存后验收交付 Excel 资产表。用户提到剧本资产表、拆资产、提取人物场景道具或制作资产清单时使用。
 ---
 # 剧本资产表提取
 
-当前版本：`v0.1.2`。
+本地版本 `0.3.1-local`，基于本地 v0.1.1 优化；不使用 GitHub v0.1.2。输入标准 DOCX 或结构化 Markdown，正式交付 `assets.json` 与 `<剧名>-资产表.xlsx`，保持人物、场景、道具、场次总表四张表及原展示模板。正式模板四张表所有单元格统一水平、垂直居中并自动换行。
 
-输入标准剧本 docx，输出 `assets.json` 和 `<剧名>-资产表.xlsx`，Excel 保留人物、场景、道具、场次总表四个 sheet。人物、道具一行对应一个状态；场景有主子结构时按子场景展示。
+`$S` 指本 SKILL.md 所在目录下的 `scripts/`，不能使用当前工作目录代替。依赖 `python-docx==1.1.2`、`openpyxl==3.1.5`；PNG 证据校验仅使用标准库；所有脚本使用同一 Python 解释器。
 
-脚本目录为本技能目录下的 `scripts/`，下文用 `$S` 指代。依赖 `python-docx==1.1.2`、`openpyxl==3.1.5`。不要把当前工作目录当成技能目录。
+## 启动与恢复
 
-## 1. 解析剧本
+先读 [执行台账与完成标准](../../references/execution_contract.md)。开始资产判断前读 [资产结构](../../references/asset_schema.md) 与 [提取和纠错规则](../../references/asset_judgment.md)。人物还须读 [状态规则](../../references/character_states.md)，道具还须读 [实物身份规则](../../references/prop_identity.md)。
 
-在剧本目录建 `<剧名>_资产提取/`，中间文件保存在里面。
-
-```bash
-python3 $S/parse_script.py <剧本.docx> <工作目录>/scenes.json
-```
-
-检查集数、场次数和人物行。未识别行超过总段落数的 5%，或连续 10 行以上无法解析时，停止并说明格式问题；否则只要核心结构正常，可逐条判读非标准标记后继续。不能以 0 集或 0 场的结果继续提取。
-
-## 2. 提取资产
-
-先读 [references/asset_schema.md](references/asset_schema.md) 与 [references/semantic_review.md](references/semantic_review.md)。人物提取还必须读 [references/character_states.md](references/character_states.md)，包括逐场记录格式、状态继承、同场多阶段和迁移规则。道具提取必须读 [references/prop_identity.md](references/prop_identity.md)，按实物身份处理异称、泛称、交接和同名不同物。
+首次运行，选择剧本目录下新的 `<剧名>_资产提取/`：
 
 ```bash
-python3 $S/show_episodes.py <工作目录>/scenes.json 1 5
+python3 "$S/workflow.py" prepare "<剧本.docx|剧本.md>" "<工作目录>"
 ```
 
-普通阅读按每批约 5 集进行；输出中 `L1` 等编号指该场 `lines` 数组中的第几行，从 1 开始，不是 docx 段落号。原始剧本结构或文本修改后须重新定位，不沿用旧行号。
-
-阅读时为每场每行保存具体语义判读结论，并汇总本场人物、场景、道具的取舍；零道具也须有本场原文依据。解析器只提供原文结构，不会代替这一步。不把输出空数组解释成没有资产，更不能从最终清单反推“全部已读”。
-
-### 人物：先记录全部出场，再生成状态场次
-
-1. 统一人物身份与别名，区分同名角色、童年身份与替身，不凭相似名称合并。检查对白：有台词的角色不能归群演；主角、主要配角的类别仍按剧情作用判断。
-2. 按人物读取全剧候选场次，保留整场上下文。候选命中只用于回查，台词提及、VO/OS 或名称子串命中都不自动证明出镜。
-
-   ```bash
-   python3 $S/show_character.py <工作目录>/scenes.json <人物名> <别名1> <别名2>
-   ```
-
-3. 逐场建立人物 `appearances`。记录人物行出场或动作出镜的依据、原文区间、故事时间线、画面实体、外观状态和继承来源。人物行漏列但动作明确出镜也要收录。只被提及而未出镜不收录。
-4. 从原文明示的服装、年龄、形态、妆发、伤势和污损建立可复用状态。以需要独立制作或外观组件的变化判断是否拆分；短暂兽耳、局部包扎等不能仅因持续时间短或面积小而直接排除。纯表情、动作、灯光及后期发光不拆造型状态。
-5. 每条记录引用状态 ID；同场换装、变身、恢复、现实与闪回要分阶段。同一人物同一画面实体在同一阶段不能分配两套互斥状态。镜像、分身等确实同时出现的实体分别记录 `instance`，不能为了通过校验虚构实体。
-6. 只有确认故事连续，且没有新的外观变化依据时，才能从同时间线同实体的最近记录沿用。时间跳跃、闪回、梦境、蒙太奇等边界必须重新判读；无法确认就记录“未说明”，不自动沿用最后读到的状态。换衣不意味着伤势恢复，变回人形不意味着衣服或血污恢复。
-7. 相同造型再次明确出现时复用已有状态；不以集号或场景用途命名状态。原文未知的细节写未说明，未提到配饰不等于无配饰。状态描述由已确认的基础特征和该版本外观组织生成，不靠推测凑完整性或字数。
-8. 独立扫描变化候选并逐条填写人物 `change_reviews`。不能从已完成的 appearances 反推候选，也不能批量把所有候选标为已记录。每条候选回查上下文，关联实际阶段或写明排除/不拆/不确定的原因。
-
-   ```bash
-   python3 $S/show_character.py <工作目录>/scenes.json <人物名> <别名1> --changes
-   ```
-
-   候选含初始外观、换装、染血、变身等关键词线索；同场代词与他人动作可能产生误报。漏复核、原文被修改或候选未关联实际阶段都会报错。关键词无法覆盖所有表达，仍须通读人物全部出场。
-
-**人物 `states[].scenes` 和 `evidence` 是派生字段。不得手填场次列表或批量把连续场次塞入一个状态。先校对 `appearances` 与 `evidence_refs`，再由脚本生成。**
-
-### 场景与道具
-
-- 同空间异称合并；场景按可共用搭建的主子空间组织，主场景 `int_ext` 和 `times` 从所有实际场次汇总。
-- 原文没有出现的资产或关键陈设不得补造。固定陈设归场景；服装归人物；可独立出镜、推动剧情的可移动物品归道具。
-- 拿起、递交、实际使用、特写等均可构成物件登记依据，不要求这些条件同时出现；剧情实际使用的车辆也按道具处理。没有写所有者、没有发生交接或损坏，不是剔除物件的理由；未知字段留空，以常态登记已有依据的物件。
-- 道具/场景仅对需重新制作或明显修改的持续外观变化拆状态；日夜、灯光、摆放位置和使用者变化不单独拆。
-- 道具先汇总原文称呼，再按实物身份归一：明确同义说明、连续交接链或独特特征一致可支持合并，记录 alias_evidence；同类型、同持有人、颜色相近本身不支持合并。证据不足的关系分开保留，并用 identity_relations 和 note 说明待确认。
-- 已确认同一实物用一个 ID，稳定展示主名写 name；展示名有身份限定时，原文主称呼单独写 source_name，确定的特指异称写 aliases。泛称、代词按单次 mentions 记录，不作为全局别名。谁持有写 holder，主要归属写 owner；转手不新建道具，破损归同一道具的新状态。
-- 使用只读回查工具检查疑似重复项与所有称呼的上下文；候选不等于合并结论。需要寻找未收录的称呼时用 --terms 补充搜索，同时仍要通读全剧相关动作。
-
-  ```bash
-  python3 $S/show_prop.py <工作目录>/scenes.json <工作目录>/assets.json --related
-  python3 $S/show_prop.py <工作目录>/scenes.json <工作目录>/assets.json PRP-001 --terms 龙骨匕首 匕首 它
-  ```
-
-- 建立 mentions，记录实际原文词、位置、指代依据、画面/非画面及状态。状态场次从实物记录生成，不从名称搜索命中直接批量填入。每个资产至少有一个状态，场次引用必须存在。
-
-### 可选并行
-
-需要并行且已获授权时，按人物、场景、道具分工，每人读取完整剧本。人物还可按角色分工，每个角色仍须覆盖全剧全部出场，不能按集数切给不同 agent。
-
-任务说明直接附目标骨架，禁止自创顶层分类：
-
-```json
-{"characters": [{"id": "CHR-001", "name": "...", "aliases": [], "role": "...", "description": "...", "note": "", "states": [], "appearances": [], "change_reviews": []}]}
-{"scenes": [{"id": "SCN-001", "name": "...", "aliases": [], "int_ext": "...", "times": [], "description": "...", "note": "", "subscenes": [], "states": []}]}
-{"props": [{"id": "PRP-001", "name": "...", "aliases": [], "owner": "...", "description": "...", "note": "", "alias_evidence": [], "identity_relations": [], "mentions": [], "states": []}]}
-```
-
-人物任务必须附 `character_states.md` 的完整 state/appearance/change_reviews 骨架，道具任务附 `prop_identity.md` 的异称证据、实物指代和身份关系骨架；各任务还须交付对应原文的逐场判读结论。分别输出 `characters.json`、`scenes_extracted.json`、`props.json`，避开解析脚本使用的 `scenes.json`。提前分配编号范围；检查顶层结构不对就退回重做。主 agent 合并 `characters`、`scenes`、`props` 三类数组，在统一 `assets.json` 中附 `semantic_review` 后校验，各 subagent 不单独跑 `--check`。合并后统一回查道具身份和逐场审核，不能只拼接各部分数组。
-
-## 3. 生成场次归属并校验
+Markdown 输入可先运行：
 
 ```bash
-python3 $S/build_xlsx.py <工作目录>/scenes.json <工作目录>/assets.json --sync-character-scenes
-python3 $S/build_xlsx.py <工作目录>/scenes.json <工作目录>/assets.json --sync-prop-scenes
-python3 $S/build_xlsx.py <工作目录>/scenes.json <工作目录>/assets.json --check
+python3 "$S/workflow.py" diagnose-markdown "<剧本.md>"
 ```
 
-同步先检查记录的可计算约束；人物同步写回状态场次和展示引文，道具同步从 visible 实物记录写回状态场次。它们不会自动选择状态、合并疑似道具、修复指代链或改变原文记录。同步完成仍须执行全资产 `--check`。
+该命令只生成解析诊断，不建立资产判断。
 
-首次 `--check` 前，按 `semantic_review.md` 把阅读时的审核记录整合到 `assets.json.semantic_review`，核对每场每行、三类资产集合与原文排除依据，再绑定当前来源及三类资产的哈希。正式校验/导出会拒绝缺失、漏行、空结论、错引用和过期审核；刷新哈希不能代替重新判读。同步操作若改了数据，须先复核受影响记录，再绑定新快照。旧项目必须回到原文补审核，不能由旧表自动宣告完成。
+程序检查零集/零场、超过 5% 未识别段落、连续至少 10 行无法解析及表格正文；不达标时停止，不以失败解析继续。`prepare` 只建立原文结构、空白逐场台账与待复核线索，不进行语义提取，也不代表已读。Markdown 会去除标题标记、引用标记和分隔线，但保留原始文件行号；来源格式写入 `scenes.json.source.format`。
 
-检查重复 ID/场次、别名冲突、原文定位与引文、出镜依据、同场阶段重叠、状态继承来源、时间线边界和派生列表一致性。旧版人物只有 `states[].scenes` 时必须回查原文补逐场记录，不可从旧列表伪造记录后宣布校验通过。
-
-- 人物行出现但未被状态覆盖：检查是否漏出场记录或别名。
-- 动作行明确出镜但人物行没写：保留原始人物行，用 `presence.kind=action` 和动作原文定位证明。
-- 同场多状态：确认先后阶段、实体或时间线确有原文依据。相同实体重叠区间报错，不能靠改时间线名称绕过。
-- 继承失败：回查时间连续性、最近出场和中间变化，不把 `from` 任意改到远处相同状态。
-- 道具归属人不在场属于弱提示，回查是否被他人持有；无法消除的警告先与用户确认，不自行忽略。
-- 道具检查：全局名称冲突、异称缺证据、泛称误作别名、局部指代错实物/错连续段、重复认领同一原文词、已确认名称漏记录，以及状态场次与实物记录不一致。旧数据须回查补 mentions/alias_evidence，不能用旧场次列表伪造原文记录。
-
-反复修正直到 **错误 0 条、未确认警告 0 条**。没有确认记录时这等同于零警告。任何错误和未确认警告均以非零退出，并阻止生成 Excel；已确认警告单独计数，不能在报告里伪称所有警告都消失。
-
-有合理且无法消除的弱警告时，读 [references/warning_approvals.md](references/warning_approvals.md)，先回查并取得用户对具体警告的确认，再保存绑定当前输入快照的确认文件。不能自行代用户确认、批量忽略警告，或通过修改原始人物行消除提示。错误不能用确认文件跳过。
+恢复已有工作时先运行：
 
 ```bash
-python3 $S/build_xlsx.py <工作目录>/scenes.json <工作目录>/assets.json --warning-report
-python3 $S/build_xlsx.py <工作目录>/scenes.json <工作目录>/assets.json --check --warning-approvals <工作目录>/warning_approvals.json
+python3 "$S/workflow.py" status "<工作目录>"
 ```
 
-程序通过不等于语义准确。必须回查全部人物变化边界与跨时间线分配，确认引文真正描述该人物该版本，而不只是能在原文找到；确认每次变身、恢复、换装、伤势变化已记录，或有合理的不拆造型判断。关键词/行号校验不能证明语义正确。
+依据实际缺项继续；`progress.json` 是提示，不是完成证明。原始 DOCX 变化后用新目录重新解析，回查迁移，不能只更新哈希。
 
-必要时回查道具/场景原文：
+## 分工和批次
+
+已获多agent授权时，先读 [分工与独立审核](../../references/agent_workflow.md)，用 `workflow.py team-init`、`fragment-template`、`submit`、`check-batch`、`merge` 管理三类独立片段。人物和道具各有全剧唯一责任人；主agent合并后交独立审核，责任方返修、审核者复查，最后统一绑定。失败执行最多3次、错峰重试，不用旧片段冒充新任务完成。
+
+程序从已审appearances/mentions派生场次、类别和行关联，不生成身份、出镜或排除结论。`candidate-groups`减少重复阅读但保留全部原始线索。`diagnose`输出完整结构化错误及受影响范围，其他批次的待办与当前错误分开。
+
+## 通读、提取与记录
+
+每批约 5 集，阅读全部人物行与动作/对白上下文，逐场填写 `review.json`。每个原文行记录实际结论，人物/场景/道具各类记录本场取舍；没有某类资产也需本场理由。不能先形成清单，再批量反写“已完成”。
 
 ```bash
-python3 $S/enrich_descriptions.py <工作目录>/scenes.json <工作目录>/assets.json
+python3 "$S/show_episodes.py" "<工作目录>/scenes.json" 1 5
+python3 "$S/show_character.py" "<工作目录>/scenes.json" "<人物名>" "<别名>"
+python3 "$S/show_character.py" "<工作目录>/scenes.json" "<人物名>" --changes
+python3 "$S/show_prop.py" "<工作目录>/scenes.json" "<工作目录>/assets.json" --related
 ```
 
-## 4. 生成并复核 Excel
+建立三类数组的 `assets.json`。每个人物读取全剧全部候选场次；有台词不归群演，名称命中、对白提及、VO/OS 不自动证明出镜。人物先写逐场 `appearances`；状态场次和展示引文只能从记录派生。同场变化按阶段，分身按有依据的实体；故事时间边界重新判读，未知外观写未说明。
 
-先读 [references/excel_output.md](references/excel_output.md)。`scripts/export_contract.py` 是表头、列序、分组、阶段顺序和样式的唯一来源；标准导出与环境要求的其他 Excel 后端都消费同一展示计划，不另写一套模板。偏离模板须说明原因并取得用户同意。
+道具按实物身份建立 `mentions`，交接不新建物件；泛称/代词不得成为全局别名。明确拿取、递交、使用、特写任一线索都可登记，不因未知所有者或没有破损而漏提。固定陈设归场景，服装归人物。
+
+逐项填写台账中的独立原文候选：已收录须关联该位置的实际资产与记录；排除须有覆盖线索的原文证据及具体原因；不确定项保留待确认，不能正式交付。扫描不覆盖所有表达，不能用候选数量代替通读。人物多状态、初始重置及继承记录还要完成 `character_reviews` 全阶段复核。
+
+## 同步、校验、生成
 
 ```bash
-python3 $S/build_xlsx.py <工作目录>/scenes.json <工作目录>/assets.json <剧本目录>/<剧名>-资产表.xlsx
-python3 $S/check_workbook.py <工作目录>/scenes.json <工作目录>/assets.json <输出.xlsx>
+python3 "$S/build_xlsx.py" "<工作目录>/scenes.json" "<工作目录>/assets.json" --sync-character-scenes
+python3 "$S/build_xlsx.py" "<工作目录>/scenes.json" "<工作目录>/assets.json" --sync-prop-scenes
+python3 "$S/workflow.py" bind "<工作目录>"
+python3 "$S/workflow.py" export "<工作目录>"
+python3 "$S/workflow.py" check "<工作目录>"
+python3 "$S/workflow.py" visual-review "<工作目录>"
+python3 "$S/workflow.py" preflight "<工作目录>"
+python3 "$S/workflow.py" warning-groups "<工作目录>"
+python3 "$S/workflow.py" warning-draft "<工作目录>"
+python3 "$S/workflow.py" compress-advice "<工作目录>"
+python3 "$S/workflow.py" impact "<工作目录>"
+python3 "$S/workflow.py" semantic-audit "<工作目录>"
+python3 "$S/workflow.py" visual-regression "<工作目录>"
+python3 "$S/workflow.py" compare-sources "<Markdown或DOCX>" "<Markdown或DOCX>"
 ```
 
-环境要求其他后端时，用 `--export-spec <工作目录>/workbook-plan.json` 代替直接导出，并按计划生成。该模式执行与标准导出相同的数据校验和警告确认；有确认文件时两个命令都传同一 `--warning-approvals`。保存 Excel 后必须执行 `check_workbook.py`，不以 JSON 的零错误代替 Excel 验收。
+`check` 是统一的非视觉验收入口，会汇总数据、独立审核、工作簿和视觉证据门槛；返回非零状态时不能 finalize。
+`visual-review` 自动为四张表生成独立 PNG 预览并登记文件哈希；它不会代替人工看图，也不会自动写入视觉结论。生成后必须实际查看图片、填写每张表的 `conclusion`，再运行 `check` 和 `finalize`。
+`preflight` 在交付前检查 Excel 行高风险、场次编号重复和审核台账漏场。`finalize` 通过后会在工作目录生成 `交付报告.md`。
+`warning-groups` 按广播/AI 音、群体角色、缺少状态等规则整理当前警告，供人工逐组复核；它只分组，不自动确认，也不改变 `warning_approvals.json`。
+`warning-draft` 生成带规则分组的确认草稿；必须人工填写每条 `reason` 和 `confirmed_by` 并复核消息后，另存为正式 `warning_approvals.json`。空白草稿不能通过交付验收。
+`compare-sources` 比较 Markdown 与 DOCX 的集次、场次编号、场景名、内外和时间；`compress-advice` 报告接近 Excel 行高上限的字段并给出保序压缩建议；`impact` 根据当前快照提示资产修改影响的复核表范围。
+`semantic-audit` 检查状态重复和跨场次引用；`visual-regression` 检查自动预览是否覆盖四表首/中/尾页面并验证 PNG 结构。两者都只报告问题，不修改资产。
 
-人物表按出现场次数从多到少排列，从 appearances 的场次号去重统计：同场多状态、重复切换或多个画面实体都只计一次。次数相同按首次实际出场的场次和阶段先后排列；首次位置也相同则保留原人物顺序。同一人物的所有状态作为完整分组，按该状态首次实际使用的场次排列，同场按阶段先后排列。状态反复出现只保留一行，排序依据首次使用；完全同位置的状态保留原状态顺序。场次顺序以解析剧本中的呈现顺序为准，不把闪回的故事时间当排序时间。排序只调整人物表展示，不重编人物/状态 ID。
+`bind` 在覆盖和证据通过后绑定当前快照，不生成判读或批准结论。改动资产/原文后旧绑定失效；用 diagnose 定位受影响范围，复核再绑定。分工模式的独立审核按范围过期，无关范围可保留；来源或版本变化全部失效。重复bind/export仅在来源、展示计划和工作簿验收均一致时保留视觉记录；变更后重新查看。导出自动重开已保存 Excel，按当前数据验收通过后才保留复核副本；没有通过时不会覆盖已有文件。
 
-人物表新增“场次·阶段·时间线”列；场次总表按人物逐场记录展示阶段、时间线与明示/沿用/未说明依据，不能只堆叠无顺序状态名。人物表和场次总表均保留逐场 note。道具表新增“异称与身份依据”，道具备注保留单次指代问题；场次总表展示统一主名与当地原文称呼，便于回查。使用已确认警告时，导出命令也须传入同一 `--warning-approvals` 文件，确认内容显示在场次总表“校验确认”列。
+有合理但无法消除的弱警告，先读 [警告确认](../../references/warning_approvals.md)，取得用户对具体警告的确认后保存 `warning_approvals.json`。不能自行代用户确认。任何错误或未确认警告阻止交付；已确认警告保留真实数量和内容。workflow 自动读取该确认文件；如单独执行 --check 或 check_workbook.py，须同时传 --warning-approvals "<工作目录>/warning_approvals.json"。
 
-生成后抽查男女主及其他多状态人物：从 Excel 的场次回查逐场记录和原文，尤其同场变化、闪回、恢复与旧状态再出现。并行结果还须核查主子场景的场次及内外/时间实际值。发现问题先修记录、重新同步校验，再生成。
+## 视觉复核与正式交付
 
-每张表都在正常缩放下检查分组边界、阅读密度、合并区留白、横向滚动和筛选是否可用。自动验收覆盖列结构、排序、内容遗漏及可计算格式；不代替视觉和语义判断。报告分别写明数据校验、Excel 验收和人工抽查结果。
+先读 [Excel 模板与验收](../../references/excel_output.md)。实际查看 `asset-table.review.xlsx` 四张表，检查分组、合并、长文本截断、阅读密度与实际筛选；将已查看的本地 PNG 预览图片及哈希和具体结论填入 `review.json.delivery_review`。自动检查不替代实际看图和语义判断，不能用占位图伪造证据。
 
-## 5. 汇报和交付
+```bash
+python3 "$S/workflow.py" finalize "<工作目录>" --output "<剧本目录>/<剧名>-资产表.xlsx"
+```
 
-简要报告人物/场景/道具各有多少资产和状态、合并的异称、待确认的外观或时间连续性问题，以及错误、未确认警告和已确认警告的真实数量；有已确认警告时说明其内容和确认依据。
+只有此命令通过且 `status` 返回 `complete` 才能声明完成。它再次回查原始 DOCX、审查台账、确认警告和已保存工作簿，检查视觉证据及哈希后发布 Excel，生成工作目录内的 `acceptance.json`。修改已交付文件后验收失效。其他 Excel 后端必须消费同一展示计划并通过同一交付验收，见执行契约。
 
-正式交付仅 `assets.json` 和 `<剧名>-资产表.xlsx`；其他中间文件留在工作目录，不作为正式输出下传。不复述整张表。
+简报分别写资产与状态数量、数据校验、Excel 验收、实际语义/视觉复核结果，列出待确认问题以及错误、未确认和已确认警告的真实数量。不把有记录说成语义必然正确。正式交付仅两个文件，台账、预览、日志、备份与验收报告留在工作目录。
+
+## 不可绕过
+
+禁止修改原始人物行、删场次、伪造实体/时间线或变更规则和脚本以通过验收；禁止从旧状态列表反造出场或道具记录。旧项目必须回到原文补台账。不能因 token、阅读批次或中断跳过后续场次，未完成就报告具体剩余项。并行仅在获得授权后进行，已有授权不重复询问；分工及合并约束见 agent_workflow.md。单agent流程兼容；不能把自查伪称独立审核。
+
+
+## 插件入口
+
+本插件保留一级 JSON 兼容入口；对 DOCX/Markdown 使用本目录 `scripts/workflow.py` 的 `prepare → 逐场复核 → bind → export → check → visual-review → finalize` 流程。插件包内的 `scripts/` 与 `references/` 是运行时副本，不依赖用户机器上的同名 skill。
