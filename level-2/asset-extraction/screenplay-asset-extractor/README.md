@@ -1,10 +1,10 @@
 # 剧本资产表提取 · 二级插件
 
-组件 `screenplay-asset-extractor`，版本 **0.3.2**，属于开宝箱工作室剧本插件 **1.0.0**。本目录包含独立运行所需的 Skills、规则、Python Harness、脚本和依赖锁；使用时无需另装 Harness Creator。
+组件 `screenplay-asset-extractor`，版本 **0.3.1**，属于开宝箱工作室剧本插件 **1.0.0**。本目录包含独立运行所需的 Skills、规则、Python Harness、脚本和依赖锁；使用时无需另装 Harness Creator。
 
 ## 输入与功能
 
-公开能力为 `extract-asset-table`。输入支持标准剧本 DOCX、结构化 Markdown，以及兼容的一级「剧本标准化」`standardized_screenplay_v1` JSON；统一由插件内置 Python gate、workflow 和 postcheck 执行。统一由插件内置 Python gate、workflow 和 postcheck 执行。本插件与场记表提取并列，可直接读取同一份一级 JSON。
+公开能力为 `extract-asset-table`。输入支持标准剧本 DOCX、结构化 Markdown，以及兼容的一级「剧本标准化」`standardized_screenplay_v1` JSON；本插件与场记表提取并列，可直接读取同一份一级 JSON。
 
 - 提取人物、主要动物、群演组、场景与子场景、道具，以及需要单独制作的关键特效。
 - 根据剧本证据整理合法别名和持续状态变化，记录来源位置；一级生成内容保留 `origin=generated`。

@@ -1,7 +1,7 @@
 {
   "name": "screenplay-asset-extractor",
   "version": "0.3.2",
-  "description": "从标准剧本 DOCX、结构化 Markdown 或一级标准 JSON 提取经逐场审核并通过交付验收的剧本资产表",
+  "description": "从标准剧本 DOCX、结构化 Markdown 或一级标准 JSON 提取可追溯的剧本资产表",
   "author": {
     "name": "开宝箱工作室"
   },
@@ -9,10 +9,10 @@
   "requires_local_executor": true,
   "interface": {
     "displayName": "剧本资产表提取",
-    "shortDescription": "从 DOCX、Markdown 或标准 JSON 提取并验收资产表",
-    "longDescription": "内置 script-asset-extractor v0.3.2：支持 DOCX、Markdown 和 standardized_screenplay_v1 JSON；逐场审核、保存后验收、视觉证据和四表居中换行。",
+    "shortDescription": "从 DOCX/Markdown/标准 JSON 提取可追溯的资产表",
+    "longDescription": "内置 script-asset-extractor v0.3.2：支持标准 DOCX、结构化 Markdown 和一级 standardized_screenplay_v1 JSON；交付人物、场景、道具、场次总表四张 Excel 表，所有可见单元格居中并自动换行，保留逐场复核、来源证据和验收门槛。",
     "developerName": "开宝箱工作室",
     "category": "Productivity",
-    "defaultPrompt": "Use $extract-asset-table to select this plugin’s JSON or DOCX workflow and extract fully reviewed, evidence-backed assets."
+    "defaultPrompt": "Use $script-asset-extractor to extract evidence-backed assets from my screenplay DOCX, Markdown, or standardized_screenplay_v1 JSON."
   }
 }

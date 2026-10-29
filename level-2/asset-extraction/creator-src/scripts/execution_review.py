@@ -6,7 +6,7 @@ from pathlib import Path
 from source_candidates import candidates
 from candidate_links import validate_action_refs
 
-VERSION = '0.3.2'
+VERSION = '0.3.1-local'
 SCHEMA = 'asset_execution_review_v1'
 KINDS = ('characters', 'scenes', 'props')
 PLACEHOLDER = re.compile(r'^(?:已完成|完成|已检查|已审核|已审阅|已读|全部已读|已核对|无|暂无|无问题|通过|ok|done|待填写|待补充|未说明)[。.!！\s]*$', re.I)
@@ -286,7 +286,7 @@ def source_errors(data):
         current = parse(path)
         errors = quality_errors(current)
         if digest(current) != digest(data):
-            # 0.3.2 added source.format; accept old 0.3.2 workspaces when
+            # 0.3.1-local added source.format; accept old 0.3.1 workspaces when
             # that is the only difference, while keeping all screenplay content strict.
             legacy = json.loads(json.dumps(data, ensure_ascii=False))
             legacy_source = legacy.get('source', {})

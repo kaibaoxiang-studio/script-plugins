@@ -1,23 +1,24 @@
 #!/usr/bin/env python3
-"""Deterministic pipeline gates: initialize or postcheck an asset workflow."""
+"""Deterministic prepare/postcheck gate for the packaged asset workflow."""
 import argparse, json, subprocess, sys
 from pathlib import Path
 
 def main():
-    ap=argparse.ArgumentParser(); ap.add_argument('--input',required=True); ap.add_argument('--output',required=True); ap.add_argument('--phase',choices=['prepare','postcheck'],required=True)
-    a=ap.parse_args(); task=json.loads(Path(a.input).read_text(encoding='utf-8')); inputs=task.get('inputs',{}); phase=inputs.get('phase',a.phase); work=Path(task['artifact_dir']); work.mkdir(parents=True,exist_ok=True)
-    root=Path(__file__).resolve().parents[1]; wf=root/'scripts'/'workflow.py'; source=Path(inputs['source_path']).expanduser().resolve()
+    ap=argparse.ArgumentParser()
+    ap.add_argument('phase', choices=('prepare','postcheck'))
+    ap.add_argument('source_path')
+    ap.add_argument('artifact_dir', type=Path)
+    args=ap.parse_args()
+    root=Path(__file__).resolve().parents[1]
+    source=Path(args.source_path).expanduser().resolve()
+    work=args.artifact_dir.resolve(); work.mkdir(parents=True,exist_ok=True)
     if not source.is_file(): raise SystemExit(f'源剧本不存在：{source}')
-    if a.phase=='prepare':
-        if (work/'progress.json').exists() or (work/'scenes.json').exists():
-            result={'status':'existing','artifact_dir':'.'}
-        else:
-            subprocess.run([sys.executable,str(wf),'prepare',str(source),str(work)],check=True)
-            result={'status':'prepared','artifact_dir':'.'}
-    else:
-        verifier=root/'scripts'/'verify_delivery.py'
-        if not (work/'acceptance.json').is_file(): raise SystemExit('尚未完成 finalize：缺少 acceptance.json')
-        subprocess.run([sys.executable,str(verifier),str(work)],check=True)
-        result={'status':'postcheck_passed','artifact_dir':'.','artifacts':['assets.json','screenplay-asset-table.xlsx']}
-    Path(a.output).write_text(json.dumps(result,ensure_ascii=False),encoding='utf-8')
+    if args.phase=='prepare':
+        if (work/'scenes.json').exists() or (work/'progress.json').exists():
+            raise SystemExit('artifact_dir 已存在工作状态；请使用 status 恢复，不得覆盖旧执行')
+        subprocess.run([sys.executable,str(root/'scripts/workflow.py'),'prepare',str(source),str(work)],check=True)
+        print(json.dumps({'status':'prepared','artifact_dir':str(work)},ensure_ascii=False)); return
+    verifier=root/'scripts/verify_delivery.py'
+    subprocess.run([sys.executable,str(verifier),str(work)],check=True)
+    print(json.dumps({'status':'postcheck_passed','artifact_dir':str(work),'artifacts':['assets.json','screenplay-asset-table.xlsx']},ensure_ascii=False))
 if __name__=='__main__': main()
