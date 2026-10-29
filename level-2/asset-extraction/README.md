@@ -29,4 +29,4 @@ DOCX 和 Markdown 入口使用插件内置的 `script-asset-extractor` skill，�
 
 本地 skill 的 194 项回归测试通过；插件静态校验、独立解压校验和 JSON → Excel 验收均通过。视觉复核仍需在实际交付时查看四张表的 PNG 证据，自动检查不替代人工语义核定。
 
-固定门禁：正式执行前运行插件内置 `scripts/pipeline_gate.py prepare <source> <artifact_dir>`；完成 finalize 后运行 `scripts/pipeline_gate.py postcheck <source> <artifact_dir>`。该 gate 只允许当前 artifact_dir 的状态通过，不会调用电脑上的同名 Skill。
+固定门禁：正式执行前运行插件内置 `scripts/pipeline_gate.py prepare <source> <artifact_dir>`；Agent 完成语义判读和工作簿检查后运行 `scripts/pipeline_gate.py check <source> <artifact_dir>`；完成 finalize 后运行 `scripts/pipeline_gate.py postcheck <source> <artifact_dir>`。该 gate 只允许当前 artifact_dir 的状态通过，不会调用电脑上的同名 Skill。

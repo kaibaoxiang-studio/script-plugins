@@ -1,6 +1,6 @@
 {
   "files": {
-    ".codex-plugin/plugin.json": "2d6b1b8d78d8f2ff170f31f9fb1f04dcc3443c8672674cdcbdc2a77b369af7e9",
+    ".codex-plugin/plugin.json": "1e4128ec89b082d1bcbddf6a7bfa263c51e490ef52693ef5dac1d3ef4b66ab3f",
     "README.md": "261fc1bf88fea9267012485ed19b99cc3b49dc2c06e7e24cfb04f2bdf0dd0310",
     "RUNTIME.md": "c4f7c577c1a2f86b147c650bc2548f7886c93ee9008adc16aff1afd778076141",
     "THIRD_PARTY_NOTICES.md": "7e67e76771950d23370622c4a1f15b0f9537fad10402239a9b510208f13ed271",
@@ -10,7 +10,7 @@
     "harness.py": "3253fbad2671700513c29b5f81f1ef80db72cb6a69972e3891fa451225dc7443",
     "licenses/Bird-s-Nest-MIT.txt": "86c078753dbb275673a301fec0f1db5ade583db1f85ecc86042f04c6aeb5774c",
     "licenses/skill-creator-Apache-2.0.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
-    "plugin.json": "76db2b8b6c50c86bd81555b84085f39d2822c1782b8bd4eb36040e46cd0c2600",
+    "plugin.json": "b0dc54d2ada0bbe07c5fbcfefffaa4fb850d29bf02a8030b88786b569258decf",
     "references/agent_workflow.md": "7ab5524ac842bf18298ea7bab635a9a8534b8c82a7f1c4d5013ed15ef86166f2",
     "references/asset-rules.md": "5cf6bc01c02007189683d8b9d3e841a144796e90ee4f8ec50273f1be33d1bf6f",
     "references/asset_judgment.md": "24992e1f7ca523443a5609bf9ab912411a6a77d2302221be195ea231b3b62976",
@@ -74,7 +74,7 @@
     "scripts/warning_approvals.py": "72b57afbe117317f251ff7aca38787d49ce3e0c9db14d56ea6ff16b5650ac984",
     "scripts/warning_groups.py": "a46465ca960ea9e5ffcb94e4e3674d57d3f586989a208f350571d143b4a4e708",
     "scripts/workflow.py": "09e407a6aa2a8ba303e8ba2d74c655a78c94f8ec9d84a9b8de18e1d2f0636269",
-    "skills/extract-asset-table/SKILL.md": "54c5d8731598003b71da2949ef70fd61b7c480a48af54ada46abe59a43758a11",
+    "skills/extract-asset-table/SKILL.md": "2e641922821c5b134d99ab7ed72397739e3e2dafbe78438b81c85864f3b05704",
     "skills/extract-asset-table/agents/openai.yaml": "23a5e3933e6adfa2bced9b98731c25a01311096746477e12b675806888031a7e",
     "skills/extract-asset-table/references/agent_workflow.md": "7ab5524ac842bf18298ea7bab635a9a8534b8c82a7f1c4d5013ed15ef86166f2",
     "skills/extract-asset-table/references/asset-rules.md": "5cf6bc01c02007189683d8b9d3e841a144796e90ee4f8ec50273f1be33d1bf6f",
@@ -155,6 +155,8 @@
     "skills/script-asset-extractor/scripts/test_prop_identity.py": "f11360c195864a693ff537d95b09e7169386d28c048fd1c03b1a04b55aa1e963",
     "skills/script-asset-extractor/scripts/test_semantic_review.py": "7598305e9d3cd085354572aabde1cd575302e96a0d608a52e22b9af22d6c95b0",
     "skills/script-asset-extractor/scripts/warning_approvals.py": "72b57afbe117317f251ff7aca38787d49ce3e0c9db14d56ea6ff16b5650ac984",
-    "sources.lock.json": "93949396c30a4b409bafaaab750e76ac01f199338678a0da467862a4f7cc839b"
+    "sources.lock.json": "93949396c30a4b409bafaaab750e76ac01f199338678a0da467862a4f7cc839b",
+    "scripts/pipeline_gate.py": "f3f09ced66b130cee623f3923db81277943b30325bcdb994b9375b8d8532d4b8",
+    "skills/script-asset-extractor/agents/openai.yaml": "bdf560e6c3dc74de9263f330e8d08df9cbe7494ed32cad75cba308005b3ea741"
   }
 }

@@ -113,4 +113,4 @@ python3 "$S/workflow.py" finalize "<artifact_dir>" --output "<artifact_dir>/scre
 
 本插件保留一级 JSON 兼容入口；对 DOCX/Markdown 使用本目录 `scripts/workflow.py` 的 `prepare → 逐场复核 → bind → export → check → visual-review → finalize` 流程。插件包内的 `scripts/` 与 `references/` 是运行时副本，不依赖用户机器上的同名 skill。
 
-固定门禁：正式执行前运行插件内置 `scripts/pipeline_gate.py prepare <source> <artifact_dir>`；完成 finalize 后运行 `scripts/pipeline_gate.py postcheck <source> <artifact_dir>`。该 gate 只允许当前 artifact_dir 的状态通过，不会调用电脑上的同名 Skill。
+固定门禁：正式执行前运行插件内置 `scripts/pipeline_gate.py prepare <source> <artifact_dir>`；Agent 完成语义判读和工作簿检查后运行 `scripts/pipeline_gate.py check <source> <artifact_dir>`；完成 finalize 后运行 `scripts/pipeline_gate.py postcheck <source> <artifact_dir>`。该 gate 只允许当前 artifact_dir 的状态通过，不会调用电脑上的同名 Skill。
