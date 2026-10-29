@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 
 from asset_core import asset_payload, read_json, require, validate_work
+from execution_review import digest, asset_digest
 
 
 def verify_legacy(directory: Path, expected_counts: dict | None):
@@ -21,6 +22,10 @@ def verify_legacy(directory: Path, expected_counts: dict | None):
     return {"verified": True, "mode": "standardized_screenplay_v1", "counts": counts}
 
 
+def sha256_file(path: Path) -> str:
+    import hashlib
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
 def verify_workflow(directory: Path, expected_counts: dict | None):
     required = ("scenes.json", "assets.json", "review.json", "acceptance.json", "screenplay-asset-table.xlsx")
     for name in required:
@@ -35,6 +40,31 @@ def verify_workflow(directory: Path, expected_counts: dict | None):
     require(acceptance.get("checks", {}).get("visual") == "evidence_recorded", "缺少视觉复核证据")
     result = read_json(directory / "assets.json")
     source = read_json(directory / "scenes.json")
+    # 保存后重新计算快照，防止旧验收文件或其他工作目录的产物冒充当前交付。
+    expected_source = acceptance.get("source_sha256")
+    expected_assets = acceptance.get("assets_sha256")
+    require(expected_source == digest(source), "acceptance.source_sha256 与当前 scenes.json 不一致")
+    require(expected_assets == asset_digest(result), "acceptance.assets_sha256 与当前 assets.json 不一致")
+    output = acceptance.get("output")
+    require(isinstance(output, str) and output, "acceptance.output 缺失")
+    output_path = Path(output)
+    if not output_path.is_absolute():
+        output_path = directory / output_path
+    require(output_path.resolve().parent == directory.resolve(), "acceptance.output 必须位于当前 artifact_dir")
+    require(output_path.resolve() == (directory / "screenplay-asset-table.xlsx").resolve(), "acceptance.output 不是当前交付工作簿")
+    require(acceptance.get("workbook_sha256") == sha256_file(directory / "screenplay-asset-table.xlsx"), "工作簿哈希与 acceptance 不一致")
+    require(acceptance.get("assets_file_sha256") == sha256_file(directory / "assets.json"), "assets.json 哈希与 acceptance 不一致")
+    require(acceptance.get("review_file_sha256") == sha256_file(directory / "review.json"), "review.json 哈希与 acceptance 不一致")
+    visual_rows = (read_json(directory / "review.json").get("delivery_review") or {}).get("visual", [])
+    require(isinstance(visual_rows, list) and visual_rows, "review.json 缺少视觉证据列表")
+    for row in visual_rows:
+        evidence = row.get("evidence_file") if isinstance(row, dict) else None
+        digest = row.get("evidence_sha256") if isinstance(row, dict) else None
+        require(isinstance(evidence, str) and evidence, "视觉证据路径缺失")
+        evidence_path = Path(evidence)
+        if not evidence_path.is_absolute(): evidence_path = directory / evidence_path
+        require(evidence_path.resolve().is_file() and evidence_path.resolve().is_relative_to(directory.resolve()), "视觉证据文件不在当前 artifact_dir")
+        require(digest == sha256_file(evidence_path), "视觉证据哈希与 review.json 不一致")
     scene_count = len(source.get("scenes", [])) or sum(len(ep.get("scenes", [])) for ep in source.get("episodes", []))
     findings = acceptance.get("confirmed_warning_details", [])
     counts = {"characters": len(result.get("characters", [])), "locations": len(result.get("scenes", [])),

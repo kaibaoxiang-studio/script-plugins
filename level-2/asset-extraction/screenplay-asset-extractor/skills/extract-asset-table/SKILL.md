@@ -1,12 +1,12 @@
 ---
 name: extract-asset-table
 metadata:
-  version: "0.3.1-local"
+  version: "0.3.2"
 description: 从标准化剧本 docx 提取人物、场景、道具及外观状态，通过逐场审查、原文候选复核和保存后验收交付 Excel 资产表。用户提到剧本资产表、拆资产、提取人物场景道具或制作资产清单时使用。
 ---
 # 剧本资产表提取
 
-插件版本 `0.3.1`，基于本地 v0.1.1 优化；不使用插件外部或个人目录中的同名 Skill。输入标准 DOCX、结构化 Markdown 或 standardized_screenplay_v1 JSON，正式交付 `assets.json` 与 `<剧名>-资产表.xlsx`，保持人物、场景、道具、场次总表四张表及原展示模板。正式模板四张表所有单元格统一水平、垂直居中并自动换行。
+插件版本 `0.3.2`，基于本地 v0.1.1 优化；不使用插件外部或个人目录中的同名 Skill。输入标准 DOCX、结构化 Markdown 或 standardized_screenplay_v1 JSON，正式交付 `assets.json` 与 `<剧名>-资产表.xlsx`，保持人物、场景、道具、场次总表四张表及原展示模板。正式模板四张表所有单元格统一水平、垂直居中并自动换行。
 
 `$S` 指本 SKILL.md 所在目录下的 `scripts/`，不能使用当前artifact_dir代替。依赖 `python-docx==1.1.2`、`openpyxl==3.1.5`；PNG 证据校验仅使用标准库；所有脚本使用同一 Python 解释器。
 

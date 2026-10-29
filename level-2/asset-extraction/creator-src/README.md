@@ -1,7 +1,5 @@
-# 剧本资产表提取插件
+# 剧本资产表提取插件维护源码
 
-使用 Harness Creator 生成独立 `screenplay-asset-extractor` 插件，入口 `extract-asset-table`。输入一级标准剧本 JSON，输出资产 JSON、四张核心工作表组成的 XLSX，以及独立疑点 JSON/Markdown。关键特效出现时增加“特效”工作表。插件不生成图像或声音。
+本目录是 `screenplay-asset-extractor` v0.3.2 的唯一构建源。插件支持标准 DOCX、结构化 Markdown 和 `standardized_screenplay_v1` JSON。DOCX/Markdown 使用插件内置 `scripts/workflow.py` 完成 `prepare → 逐场复核 → bind → export → check → visual-review → finalize`；JSON 保留兼容入口。
 
-源码分工：`scripts/asset_core.py` 完成一级 JSON 检查、保守底稿、来源与资产引用校验、报告；`scripts/asset_xlsx.py` 从同一资产 JSON 渲染 Excel。Agent 按 `references/asset-rules.md` 作有依据的身份、状态与道具判断。旧 Skill 目录保留作对照，不是插件依赖。
-
-构建：用 Python 3.12+ 运行 `build_blueprint.py`，再以 Harness Creator 的 `harness.py build --spec blueprint.json --output ../screenplay-asset-extractor --confirmed` 构建。构建后锁定 `openpyxl` 与 `et_xmlfile`，执行 `validate`、实际 `run-capability` 和 `package`。验收记录见 `VALIDATION.md`。
+`build_blueprint.py` 生成 `blueprint.json`，再由 Harness Creator 构建插件。构建后必须运行静态校验、独立解压校验、JSON→Excel 验收，并确认包内不存在 `__pycache__` 或 `.pyc`。

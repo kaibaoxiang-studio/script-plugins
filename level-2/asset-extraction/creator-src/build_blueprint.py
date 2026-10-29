@@ -52,7 +52,7 @@ def main() -> None:
             "required_artifacts": ["assets.json", "screenplay-asset-table.xlsx"]}],
         "files": {str(path.relative_to(ROOT)): path.read_text(encoding="utf-8")
                   for folder in (ROOT / "scripts", ROOT / "references")
-                  for path in folder.rglob("*") if path.is_file() and path.suffix in {".py", ".md"}},
+                  for path in folder.rglob("*") if path.is_file() and path.name != "bootstrap.py" and path.suffix in {".py", ".md"}},
         "workflows": [],
         "sources": [
             {"origin": "kaibaoxiang-studio/script-plugins:script-asset-extractor",
@@ -71,7 +71,7 @@ def main() -> None:
     snapshot = ROOT.parent / "screenplay-asset-extractor"
     for folder in (snapshot / "skills/extract-asset-table", snapshot / "skills/script-asset-extractor", snapshot / "skills/screenplay-asset-extractor"):
         for path in folder.rglob("*"):
-            if path.is_file() and path.suffix in {".py", ".md", ".yaml"} and "__pycache__" not in path.parts:
+            if path.is_file() and path.name != 'bootstrap.py' and path.suffix in {".py", ".md", ".yaml"} and "__pycache__" not in path.parts:
                 spec["files"][path.relative_to(snapshot).as_posix()] = path.read_text(encoding="utf-8")
     target = ROOT / "blueprint.json"
     target.write_text(json.dumps(spec, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

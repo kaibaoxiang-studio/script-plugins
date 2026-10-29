@@ -15,11 +15,11 @@ DEPENDENCIES = (
 )
 INTERFACE = {
     "displayName": "剧本资产表提取",
-    "shortDescription": "从标准剧本提取可追溯的资产表",
-    "longDescription": "JSON 和 DOCX 入口均需逐场语义审核后导出，支持人物状态、道具身份与可追溯 Excel；DOCX Skill 0.1.2。",
+    "shortDescription": "从 DOCX、Markdown 或标准 JSON 提取并验收资产表",
+    "longDescription": "内置 script-asset-extractor v0.3.2：支持 DOCX、Markdown 和 standardized_screenplay_v1 JSON；逐场审核、保存后验收、视觉证据和四表居中换行。",
     "developerName": "开宝箱工作室",
     "category": "Productivity",
-    "defaultPrompt": "Use $screenplay-asset-extractor to select this plugin’s JSON or DOCX workflow and extract fully reviewed, evidence-backed assets.",
+    "defaultPrompt": "Use $extract-asset-table to select this plugin’s JSON or DOCX workflow and extract fully reviewed, evidence-backed assets.",
 }
 NOTICES = """# 第三方来源
 
