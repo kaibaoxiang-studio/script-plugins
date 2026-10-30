@@ -24,7 +24,7 @@ def main():
                           'command':[sys.executable,str(Path(__file__).resolve()),'--install']})); return
     if not executable.exists(): venv.EnvBuilder(with_pip=True).create(target)
     subprocess.run(command,check=True)
-    subprocess.run([str(executable),'-c','import yaml,jsonschema'],check=True)
+    subprocess.run([str(executable),'-c','import yaml,jsonschema,docx,openpyxl,lxml'],check=True)
     print(json.dumps({'status':'ready','python':str(executable)}))
 
 if __name__=='__main__': main()

@@ -2,7 +2,7 @@
   "files": {
     ".codex-plugin/plugin.json": "82d66e77b1c4789ae60b33d2a8414cca86120943e56ee92073ba1ec89cf37a10",
     "README.md": "b06c52489b8e839cf732285896ffcaa79ce8b3eb4d1283b2736814b3358bbeed",
-    "RUNTIME.md": "c4f7c577c1a2f86b147c650bc2548f7886c93ee9008adc16aff1afd778076141",
+    "RUNTIME.md": "5e7d4d8a9b738fc6450b8229b6ab5a9452c99d74cd1944315a3caf742d1ba11a",
     "THIRD_PARTY_NOTICES.md": "7e67e76771950d23370622c4a1f15b0f9537fad10402239a9b510208f13ed271",
     "VALIDATION.md": "762271d925c0410a4b934745d97aa8f01002f964528ed51f1601ed914724e06d",
     "capabilities.json": "86f8da0534d4fe597dadc2595f6268aed3fc175aa414b4e22e53aed0b2d01dd0",
@@ -41,7 +41,7 @@
     "scripts/asset_validation.py": "347df66308de61e338b80f9824beb3f41b7d4c49576b64369999c233766b8ae4",
     "scripts/asset_xlsx.py": "c278d6249bbad1f323be5929d349ed10d46716cd7128e0fea446e1cd4c4bd0ac",
     "scripts/audit_state.py": "85311d3742fcf1273a804b075cc676b6ff0ea288657a831c8bdf8c990c7ac2f9",
-    "scripts/bootstrap.py": "77c96b30af3e580a071979c3f774f17fd3c56564193393e060327654e3b25aa7",
+    "scripts/bootstrap.py": "83a1609aa484a78b1b962fc3739767b219dc6c03a75e437722fef933b9b26328",
     "scripts/build_xlsx.py": "a68d1fbb6961638344b0ea013c44cefa7f8013e3283574200e69d4e13877faf8",
     "scripts/candidate_links.py": "f38f877319d1064d3d15ad2147fb313e32d4fff662c11d050a1d2bde004391b1",
     "scripts/change_log.py": "007011b6ed7713f18ae15f3f9e1424b4f06c722cd6466a7d17a1acfa668278a1",
@@ -74,7 +74,7 @@
     "scripts/warning_approvals.py": "72b57afbe117317f251ff7aca38787d49ce3e0c9db14d56ea6ff16b5650ac984",
     "scripts/warning_groups.py": "a46465ca960ea9e5ffcb94e4e3674d57d3f586989a208f350571d143b4a4e708",
     "scripts/workflow.py": "09e407a6aa2a8ba303e8ba2d74c655a78c94f8ec9d84a9b8de18e1d2f0636269",
-    "skills/extract-asset-table/SKILL.md": "9c58b22a44a4b83d162b6a45b1cb37f43fd7142a69b1d0e92bcfab2a0bceac49",
+    "skills/extract-asset-table/SKILL.md": "413de0db99347d0e52f7918f4a807d2f8fc2749dd1a8b59aba68ed1c4f7f56ac",
     "skills/extract-asset-table/agents/openai.yaml": "453c2a4511f0b12cbf4ce927702c24de2f2f7efd824b8b15a412d44617fc8a7a",
     "skills/extract-asset-table/references/agent_workflow.md": "195ec36d1bb6e76fb522b15ee1d65b973bd853778d5f29f2a427088d526cc009",
     "skills/extract-asset-table/references/asset-rules.md": "5cf6bc01c02007189683d8b9d3e841a144796e90ee4f8ec50273f1be33d1bf6f",
@@ -129,7 +129,7 @@
     "skills/extract-asset-table/scripts/workflow.py": "09e407a6aa2a8ba303e8ba2d74c655a78c94f8ec9d84a9b8de18e1d2f0636269",
     "skills/screenplay-asset-extractor/SKILL.md": "544880f7ef80af89a85696b174b0910f673cb93d72ea24be751ef25d311f4613",
     "skills/screenplay-asset-extractor/agents/openai.yaml": "453c2a4511f0b12cbf4ce927702c24de2f2f7efd824b8b15a412d44617fc8a7a",
-    "skills/script-asset-extractor/SKILL.md": "024ff4fad78afe1bd85ed8706b1c551147fe2353f095f67fe64b5dc6d1522cab",
+    "skills/script-asset-extractor/SKILL.md": "56bbbdf199ddb0e5e2a93812ca61803c88c78018ec567b3de743292bdac37ea6",
     "skills/script-asset-extractor/references/asset_schema.md": "ecb4f34615ad69ce87aab40de4244466a903f44fe3070e980c1282a5a8267103",
     "skills/script-asset-extractor/references/character_states.md": "c5d6d67a42d3e7e8a75a6bc2fadb2c56ff19fe9a120064dce228f9fe7e1a8342",
     "skills/script-asset-extractor/references/excel_output.md": "efcdd1c95d1d29c241787f78d0fb60ea4819605ac68ad9db7062b39acde42237",
@@ -156,7 +156,9 @@
     "skills/script-asset-extractor/scripts/test_semantic_review.py": "7598305e9d3cd085354572aabde1cd575302e96a0d608a52e22b9af22d6c95b0",
     "skills/script-asset-extractor/scripts/warning_approvals.py": "72b57afbe117317f251ff7aca38787d49ce3e0c9db14d56ea6ff16b5650ac984",
     "sources.lock.json": "93949396c30a4b409bafaaab750e76ac01f199338678a0da467862a4f7cc839b",
-    "scripts/pipeline_gate.py": "f3f09ced66b130cee623f3923db81277943b30325bcdb994b9375b8d8532d4b8",
-    "skills/script-asset-extractor/agents/openai.yaml": "bdf560e6c3dc74de9263f330e8d08df9cbe7494ed32cad75cba308005b3ea741"
+    "scripts/pipeline_gate.py": "69aa1d135a02ec022eb2b07408b47cbf2f91b7c757c605ff7eeedaeb508c1df7",
+    "skills/script-asset-extractor/agents/openai.yaml": "bdf560e6c3dc74de9263f330e8d08df9cbe7494ed32cad75cba308005b3ea741",
+    "scripts/env_diagnostics.py": "39431d53c0217311da94da458510f2761bbac6ad351c7d27f26578662dec70b4",
+    "scripts/launch.py": "bb5d0445e6e15863a29b7e711df7bdd0cc05f3fdc8ad4d01311456915e96432d"
   }
 }

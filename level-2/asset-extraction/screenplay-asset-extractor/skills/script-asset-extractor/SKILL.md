@@ -17,13 +17,13 @@ description: 从标准化剧本 docx 提取人物、场景、道具及外观状�
 首次运行，选择剧本目录下新的 `<剧名>_资产提取/`：
 
 ```bash
-python3 "$S/workflow.py" prepare "<剧本.docx|剧本.md>" "<工作目录>"
+python3 "$S/launch.py" "$S/workflow.py" prepare "<剧本.docx|剧本.md>" "<工作目录>"
 ```
 
 Markdown 输入可先运行：
 
 ```bash
-python3 "$S/workflow.py" diagnose-markdown "<剧本.md>"
+python3 "$S/launch.py" "$S/workflow.py" diagnose-markdown "<剧本.md>"
 ```
 
 该命令只生成解析诊断，不建立资产判断。
@@ -33,7 +33,7 @@ python3 "$S/workflow.py" diagnose-markdown "<剧本.md>"
 恢复已有工作时先运行：
 
 ```bash
-python3 "$S/workflow.py" status "<工作目录>"
+python3 "$S/launch.py" "$S/workflow.py" status "<工作目录>"
 ```
 
 依据实际缺项继续；`progress.json` 是提示，不是完成证明。原始 DOCX 变化后用新目录重新解析，回查迁移，不能只更新哈希。
@@ -49,10 +49,10 @@ python3 "$S/workflow.py" status "<工作目录>"
 每批约 5 集，阅读全部人物行与动作/对白上下文，逐场填写 `review.json`。每个原文行记录实际结论，人物/场景/道具各类记录本场取舍；没有某类资产也需本场理由。不能先形成清单，再批量反写“已完成”。
 
 ```bash
-python3 "$S/show_episodes.py" "<工作目录>/scenes.json" 1 5
-python3 "$S/show_character.py" "<工作目录>/scenes.json" "<人物名>" "<别名>"
-python3 "$S/show_character.py" "<工作目录>/scenes.json" "<人物名>" --changes
-python3 "$S/show_prop.py" "<工作目录>/scenes.json" "<工作目录>/assets.json" --related
+python3 "$S/launch.py" "$S/show_episodes.py" "<工作目录>/scenes.json" 1 5
+python3 "$S/launch.py" "$S/show_character.py" "<工作目录>/scenes.json" "<人物名>" "<别名>"
+python3 "$S/launch.py" "$S/show_character.py" "<工作目录>/scenes.json" "<人物名>" --changes
+python3 "$S/launch.py" "$S/show_prop.py" "<工作目录>/scenes.json" "<工作目录>/assets.json" --related
 ```
 
 建立三类数组的 `assets.json`。每个人物读取全剧全部候选场次；有台词不归群演，名称命中、对白提及、VO/OS 不自动证明出镜。人物先写逐场 `appearances`；状态场次和展示引文只能从记录派生。同场变化按阶段，分身按有依据的实体；故事时间边界重新判读，未知外观写未说明。
@@ -64,20 +64,20 @@ python3 "$S/show_prop.py" "<工作目录>/scenes.json" "<工作目录>/assets.js
 ## 同步、校验、生成
 
 ```bash
-python3 "$S/build_xlsx.py" "<工作目录>/scenes.json" "<工作目录>/assets.json" --sync-character-scenes
-python3 "$S/build_xlsx.py" "<工作目录>/scenes.json" "<工作目录>/assets.json" --sync-prop-scenes
-python3 "$S/workflow.py" bind "<工作目录>"
-python3 "$S/workflow.py" export "<工作目录>"
-python3 "$S/workflow.py" check "<工作目录>"
-python3 "$S/workflow.py" visual-review "<工作目录>"
-python3 "$S/workflow.py" preflight "<工作目录>"
-python3 "$S/workflow.py" warning-groups "<工作目录>"
-python3 "$S/workflow.py" warning-draft "<工作目录>"
-python3 "$S/workflow.py" compress-advice "<工作目录>"
-python3 "$S/workflow.py" impact "<工作目录>"
-python3 "$S/workflow.py" semantic-audit "<工作目录>"
-python3 "$S/workflow.py" visual-regression "<工作目录>"
-python3 "$S/workflow.py" compare-sources "<Markdown或DOCX>" "<Markdown或DOCX>"
+python3 "$S/launch.py" "$S/build_xlsx.py" "<工作目录>/scenes.json" "<工作目录>/assets.json" --sync-character-scenes
+python3 "$S/launch.py" "$S/build_xlsx.py" "<工作目录>/scenes.json" "<工作目录>/assets.json" --sync-prop-scenes
+python3 "$S/launch.py" "$S/workflow.py" bind "<工作目录>"
+python3 "$S/launch.py" "$S/workflow.py" export "<工作目录>"
+python3 "$S/launch.py" "$S/workflow.py" check "<工作目录>"
+python3 "$S/launch.py" "$S/workflow.py" visual-review "<工作目录>"
+python3 "$S/launch.py" "$S/workflow.py" preflight "<工作目录>"
+python3 "$S/launch.py" "$S/workflow.py" warning-groups "<工作目录>"
+python3 "$S/launch.py" "$S/workflow.py" warning-draft "<工作目录>"
+python3 "$S/launch.py" "$S/workflow.py" compress-advice "<工作目录>"
+python3 "$S/launch.py" "$S/workflow.py" impact "<工作目录>"
+python3 "$S/launch.py" "$S/workflow.py" semantic-audit "<工作目录>"
+python3 "$S/launch.py" "$S/workflow.py" visual-regression "<工作目录>"
+python3 "$S/launch.py" "$S/workflow.py" compare-sources "<Markdown或DOCX>" "<Markdown或DOCX>"
 ```
 
 `check` 是统一的非视觉验收入口，会汇总数据、独立审核、工作簿和视觉证据门槛；返回非零状态时不能 finalize。
@@ -97,7 +97,7 @@ python3 "$S/workflow.py" compare-sources "<Markdown或DOCX>" "<Markdown或DOCX>"
 先读 [Excel 模板与验收](../../references/excel_output.md)。实际查看 `asset-table.review.xlsx` 四张表，检查分组、合并、长文本截断、阅读密度与实际筛选；将已查看的本地 PNG 预览图片及哈希和具体结论填入 `review.json.delivery_review`。自动检查不替代实际看图和语义判断，不能用占位图伪造证据。
 
 ```bash
-python3 "$S/workflow.py" finalize "<工作目录>" --output "<剧本目录>/<剧名>-资产表.xlsx"
+python3 "$S/launch.py" "$S/workflow.py" finalize "<工作目录>" --output "<剧本目录>/<剧名>-资产表.xlsx"
 ```
 
 只有此命令通过且 `status` 返回 `complete` 才能声明完成。它再次回查原始 DOCX、审查台账、确认警告和已保存工作簿，检查视觉证据及哈希后发布 Excel，生成工作目录内的 `acceptance.json`。修改已交付文件后验收失效。其他 Excel 后端必须消费同一展示计划并通过同一交付验收，见执行契约。
