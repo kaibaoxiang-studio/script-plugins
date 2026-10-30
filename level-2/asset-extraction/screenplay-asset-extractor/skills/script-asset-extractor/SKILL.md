@@ -10,6 +10,26 @@ description: 从标准化剧本 docx 提取人物、场景、道具及外观状�
 
 `$S` 指本 SKILL.md 所在目录下的 `scripts/`，不能使用当前工作目录代替。依赖 `python-docx==1.1.2`、`openpyxl==3.1.5`；PNG 证据校验仅使用标准库；所有脚本使用同一 Python 解释器。
 
+
+## 运行环境门禁（不可绕过）
+
+在执行任何解析、提取、导出或验收命令前，必须先确认插件运行时：
+
+```bash
+python3 "$S/bootstrap.py" --install
+python3 "$S/launch.py" "$S/env_diagnostics.py"
+```
+
+所有诊断必须同时满足：Python 3.12+，并能导入 `jsonschema`、`yaml`、`docx`、`openpyxl`、`lxml`。如果诊断失败，必须停止并报告缺少的解释器或依赖，不能继续生成部分资产表。
+
+所有插件脚本必须通过 `$S/launch.py` 启动，例如：
+
+```bash
+python3 "$S/launch.py" "$S/workflow.py" prepare "<剧本.docx|剧本.md>" "<artifact_dir>"
+```
+
+禁止直接调用系统 `python`、`python3` 或当前工作目录中的同名脚本运行插件流程；禁止依赖 `PATH` 中的 Python 别名、用户目录中的同名 Skill 或其他项目的虚拟环境。`$S` 必须解析为本插件包内 `scripts/` 的绝对路径。
+
 ## 启动与恢复
 
 先读 [执行台账与完成标准](../../references/execution_contract.md)。开始资产判断前读 [资产结构](../../references/asset_schema.md) 与 [提取和纠错规则](../../references/asset_judgment.md)。人物还须读 [状态规则](../../references/character_states.md)，道具还须读 [实物身份规则](../../references/prop_identity.md)。

@@ -73,3 +73,6 @@ runtime_python="/absolute/path/returned/python"
 结构和数量通过不能代替人工语义核定。三份长稿未逐集完成人工资产核定；身份、场景归并、道具与特效的制作必要性及遗漏仍需结合独立报告审阅。范围见 [VALIDATION.md](VALIDATION.md) 和[项目验证记录](https://github.com/kaibaoxiang-studio/script-plugins/blob/v1.0.0/docs/validation-v1.0.md)。
 
 蓝图生成器和测试位于仓库的 [creator-src](https://github.com/kaibaoxiang-studio/script-plugins/tree/v1.0.0/level-2/asset-extraction/creator-src)，不属于独立包运行依赖。本 README 由其中的 `PLUGIN-README.md` 维护并写入构建蓝图。来源与许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+
+
+首次运行必须先执行 `python3 scripts/bootstrap.py --install` 和 `python3 scripts/launch.py scripts/env_diagnostics.py`；诊断失败时不得继续生成资产表。
