@@ -14,7 +14,7 @@ def main():
     cached = Path.home() / ".cache" / "harness-runtime" / key
     candidates = [cached / version / "bin" / "python"]
     candidates.extend(sorted(cached.glob("py3*/bin/python"), reverse=True))
-    if sys.version_info >= (3, 12) and importlib.util.find_spec("openpyxl"):
+    if sys.version_info >= (3, 12) and all(importlib.util.find_spec(name) for name in ("yaml", "jsonschema", "docx", "openpyxl", "lxml")):
         executable = Path(sys.executable)
     else:
         executable = next((item for item in candidates if item.is_file()), None)

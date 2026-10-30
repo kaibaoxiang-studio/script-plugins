@@ -11,11 +11,11 @@
 四并发槽位先运行“主agent+三类提取”，提取结束后再启动审核；审核结束后再分配返修。禁止并发写最终assets.json/review.json。仅主agent调用submit/merge/submit-audit/bind。worker写独立draft文件。
 
 ```bash
-python3 "$S/workflow.py" prepare "<剧本.docx>" "<工作目录>"
-python3 "$S/workflow.py" team-init "<工作目录>"
-python3 "$S/workflow.py" fragment-template "<工作目录>" --kind characters --output "<工作目录>/drafts/characters.json"
-python3 "$S/workflow.py" fragment-template "<工作目录>" --kind scenes --output "<工作目录>/drafts/scenes.json"
-python3 "$S/workflow.py" fragment-template "<工作目录>" --kind props --output "<工作目录>/drafts/props.json"
+python3 "$S/launch.py" "$S/workflow.py" prepare "<剧本.docx>" "<工作目录>"
+python3 "$S/launch.py" "$S/workflow.py" team-init "<工作目录>"
+python3 "$S/launch.py" "$S/workflow.py" fragment-template "<工作目录>" --kind characters --output "<工作目录>/drafts/characters.json"
+python3 "$S/launch.py" "$S/workflow.py" fragment-template "<工作目录>" --kind scenes --output "<工作目录>/drafts/scenes.json"
+python3 "$S/launch.py" "$S/workflow.py" fragment-template "<工作目录>" --kind props --output "<工作目录>/drafts/props.json"
 ```
 
 模板保留待审空字段，不是已审证明。每类片段为`asset_fragment_v1`，绑定解析数据的source_sha256、当前version、kind、scope（真实场次号）；包含assets（此类别业务数组）、line_reviews、category_reviews、candidate_reviews、character_reviews。人物负责visual/timeline候选，道具负责prop_*候选，场景不反写其他候选。原文/版本变化拒提交，不能仅刷新哈希继续使用旧判读。
@@ -27,9 +27,9 @@ worker任务必须给出：绝对原文/规则/草稿路径、类别和ID范围�
 每类line_reviews必须有scene_id、line、完整原文quote、具体conclusion，category_reviews每场一个具体取舍结论。asset_ids允许留空交由程序补可确定的关联：人物真实appearance覆盖的行、道具visible mention所在行、类别集合从已审业务记录派生。程序不补出镜、身份、状态、排除理由或“已读”。额外引用的未知/错类别/不在本场ID会拒。
 
 ```bash
-python3 "$S/workflow.py" candidate-groups "<工作目录>"
-python3 "$S/workflow.py" submit "<工作目录>" --fragment "<工作目录>/drafts/characters.json"
-python3 "$S/workflow.py" check-batch "<工作目录>" --kind characters --scene 1-1 --scene 1-2
+python3 "$S/launch.py" "$S/workflow.py" candidate-groups "<工作目录>"
+python3 "$S/launch.py" "$S/workflow.py" submit "<工作目录>" --fragment "<工作目录>/drafts/characters.json"
+python3 "$S/launch.py" "$S/workflow.py" check-batch "<工作目录>" --kind characters --scene 1-1 --scene 1-2
 ```
 
 candidate-groups将动作分句与其中物品词作为一个阅读组，保留原始候选全部ID及证据。多物件组仍须分别判断每个候选，不能整组借一个物件通过；未命中词表的内容靠逐行通读补全。
@@ -62,10 +62,10 @@ candidate-groups将动作分句与其中物品词作为一个阅读组，保留�
 ## 合并与独立审核门槛
 
 ```bash
-python3 "$S/workflow.py" submit "<工作目录>" --fragment "<工作目录>/drafts/scenes.json"
-python3 "$S/workflow.py" submit "<工作目录>" --fragment "<工作目录>/drafts/props.json"
-python3 "$S/workflow.py" merge "<工作目录>"
-python3 "$S/workflow.py" audit-template "<工作目录>" --output "<工作目录>/audit.pending.json"
+python3 "$S/launch.py" "$S/workflow.py" submit "<工作目录>" --fragment "<工作目录>/drafts/scenes.json"
+python3 "$S/launch.py" "$S/workflow.py" submit "<工作目录>" --fragment "<工作目录>/drafts/props.json"
+python3 "$S/launch.py" "$S/workflow.py" merge "<工作目录>"
+python3 "$S/launch.py" "$S/workflow.py" audit-template "<工作目录>" --output "<工作目录>/audit.pending.json"
 ```
 
 merge只有三类全场scope通过才生成最终assets/review，保留主agent未识别段落复核、旧审核记录及旧视觉记录供后续判断；不自动bind。未通过不覆盖，写入采用共享锁、输入指纹检查和失败回滚。team状态不能代替实际片段验证。模板报告为asset_independent_audit_v1，绑定source/asset/review哈希、audit_state_sha256（当前独立审核及问题状态）和version，reviewer_id填写实际审核者标识。
@@ -73,7 +73,7 @@ merge只有三类全场scope通过才生成最终assets/review，保留主agent�
 审核agent填写scene_reviews逐场结论及character_reviews按人物全剧边界结论。人物复核不按集割裂；场次结论须涉及原文出镜、状态、道具身份、候选排除与陈设。发现问题写issues，每项有issue_id、owner（characters/props/scenes/validator/coordinator）、真实scene_id/line、message、实际原文evidence_refs；人物问题必须填该人物asset_id。只在确实涉及其他类具体资产时填asset_id，不捏造。
 
 ```bash
-python3 "$S/workflow.py" submit-audit "<工作目录>" --report "<工作目录>/audit.pending.json"
+python3 "$S/launch.py" "$S/workflow.py" submit-audit "<工作目录>" --report "<工作目录>/audit.pending.json"
 ```
 
 审核报告有未解决问题或范围尚未覆盖时命令返回非零，但有效审核记录已保存，不需删掉重来。主agent读具体报告决定下一步。不能以exit code代替是否写入的判断。submit-audit不会批准业务弱警告。
@@ -85,9 +85,9 @@ issues退给责任方修改draft，再submit/merge。审核者用新audit-templa
 ## 错误路由与恢复
 
 ```bash
-python3 "$S/workflow.py" diagnose "<工作目录>"
-python3 "$S/workflow.py" record-run "<工作目录>" --kind props --state running --agent "实际agent标识"
-python3 "$S/workflow.py" record-run "<工作目录>" --kind props --state failed --error "实际429或其他错误原文"
+python3 "$S/launch.py" "$S/workflow.py" diagnose "<工作目录>"
+python3 "$S/launch.py" "$S/workflow.py" record-run "<工作目录>" --kind props --state running --agent "实际agent标识"
+python3 "$S/launch.py" "$S/workflow.py" record-run "<工作目录>" --kind props --state failed --error "实际429或其他错误原文"
 ```
 
 diagnose保存完整diagnostics.json，不截断到前40项，并提供code、owner、场次/行/资产位置及affected_scopes。分类是提示，无法确定责任时归coordinator；不要将所有候选错误都归校验器。真实候选位置规则冲突先给validator维护，不能逼提取agent伪造事实来通关。

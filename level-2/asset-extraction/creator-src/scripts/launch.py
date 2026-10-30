@@ -3,10 +3,12 @@
 import hashlib, importlib.util, os, sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-REQUIRED=('jsonschema','yaml','docx','openpyxl')
+REQUIRED=('jsonschema','yaml','docx','openpyxl','lxml')
 def ready(): return sys.version_info >= (3,12) and all(importlib.util.find_spec(x) for x in REQUIRED)
 def main():
-    if len(sys.argv)<2: raise SystemExit('用法：python3 scripts/launch.py <script.py> [参数]')
+    if len(sys.argv)<2 or sys.argv[1] in ('-h','--help'):
+        print('用法：python3 scripts/launch.py <script.py> [参数]')
+        return
     target=Path(sys.argv[1]).resolve()
     if not target.is_file(): raise SystemExit(f'脚本不存在：{target}')
     if ready() or target.name in ('bootstrap.py','launch.py'):
