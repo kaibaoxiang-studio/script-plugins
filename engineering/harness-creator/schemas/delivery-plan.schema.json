@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "DeliveryPlanV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "blueprint_sha256", "features"],
+  "properties": {
+    "schema_version": {"const": "DeliveryPlanV1"},
+    "blueprint_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "features": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "title", "goal", "capability_ids", "depends_on", "non_goals", "scenarios"],
+        "properties": {
+          "id": {"type": "string"},
+          "title": {"type": "string", "minLength": 1},
+          "goal": {"type": "string", "minLength": 1},
+          "capability_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+          "depends_on": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+          "non_goals": {"type": "array", "items": {"type": "string"}},
+          "scenarios": {
+            "type": "array", "minItems": 1,
+            "items": {
+              "type": "object", "additionalProperties": false,
+              "required": ["id", "given", "when", "then"],
+              "properties": {
+                "id": {"type": "string"},
+                "given": {"type": "string", "minLength": 1},
+                "when": {"type": "string", "minLength": 1},
+                "then": {"type": "string", "minLength": 1}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

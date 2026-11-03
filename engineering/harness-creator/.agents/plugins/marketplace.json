@@ -1,0 +1,20 @@
+{
+  "name": "harness-creator-local",
+  "interface": {
+    "displayName": "Harness Creator Local"
+  },
+  "plugins": [
+    {
+      "name": "harness-creator",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "FeatureEvidenceV1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "feature_id", "plan_sha256", "implementation", "validation"],
+  "properties": {
+    "schema_version": {"const": "FeatureEvidenceV1"},
+    "feature_id": {"type": "string"},
+    "plan_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "implementation": {"$ref": "#/$defs/implementation"},
+    "validation": {"$ref": "#/$defs/validation"}
+  },
+  "$defs": {
+    "check": {
+      "type": "object", "additionalProperties": false,
+      "required": ["scenario_id", "command", "exit_code", "log_path", "log_sha256"],
+      "properties": {
+        "status": {"enum": ["passed", "failed"]},
+        "scenario_id": {"type": "string"},
+        "command": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "exit_code": {"type": "integer"},
+        "log_path": {"type": "string"},
+        "log_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "artifact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string"},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "implementation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["session_id", "summary", "checks", "artifacts"],
+      "properties": {
+        "session_id": {"type": "string", "minLength": 1},
+        "summary": {"type": "string", "minLength": 1},
+        "checks": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/check"}},
+        "artifacts": {"type": "array", "items": {"$ref": "#/$defs/artifact"}}
+      }
+    },
+    "validation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["session_id", "verdict", "checks", "report", "plugin_fingerprint"],
+      "properties": {
+        "session_id": {"type": "string", "minLength": 1},
+        "verdict": {"enum": ["accept", "revise", "block"]},
+        "checks": {"type": "array", "items": {"$ref": "#/$defs/check"}},
+        "report": {"$ref": "#/$defs/artifact"},
+        "plugin_fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    }
+  }
+}

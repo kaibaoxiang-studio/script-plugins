@@ -1,6 +1,6 @@
 {
   "name": "harness-creator",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "通过对话创建、改造和维护可独立运行的 Codex 业务能力插件。",
   "author": {
     "name": "kaibaoxiang-studio"

@@ -1,12 +1,14 @@
-# 额外工程：Harness Creator
+# 额外工程：Harness Creator v0.2.0
 
-Harness Creator 是通用业务能力插件建设与维护工程，展示名为 **Harness Creator**，组件版本 **0.1.0**。它提供需求对齐、能力架构、来源整合、知识维护、Skill 编写、构建和验证能力。
+通过业务需求创建、改造和维护独立Codex插件。它不是剧本的一级或二级节点，三个业务插件使用时无需安装Creator。
 
-它不属于剧本的一级或二级业务节点。三个业务插件可独立使用；团队需要创建新能力或维护构建时再选装 Creator。
+本次以**候选版**发布：增加功能级交付计划、真实检查日志、验收证据与最终文件指纹核对，并修复实际Agent的Skill加载超时问题。
 
-- [完整工程](harness-creator/README.md)
-- [验证状态](harness-creator/docs/validation.md)
-- [统一安装](../docs/installation.md)
+- [能力说明、使用入口与三类流程图](harness-creator/README.md)
+- [候选安装包](https://github.com/kaibaoxiang-studio/script-plugins/releases/tag/harness-creator-v0.2.0)
+- [安装说明](harness-creator/docs/install.md)
+- [发布复核](harness-creator/docs/publication-v0.2.md)
+- [原候选真实调用记录](harness-creator/docs/validation-v0.2.md)
 - [来源与许可](harness-creator/THIRD_PARTY_NOTICES.md)
 
-本次 24 项确定性测试、结构检查和运行环境检查通过。两个二级插件是具体建设实例；通用真实模型创建、任意外部框架迁移和自升级安装仍需按各任务单独验收。
+本次重新执行29项确定性测试及6能力／7 Skills结构检查。真实中文路径与小型插件调用为历史验证；未完成真实剧本整链、性能对照、原生Windows端到端或候选自身独立验收。动态DAG、租约接管与集群高可用不在本版实现范围。

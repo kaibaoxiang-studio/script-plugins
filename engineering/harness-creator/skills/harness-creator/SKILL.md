@@ -16,6 +16,7 @@ description: "通过 Grill Me 创建、改造、整合和升级可独立运行�
 ## 按任务加载
 
 - 创建：读取 [创建与蓝图](references/create.md)、[统一标准](references/standard.md)。使用 `harness-architect` 明确能力，再用 `harness-skill-author` 编写实际业务规则与所需代码。
+- 功能级建设与交付：读取 [功能级规格与验收证据](references/delivery.md)。完成蓝图后按可观察行为切分交付项；逐项记录真实检查与独立验收。简单插件仍可只设一项，不套用固定数量。
 - 搜索或吸收 Skill、Agent、完整 Harness：读取 [来源与改造](references/absorb.md)，使用 `harness-source-integrator`。无适用候选时独立实现。
 - 补知识：使用内置 [知识维护](../harness-knowledge-maintainer/SKILL.md)，读取 [知识协议](references/knowledge.md)。
 - 修改已有插件或自身：读取 [增量升级](references/update.md)，基于当前文件和用户修改形成增量方案。
@@ -28,5 +29,7 @@ description: "通过 Grill Me 创建、改造、整合和升级可独立运行�
 根目录的 `harness.py` 提供确定性建设工具；先运行 `doctor`。依赖缺失时使用随包 `scripts/bootstrap.py --install`，不要写死开发机路径或修改 Codex 配置。通过 `build` 将**已经编写完整**的 HarnessBlueprintV1 组装为独立插件；它不会替模型填充缺失业务知识。蓝图文件位于用户工作区，数据与源资料不会自动进入发布包。
 
 执行自己编写的脚本并验证它们；用最小实际调用检查代表性能力。缺失工具、未验证的模型行为和失败检查必须保留真实状态，不用占位函数、假 Agent 或模拟结果声称业务已通过。
+
+建设完成后用 `delivery-check` 核对功能级证据，正式发行用 `release-package` 先检查再打包。独立复核尚未完成时可用普通 `package` 交付候选及明确的待审项；只有通过交付门槛才称为已验收。交付计划和证据保存在用户工作区，不与业务插件混包。
 
 交付源码目录、可安装 ZIP、使用方法和验证结果。默认由用户自行上传 GitHub。Creator 自身升级在独立候选目录中完成，运行中的版本保持固定。

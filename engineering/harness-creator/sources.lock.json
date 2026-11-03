@@ -31,6 +31,17 @@
         }
       ],
       "adaptation": "参考渐进加载与增量维护方法；未复制系统Skill作为运行依赖。"
+    },
+    {
+      "origin": "https://github.com/devexpert-io/harness-starter",
+      "revision": "18b19e61df839f5d8bb9ecb6cce7941437214977",
+      "license": "MIT",
+      "selected_files": [
+        {"path": ".agents/skills/harness-starter/SKILL.md", "git_blob_sha": "81f050b3ffe14b2b07e3251559ef52a22709ef6d", "mode": "method-reference"},
+        {"path": ".agents/skills/feature-spec/SKILL.md", "git_blob_sha": "ee6bc088226bf22276a265122040b928af9ea883", "mode": "method-reference"},
+        {"path": ".agents/skills/feature-validator/SKILL.md", "git_blob_sha": "4fd71089107d2429cd7e7f0df58845b9cdfb4d56", "mode": "method-reference"}
+      ],
+      "adaptation": "借鉴可验证功能切片、单项规格和独立复核流程；交付计划、证据 Schema 与校验代码按 Creator 现有蓝图和运行时独立实现。"
     }
   ]
 }

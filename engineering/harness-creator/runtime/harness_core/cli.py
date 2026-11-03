@@ -5,17 +5,18 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
-from .common import read_json, write_json, sha, now, redact
+from .common import fingerprint, read_json, write_json, sha, now, redact
 from .packages import build, revise, patch, package, validate_plugin
 from .engine import Engine
 from .store import Store
-from . import knowledge, sources
+from . import knowledge, sources, delivery
 
 def parser():
     p=argparse.ArgumentParser(description='Build, maintain and run standalone Codex capability plugins.')
     commands=p.add_subparsers(dest='command',required=True)
     commands.add_parser('doctor')
     validate=commands.add_parser('validate'); validate.add_argument('--plugin',type=Path)
+    stamp=commands.add_parser('plugin-fingerprint'); stamp.add_argument('--plugin',type=Path,required=True)
     for name in ('build','revise'):
         cmd=commands.add_parser(name); cmd.add_argument('--spec',type=Path,required=True)
         cmd.add_argument('--output',type=Path,required=True); cmd.add_argument('--confirmed',action='store_true')
@@ -24,6 +25,27 @@ def parser():
     cmd.add_argument('--plan',type=Path,required=True); cmd.add_argument('--confirmed',action='store_true')
     cmd=commands.add_parser('package'); cmd.add_argument('--plugin',type=Path)
     cmd.add_argument('--output',type=Path,required=True)
+    cmd=commands.add_parser('release-package')
+    cmd.add_argument('--plugin',type=Path,required=True)
+    cmd.add_argument('--output',type=Path,required=True)
+    cmd.add_argument('--workspace',type=Path,required=True)
+    cmd.add_argument('--blueprint',type=Path,required=True)
+    cmd.add_argument('--plan',type=Path,required=True)
+    cmd.add_argument('--evidence-dir',type=Path,required=True)
+    cmd=commands.add_parser('delivery-plan-check')
+    cmd.add_argument('--blueprint',type=Path,required=True)
+    cmd.add_argument('--plan',type=Path,required=True)
+    cmd=commands.add_parser('capture-check')
+    cmd.add_argument('--workspace',type=Path,required=True)
+    cmd.add_argument('--feature',required=True); cmd.add_argument('--scenario',required=True)
+    cmd.add_argument('--timeout',type=int,default=600)
+    cmd.add_argument('argv',nargs=argparse.REMAINDER)
+    cmd=commands.add_parser('delivery-check')
+    cmd.add_argument('--plugin',type=Path,required=True)
+    cmd.add_argument('--workspace',type=Path,required=True)
+    cmd.add_argument('--blueprint',type=Path,required=True)
+    cmd.add_argument('--plan',type=Path,required=True)
+    cmd.add_argument('--evidence-dir',type=Path,required=True)
     for name in ('run','run-capability','resume','status','replay','cancel'):
         cmd=commands.add_parser(name); cmd.add_argument('--plugin',type=Path)
         cmd.add_argument('--workspace',type=Path,required=True)
@@ -60,10 +82,31 @@ def execute(args,root):
                 'codex':codex,'codex_version':subprocess.check_output([codex,'--version'],text=True).strip() if codex else None,
                 'plugin':validate_plugin(root)}
     if command=='validate': return validate_plugin(plugin)
+    if command=='plugin-fingerprint':
+        validation=validate_plugin(plugin)
+        if not validation['valid']: raise ValueError('; '.join(validation['errors']))
+        return {'plugin':str(plugin.resolve()),'fingerprint':fingerprint(plugin)}
     if command=='build': return build(read_json(args.spec),args.output,root,args.confirmed)
     if command=='revise': return revise(args.source,read_json(args.spec),args.output,root,args.confirmed)
     if command=='patch': return patch(plugin,read_json(args.plan),args.confirmed)
     if command=='package': return package(plugin,args.output)
+    if command=='release-package':
+        report=delivery.check_delivery(args.workspace,args.blueprint,args.plan,args.evidence_dir,plugin)
+        if not report['valid']:
+            raise ValueError('Delivery gate failed: '+'; '.join(report['errors']))
+        return {'valid':True,'delivery':report,'package':package(plugin,args.output)}
+    if command=='delivery-plan-check':
+        blueprint=read_json(args.blueprint)
+        plan=read_json(args.plan)
+        features=delivery.validate_plan(plan,blueprint)
+        if plan['blueprint_sha256']!=sha(args.blueprint):
+            raise ValueError('Blueprint changed after delivery plan was prepared')
+        return {'valid':True,'features':len(features),'plan_sha256':sha(args.plan)}
+    if command=='capture-check':
+        argv=args.argv[1:] if args.argv and args.argv[0]=='--' else args.argv
+        return delivery.capture_check(args.workspace,args.feature,args.scenario,argv,args.timeout)
+    if command=='delivery-check':
+        return delivery.check_delivery(args.workspace,args.blueprint,args.plan,args.evidence_dir,plugin)
     if command in {'run','run-capability','resume','status','replay','cancel'}:
         database=args.workspace.resolve()/'.harness/runs.sqlite3'
         if command in {'status','replay','cancel'}:

@@ -36,7 +36,7 @@ def graph_order(graph, capabilities):
         if node.get('capability') not in capabilities:
             raise ValueError(f'Unknown capability: {node.get("capability")}')
         if node.get('retries', 1) not in (0, 1):
-            raise ValueError('v0.1 supports zero or one retry')
+            raise ValueError('Runtime supports zero or one retry')
         if not node.get('idempotent', False) and node.get('retries', 0):
             raise ValueError('Non-idempotent nodes cannot retry automatically')
         if not 1 <= node.get('timeout_seconds', 600) <= 86400:
