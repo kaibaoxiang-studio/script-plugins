@@ -147,14 +147,20 @@ def validate(scenes_data, assets):
     # 道具的弱反向校验：道具标了 owner 时，owner 通常该在那一场出场（允许道具脱离
     # owner 单独出镜的情况，比如被别人捡起/收走，所以降级为提示而非强校验，
     # 命中时不代表一定错，但值得回查原文确认）
+    # owner 按人物资产解析：人物行出现其名称/别名，或该人物在本场有出场记录（动作出镜），都算在场。
+    owner_names = {n: c for c in assets.get('characters', []) for n in [c['name']] + c.get('aliases', [])}
     for a in assets.get('props', []):
         owner = a.get('owner')
         if not owner:
             continue
+        person = owner_names.get(owner)
+        names = {owner} | ({person['name'], *person.get('aliases', [])} if person else set())
         for st in a.get('states', []):
             for sid in st.get('scenes', []):
                 scene = all_scenes.get(sid)
-                if scene and owner not in scene['characters']:
+                present = scene and (names & set(scene['characters']) or (person and any(
+                    r.get('scene_id') == sid for r in person.get('appearances', []) if isinstance(r, dict))))
+                if scene and not present:
                     warnings.append(
                         f'{sid} 道具「{a["name"]}」的归属人物「{owner}」未在此场次人物行中出现，'
                         f'回查原文确认该场次道具是否确由他人持有或场次号是否有误')
@@ -178,6 +184,10 @@ def validate(scenes_data, assets):
         for st in a.get('states', []):
             if not st.get('description', '').strip():
                 errors.append(f'[人物] {a.get("id")}-{st.get("id")} 缺少状态描述')
+
+    # 原文层可以写未说明；设计补全层必须给出可制作的具体内容。
+    from design_fields import design_errors
+    errors.extend(design_errors(assets))
 
     return errors, warnings
 

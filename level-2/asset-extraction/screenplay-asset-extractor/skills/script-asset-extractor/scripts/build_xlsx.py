@@ -21,7 +21,8 @@ from character_ledger import character_breakdown, segment_position, state_notes,
 from asset_validation import input_errors
 from warning_approvals import apply_approvals, approval_text, warning_id, warning_report
 from prop_identity import identity_text, prop_state_notes, sync_props, validate_props
-from semantic_review import validate_semantic_review
+from pathlib import Path
+from execution_review import load_review, validate_review, source_errors
 
 KINDS = [
     # (assets.json 键, sheet 名, 名称列标题, 专属列)
@@ -146,14 +147,20 @@ def validate(scenes_data, assets):
     # 道具的弱反向校验：道具标了 owner 时，owner 通常该在那一场出场（允许道具脱离
     # owner 单独出镜的情况，比如被别人捡起/收走，所以降级为提示而非强校验，
     # 命中时不代表一定错，但值得回查原文确认）
+    # owner 按人物资产解析：人物行出现其名称/别名，或该人物在本场有出场记录（动作出镜），都算在场。
+    owner_names = {n: c for c in assets.get('characters', []) for n in [c['name']] + c.get('aliases', [])}
     for a in assets.get('props', []):
         owner = a.get('owner')
         if not owner:
             continue
+        person = owner_names.get(owner)
+        names = {owner} | ({person['name'], *person.get('aliases', [])} if person else set())
         for st in a.get('states', []):
             for sid in st.get('scenes', []):
                 scene = all_scenes.get(sid)
-                if scene and owner not in scene['characters']:
+                present = scene and (names & set(scene['characters']) or (person and any(
+                    r.get('scene_id') == sid for r in person.get('appearances', []) if isinstance(r, dict))))
+                if scene and not present:
                     warnings.append(
                         f'{sid} 道具「{a["name"]}」的归属人物「{owner}」未在此场次人物行中出现，'
                         f'回查原文确认该场次道具是否确由他人持有或场次号是否有误')
@@ -178,7 +185,10 @@ def validate(scenes_data, assets):
             if not st.get('description', '').strip():
                 errors.append(f'[人物] {a.get("id")}-{st.get("id")} 缺少状态描述')
 
-    errors.extend(validate_semantic_review(scenes_data, assets))
+    # 原文层可以写未说明；设计补全层必须给出可制作的具体内容。
+    from design_fields import design_errors
+    errors.extend(design_errors(assets))
+
     return errors, warnings
 
 
@@ -196,7 +206,7 @@ def write_plan_sheet(wb, plan):
         for cell in row:
             cell.font = Font(name=STYLE['font'], size=STYLE['font_size'])
             cell.border = BORDER
-            cell.alignment = Alignment(wrap_text=True, horizontal='left' if cell.column in plan['text_columns'] else 'center', vertical='top' if cell.column in plan['text_columns'] else 'center')
+            cell.alignment = Alignment(wrap_text=True, horizontal='center', vertical='center')
     for cell in ws[1]:
         cell.font = Font(name=STYLE['font'], size=STYLE['font_size'], bold=True, color='FFFFFF')
         cell.fill = HEADER_FILL
@@ -212,7 +222,7 @@ def write_plan_sheet(wb, plan):
             for col in group['merge_columns']:
                 ws.merge_cells(start_row=group['start'], end_row=group['end'], start_column=col, end_column=col)
                 cell = ws.cell(group['start'], col)
-                cell.alignment = Alignment(wrap_text=True, horizontal='left' if col in plan['text_columns'] else 'center', vertical='center')
+                cell.alignment = Alignment(wrap_text=True, horizontal='center', vertical='center')
     ws.freeze_panes = plan['freeze']
     ws.auto_filter.ref = plan['filter']
     ws.sheet_view.showGridLines = False
@@ -251,6 +261,7 @@ def main():
     modes.add_argument('--warning-report', action='store_true')
     modes.add_argument('--export-spec', metavar='展示计划.json', help='验证通过后导出统一展示契约，供其他 Excel 后端消费')
     parser.add_argument('--warning-approvals', metavar='确认文件.json')
+    parser.add_argument('--review-file', metavar='review.json', help='默认使用 scenes.json 同目录的 review.json')
     args = parser.parse_args()
     if not (args.output or args.check or args.sync_character_scenes or args.sync_prop_scenes or args.warning_report or args.export_spec):
         parser.error('指定输出.xlsx 或 --check/--sync-character-scenes/--sync-prop-scenes/--warning-report')
@@ -272,6 +283,17 @@ def main():
         for error in shape_errors:
             print('错误:', error)
         parser.exit(1)
+    protected = {Path(args.scenes_file).resolve(), Path(args.assets_file).resolve(),
+                 Path(args.review_file or Path(args.scenes_file).with_name('review.json')).resolve()}
+    if args.warning_approvals:
+        protected.add(Path(args.warning_approvals).resolve())
+    if isinstance(scenes_data.get('source'), dict) and isinstance(scenes_data['source'].get('path'), str):
+        protected.add(Path(scenes_data['source']['path']).resolve())
+    protected.update(path.resolve() for path in Path(__file__).resolve().parent.parent.rglob('*') if path.is_file())
+    if args.output and (Path(args.output).suffix.lower() != '.xlsx' or Path(args.output).resolve() in protected):
+        parser.exit(1, '输出须为 .xlsx，不能覆盖剧本、工作数据或 skill 文件\n')
+    if args.export_spec and Path(args.export_spec).resolve() in protected:
+        parser.exit(1, '展示计划不能覆盖输入、台账或 skill 文件\n')
 
     if args.sync_character_scenes or args.sync_prop_scenes:
         errors, warnings = (sync_characters(scenes_data, assets) if args.sync_character_scenes
@@ -292,6 +314,15 @@ def main():
         report['errors'] = errors
         print(json.dumps(report, ensure_ascii=False, indent=2))
         parser.exit(1 if errors else 0)
+    errors.extend(source_errors(scenes_data))
+    try:
+        review_path = Path(args.review_file or Path(args.scenes_file).with_name('review.json'))
+        review = load_review(review_path)
+        from audit_state import team_mode_errors
+        errors.extend(team_mode_errors(scenes_data,review,[review_path.parent,Path(args.scenes_file).parent]))
+        errors.extend(validate_review(scenes_data, assets, review))
+    except ValueError as error:
+        errors.append(str(error))
     document = None
     if args.warning_approvals:
         try:
@@ -333,8 +364,15 @@ def main():
     wb.remove(wb.active)
     for sheet in plan['sheets']:
         write_plan_sheet(wb, sheet)
-    wb.save(args.output)
-    print('已生成:', args.output)
+    from delivery_guard import save_verified
+    if Path(args.output).resolve() in {Path(args.scenes_file).resolve(), Path(args.assets_file).resolve()}:
+        parser.exit(1, '输出不能覆盖输入文件\n')
+    try:
+        save_verified(wb, scenes_data, assets, args.output, accepted)
+    except (OSError, ValueError) as error:
+        parser.exit(1, f'错误: {error}\n')
+    print('已生成并自动验收工作簿:', args.output)
+    print('正式交付仍须 workflow.py finalize 完成原文快照、语义/视觉复核和文件哈希验收')
 
 
 if __name__ == '__main__':

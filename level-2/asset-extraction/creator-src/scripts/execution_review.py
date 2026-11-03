@@ -6,7 +6,7 @@ from pathlib import Path
 from source_candidates import candidates
 from candidate_links import validate_action_refs
 
-VERSION = '0.3.2'
+VERSION = '0.4.0'
 SCHEMA = 'asset_execution_review_v1'
 KINDS = ('characters', 'scenes', 'props')
 PLACEHOLDER = re.compile(r'^(?:已完成|完成|已检查|已审核|已审阅|已读|全部已读|已核对|无|暂无|无问题|通过|ok|done|待填写|待补充|未说明)[。.!！\s]*$', re.I)
@@ -292,6 +292,14 @@ def source_errors(data):
             legacy_source = legacy.get('source', {})
             current_source = current.get('source', {})
             legacy_source.pop('format', None); current_source.pop('format', None)
+            # 0.3.3 only added report fields and preamble flags; screenplay content must still match.
+            report = current.get('parse_report', {})
+            for key in ('preamble_count', 'scene_like_preamble', 'empty_episodes', 'incomplete_headers', 'mismatched_episodes'):
+                if key not in legacy.get('parse_report', {}):
+                    report.pop(key, None)
+            if not any('preamble' in item for item in legacy.get('parse_report', {}).get('unrecognized', [])):
+                for item in report.get('unrecognized', []):
+                    item.pop('preamble', None)
             if digest(current) != digest(legacy):
                 errors.append('scenes.json 与原始 DOCX 重解析不一致，禁止修改原文结构规避校验')
         return errors

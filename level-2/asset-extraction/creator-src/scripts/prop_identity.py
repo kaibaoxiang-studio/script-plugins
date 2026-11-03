@@ -2,7 +2,7 @@
 import re
 
 from asset_validation import input_errors
-from character_ledger import check_refs, scene_index
+from character_ledger import check_refs, in_direction, scene_index
 
 
 GENERIC_NAMES = {'刀', '剑', '匕首', '戒指', '尾戒', '卷轴', '信', '药瓶', '玉佩',
@@ -145,7 +145,8 @@ def validate_props(data, assets, check_derived=True):
                 source_terms.add(mention['raw_name'])
             elif basis == 'contextual':
                 anchor = by_id.get(mention.get('from'))
-                if anchor is None or anchor['timeline'] != mention['timeline']:
+                if (anchor is None or anchor['timeline'] != mention['timeline']
+                        or anchor.get('visibility') == 'unrelated'):
                     errors.append(f'{mlabel} 局部指代须指向同实物同连续段的先前记录')
                 elif anchor['source'] not in mention.get('identity_refs', []):
                     errors.append(f'{mlabel} 指代依据须包含所引用实物的先前原文位置')
@@ -158,8 +159,10 @@ def validate_props(data, assets, check_derived=True):
                 errors.append(f'{mlabel} 非局部指代不能设置 from')
             visibility, stid = mention['visibility'], mention.get('state_id')
             if visibility == 'visible':
-                if scenes[sid]['lines'][line - 1]['type'] != 'action':
-                    errors.append(f'{mlabel} 台词提及不能直接当作道具出镜')
+                row = scenes[sid]['lines'][line - 1]
+                # 台词行里全角括号内的舞台动作（「（放下茶杯）……」）描述画面，可作出镜依据；台词内容本身不行。
+                if not (row['type'] == 'action' or (row['type'] == 'dialog' and in_direction(text, low, high))):
+                    errors.append(f'{mlabel} 台词提及不能直接当作道具出镜（台词括注里的舞台动作除外）')
                 if stid not in states:
                     errors.append(f'{mlabel} 引用了不存在的状态: {stid}')
                 visible.setdefault(stid, set()).add(sid)
@@ -172,11 +175,17 @@ def validate_props(data, assets, check_derived=True):
                     errors.append(f'{mlabel} 非画面提及不能填入状态场次')
                 if not mention.get('note', '').strip():
                     errors.append(f'{mlabel} 非画面提及须说明排除理由')
+            elif visibility == 'unrelated':
+                # 同名但不是这件实物（如「一笔交易」里的「笔」、门口另挂的红绸），只为通过全剧名称核对。
+                if stid is not None or basis == 'contextual':
+                    errors.append(f'{mlabel} 非本物件的同名命中不能填状态或作上下文指代')
+                if not mention.get('note', '').strip():
+                    errors.append(f'{mlabel} 非本物件的同名命中须说明它实际指什么')
             else:
-                errors.append(f'{mlabel} visibility 必须为 visible/reference')
+                errors.append(f'{mlabel} visibility 必须为 visible/reference/unrelated')
             by_id[mid] = mention
 
-        if 'source_name' in prop and not any(m['raw_name'] == source_name
+        if 'source_name' in prop and not any(m['raw_name'] == source_name and m['visibility'] != 'unrelated'
                                             and m['basis'] in ('named', 'introduced') for m in by_id.values()):
             errors.append(f'{label} source_name 缺少实际原文主称呼记录')
         for alias in aliases:
@@ -230,9 +239,21 @@ def validate_props(data, assets, check_derived=True):
     claimed = {(mention['source']['scene_id'], mention['source']['line'],
                 mention['start_offset'], mention['end_offset'])
                for prop in assets['props'] for mention in prop.get('mentions', [])}
+    # 单字称呼（针、笔）多为比喻/量词/构词，只在该道具已有记录的场次回查；两字以上仍查全剧。
+    local = {}
+    for prop in assets['props']:
+        mentions = [m for m in prop.get('mentions', []) if isinstance(m, dict)]
+        own = {prop['name'], prop.get('source_name', prop['name']), *prop.get('aliases', []),
+               *(m.get('raw_name', '') for m in mentions if m.get('basis') == 'introduced')}
+        sids = {m['source']['scene_id'] for m in mentions if isinstance(m.get('source'), dict)}
+        for name in own:
+            if len(name) == 1:
+                local.setdefault(name, set()).update(sids)
     for sid, scene in scenes.items():
         for line_no, line in enumerate(scene['lines'], 1):
             for hit in text_matches(line['text'], terms):
+                if hit['raw_name'] in local and sid not in local[hit['raw_name']]:
+                    continue
                 if not any(old_sid == sid and old_line == line_no
                            and low <= hit['start_offset'] < hit['end_offset'] <= high
                            for old_sid, old_line, low, high in claimed):

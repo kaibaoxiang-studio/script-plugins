@@ -1,6 +1,7 @@
 """只读验收已保存 Excel：从当前源数据重建期望契约，非从导出计划自证。"""
 import argparse
 import json
+from zipfile import BadZipFile
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
 from export_contract import build_plan, STYLE, text_lines
@@ -52,8 +53,8 @@ def audit_workbook(workbook, plan):
                 if cell.font.name != STYLE['font'] or cell.font.sz != STYLE['font_size']:
                     errors.append(f'{label}!{cell.coordinate} 字体与模板不一致')
                 is_text = col in spec['text_columns']
-                vertical = 'center' if row == 1 or group or not is_text else 'top'
-                horizontal = 'center' if row == 1 or not is_text else 'left'
+                vertical = 'center'
+                horizontal = 'center'
                 if cell.alignment.vertical != vertical or cell.alignment.horizontal != horizontal or not cell.alignment.wrap_text:
                     errors.append(f'{label}!{cell.coordinate} 对齐/换行错误')
                 for side in ['left', 'right', 'top', 'bottom']:
@@ -71,6 +72,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('scenes_file'); parser.add_argument('assets_file'); parser.add_argument('workbook')
     parser.add_argument('--warning-approvals')
+    parser.add_argument('--review-file')
     args = parser.parse_args()
     from build_xlsx import validate
     from warning_approvals import apply_approvals
@@ -81,14 +83,26 @@ def main():
         if args.warning_approvals:
             with open(args.warning_approvals, encoding='utf-8') as f: document = json.load(f)
         errors, warnings = validate(data, assets)
+        from pathlib import Path
+        from execution_review import load_review, validate_review, source_errors
+        errors.extend(source_errors(data))
+        review_path=Path(args.review_file or Path(args.scenes_file).with_name('review.json'))
+        review=load_review(review_path)
+        from audit_state import team_mode_errors
+        errors.extend(team_mode_errors(data,review,[review_path.parent,Path(args.scenes_file).parent]))
+        errors.extend(validate_review(data, assets, review))
         remaining, accepted, approval_errors = apply_approvals(data, assets, warnings, document)
         errors.extend(approval_errors)
         errors.extend('未确认警告：' + message for message in remaining)
         if not errors:
-            errors = audit_workbook(load_workbook(args.workbook), build_plan(data, assets, accepted))
-    except (OSError, ValueError, KeyError) as error:
+            workbook=load_workbook(args.workbook)
+            try:
+                errors = audit_workbook(workbook, build_plan(data, assets, accepted))
+            finally:
+                workbook.close()
+    except (OSError, ValueError, KeyError, BadZipFile) as error:
         parser.exit(1, f'无法完成验收：{error}\n')
-    for error in errors[:40]: print('错误:', error)
+    for error in errors: print('错误:', error)
     print(f'Excel 内容与格式验收：{len(errors)} 条错误；仍需正常缩放下人工检查阅读密度和筛选使用。')
     parser.exit(1 if errors else 0)
 

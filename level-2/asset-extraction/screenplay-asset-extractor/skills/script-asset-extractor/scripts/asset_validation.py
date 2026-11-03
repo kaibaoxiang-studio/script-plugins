@@ -33,6 +33,13 @@ def input_errors(data, assets):
                 if not isinstance(value, str):
                     errors.append(f'{path}.{key}[{i}] 类型错误，应为 str')
 
+    def design(obj, path):
+        field(obj, 'design_basis', str, path)
+        if field(obj, 'design', dict, path):
+            for key, value in obj['design'].items():
+                if not isinstance(value, str):
+                    errors.append(f'{path}.design.{key} 类型错误，应为 str')
+
     def refs(obj, key, path):
         for ref, ref_path in objects(obj, key, path):
             for name, kind in [('scene_id', str), ('line', int), ('quote', str)]:
@@ -40,6 +47,18 @@ def input_errors(data, assets):
 
     if not isinstance(data, dict) or not isinstance(assets, dict):
         return ['scenes.json 和 assets.json 顶层必须为对象']
+
+    if field(data, 'source', dict, 'script'):
+        field(data['source'], 'path', str, 'script.source', True)
+        field(data['source'], 'sha256', str, 'script.source', True)
+    if field(data, 'parse_report', dict, 'script'):
+        report = data['parse_report']
+        for key in ('nonempty_paragraphs', 'unrecognized_count', 'max_consecutive_unrecognized', 'table_text_count'):
+            if field(report, key, int, 'script.parse_report', True) and report[key] < 0:
+                errors.append(f'script.parse_report.{key} 不能为负数')
+        for item, path in objects(report, 'unrecognized', 'script.parse_report', True):
+            field(item, 'paragraph', int, path, True)
+            field(item, 'text', str, path, True)
 
     for ep, ep_path in objects(data, 'episodes', 'script', True):
         field(ep, 'episode', int, ep_path, True)
@@ -72,6 +91,7 @@ def input_errors(data, assets):
                 field(asset, key, str, path)
             if kind == 'props':
                 field(asset, 'source_name', str, path)
+            design(asset, path)
             for state, state_path in objects(asset, 'states', path):
                 field(state, 'id', str, state_path, True)
                 field(state, 'name', str, state_path, True)
@@ -79,6 +99,7 @@ def input_errors(data, assets):
                 for key in ('basis', 'description', 'note', 'evidence'):
                     field(state, key, str, state_path)
                 refs(state, 'evidence_refs', state_path)
+                design(state, state_path)
                 if field(state, 'visual', dict, state_path):
                     for key, value in state['visual'].items():
                         if not isinstance(value, str):
@@ -86,6 +107,7 @@ def input_errors(data, assets):
             for sub, sub_path in objects(asset, 'subscenes', path):
                 field(sub, 'name', str, sub_path, True)
                 field(sub, 'description', str, sub_path)
+                design(sub, sub_path)
                 strings(sub, 'scenes', sub_path, True)
             for rec, rec_path in objects(asset, 'appearances', path):
                 for key in ('id', 'scene_id', 'state_id', 'timeline', 'instance', 'basis', 'boundary'):

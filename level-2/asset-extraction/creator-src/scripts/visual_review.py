@@ -9,12 +9,24 @@ SHEETS = ('人物', '场景', '道具', '场次总表')
 def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
+SOFFICE_PATHS = ('/Applications/LibreOffice.app/Contents/MacOS/soffice',
+                 'C:/Program Files/LibreOffice/program/soffice.exe')
+
+def soffice():
+    # macOS 的 brew cask 不把 soffice 放进 PATH，按常见安装位置补找。
+    return shutil.which('soffice') or next((p for p in SOFFICE_PATHS if Path(p).is_file()), None)
+
+def missing_tools():
+    return [name for name, found in (('soffice', soffice()), ('pdftoppm', shutil.which('pdftoppm'))) if not found]
+
+INSTALL_HINT = 'macOS: brew install --cask libreoffice && brew install poppler；Linux: apt install libreoffice poppler-utils'
+
 def generate(work):
     work = Path(work).resolve(); draft = work / 'asset-table.review.xlsx'
     if not draft.is_file(): raise ValueError('缺少 asset-table.review.xlsx；先 workflow.py export')
     evidence = work / 'visual_evidence'; evidence.mkdir(exist_ok=True)
-    missing=[name for name in ('soffice','pdftoppm') if shutil.which(name) is None]
-    if missing: raise ValueError('视觉预览缺少依赖：' + '、'.join(missing) + '；请安装 LibreOffice 和 Poppler')
+    missing = missing_tools()
+    if missing: raise ValueError('视觉预览缺少依赖：' + '、'.join(missing) + '；' + INSTALL_HINT)
     temp = Path(tempfile.mkdtemp(prefix='asset-preview-'))
     try:
         wb = load_workbook(draft)
@@ -29,7 +41,7 @@ def generate(work):
             ws.page_setup.fitToWidth = 1; ws.page_setup.fitToHeight = 0
             ws.print_title_rows = '1:1'
             out = temp / f'{sheet}.xlsx'; one.save(out); one.close()
-            subprocess.run(['soffice','--headless','--convert-to','pdf','--outdir',str(temp),str(out)], check=True, capture_output=True)
+            subprocess.run([soffice(),'--headless','--convert-to','pdf','--outdir',str(temp),str(out)], check=True, capture_output=True)
             pdf = temp / f'{sheet}.pdf'
             import subprocess as sp
             pages = int(sp.check_output(['pdfinfo',str(pdf)], text=True).split('Pages:')[1].splitlines()[0].strip()) if shutil.which('pdfinfo') else 1

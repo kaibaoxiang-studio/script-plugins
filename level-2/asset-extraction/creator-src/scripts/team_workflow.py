@@ -2,6 +2,7 @@
 import copy
 import json
 import os
+import re
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
@@ -164,6 +165,123 @@ def init_team(work):
         return _report(issues=[_issue('team_init', 'coordinator', 'team.json', error)])
 
 
+def upgrade_team(work):
+    """插件版本升级、原文未变时保留分工台账；三类片段改为待重新提交，按新规则重新校验。"""
+    work = Path(work)
+    try:
+        with _lock(work):
+            paths = [work / name for name in ('scenes.json', 'team.json', 'assets.json', 'review.json')]
+            paths += [work / 'fragments' / f'{k}.json' for k in KINDS]
+            expected = _watch_source(work, paths)
+            data, scenes = _source(work)
+            errors = execution.source_errors(data)
+            if errors:
+                raise ValueError('原文或解析结果与当前版本不一致，不能升级，须新目录重新 prepare：' + '；'.join(errors))
+            team = _read(work / 'team.json')
+            if team.get('schema_version') != TEAM_SCHEMA or team.get('source_sha256') != execution.digest(data):
+                raise ValueError('team 原文快照已变化，不能升级，须新工作目录重新建立分工')
+            if team.get('version') == execution.VERSION:
+                return _report(status='current', team=team)
+            if not isinstance(team.get('owners'), dict) or set(team['owners']) != set(KINDS):
+                raise ValueError('team 必须有三类唯一 owner')
+            updates, resubmit = {}, []
+            for kind in KINDS:
+                owner = team['owners'][kind]
+                target = work / 'fragments' / f'{kind}.json'
+                if target.exists():
+                    # 旧片段改写版本号，作为该 owner 补齐新字段后重新提交的底稿；不视为已通过。
+                    fragment = _read(target); fragment['version'] = execution.VERSION
+                    updates[target] = fragment
+                    resubmit.append(kind)
+                team['owners'][kind] = {'owner': kind, 'status': 'pending',
+                                        'submitted_scope': owner.get('submitted_scope', [])}
+            team['upgraded_from'] = team.get('version')
+            team['version'] = execution.VERSION
+            team['status'] = 'pending'
+            updates[work / 'team.json'] = team
+            _transaction(updates, expected)
+            return _report(status='upgraded', team=team, resubmit=resubmit,
+                           note='独立审核快照随版本自动过期；各 owner 以 fragments/<kind>.json 为底稿补齐新规则字段后 submit，再 merge 并重新独立审核')
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        return _report(issues=[_issue('team_upgrade', 'coordinator', 'team.json', error)])
+
+
+RE_LINE_REF = re.compile(r'(\d+-\d+)[:：]L(\d+)(?:\s*[-–~]\s*L?(\d+))?')
+RE_PRONOUN = re.compile(r'[他她它]|众人|二人|两人|三人|对方')
+
+
+def _touched_lines(data, assets, kind):
+    """本类资产、文字引用或候选线索落到的原文行；这些行不能用区间合并判读。"""
+    scenes = _scene_index(data)
+    touched = set()
+    def walk(value):
+        if isinstance(value, dict):
+            sid = value.get('scene_id')
+            if isinstance(sid, str) and type(value.get('line')) is int:
+                touched.add((sid, value['line']))
+            if isinstance(sid, str) and type(value.get('start_line')) is int:
+                touched.add((sid, value['start_line']))  # 出场区间只占起始行，整场出场不等于每行都有人物动作
+            for child in value.values():
+                walk(child)
+        elif isinstance(value, list):
+            for child in value:
+                walk(child)
+        elif isinstance(value, str):
+            for sid, low, high in RE_LINE_REF.findall(value):
+                if sid in scenes:
+                    a, b = sorted((int(low), int(high or low)))
+                    touched.update((sid, i) for i in range(a, b + 1))
+    walk(assets[kind])
+    touched.update((c['source']['scene_id'], c['source']['line']) for c in candidates(data) if _belongs(c, kind))
+    for asset in assets[kind]:
+        names = [n for n in (asset.get('name'), asset.get('source_name'), *asset.get('aliases', [])) if n]
+        sids = set()
+        if kind == 'characters':
+            sids = set(scenes)  # 名字出现在未登记出场的场次，正是需要逐行判读的漏提线索
+        elif kind == 'scenes':
+            sids = {s for state in asset.get('states', []) for s in state.get('scenes', [])}
+            snippets = [part.split('：', 1)[-1].strip() for state in asset.get('states', [])
+                        for part in re.split('[；;]', state.get('evidence') or '') if part.strip()]
+        for sid in sids & scenes.keys():
+            for i, row in enumerate(scenes[sid]['lines'], 1):
+                text = row['text']
+                if any(n in text for n in names) or (kind == 'scenes' and any(s and s in text for s in snippets)):
+                    touched.add((sid, i))
+    for sid, scene in scenes.items():
+        for i, row in enumerate(scene['lines'], 1):
+            if kind == 'characters' and (row['type'] == 'dialog' or RE_PRONOUN.search(row['text'])):
+                touched.add((sid, i))
+        if kind == 'scenes':
+            first = next((i for i, row in enumerate(scene['lines'], 1) if row['type'] == 'action'), None)
+            if first:
+                touched.add((sid, first))  # 场首动作行通常交代环境
+    return touched
+
+
+def _expand_ranges(data, assets, kind, scenes, items, fail):
+    """区间条目 {line, end_line} 只用于本类无资产、无候选的连续过渡行，提交时展开为逐行记录。"""
+    touched, out = None, []
+    for item in items:
+        if 'end_line' not in item:
+            out.append(item); continue
+        sid, low, high = item.get('scene_id'), item.get('line'), item.get('end_line')
+        location = f'{sid}:L{low}-L{high}'
+        if (sid not in scenes or type(low) is not int or type(high) is not int
+                or not 1 <= low < high <= len(scenes[sid]['lines'])):
+            fail('line_location', location, '区间复核须为本场真实原文行且 end_line 大于 line'); continue
+        if item.get('asset_ids'):
+            fail('line_reference', location, '区间复核只用于本类无资产的行，asset_ids 须为空'); continue
+        if not execution.concrete(item.get('conclusion')):
+            fail('conclusion', location, '区间复核缺少具体判读'); continue
+        touched = _touched_lines(data, assets, kind) if touched is None else touched
+        busy = [i for i in range(low, high + 1) if (sid, i) in touched]
+        if busy:
+            fail('line_range', location, f'区间内 L{busy} 有本类资产记录或候选线索，须逐行判读'); continue
+        out.extend({'scene_id': sid, 'line': i, 'quote': scenes[sid]['lines'][i - 1]['text'], 'asset_ids': [],
+                    'conclusion': f'（L{low}-L{high} 区间判读）{item["conclusion"]}'} for i in range(low, high + 1))
+    return out
+
+
 def _belongs(candidate, kind):
     return ((kind == 'props' and candidate['kind'].startswith('prop_'))
             or (kind == 'characters' and candidate['kind'] in ('visual', 'timeline')))
@@ -257,6 +375,7 @@ def _validate_fragment(data, scenes, fragment, previous=None, other_ids=()):
     fragment = copy.deepcopy(fragment); fragment['assets'] = assets[kind]; fragment['scope'] = scope
     allowed = set(identifiers)
     local_errors = []
+    fragment['line_reviews'] = _expand_ranges(data, assets, kind, scenes, fragment['line_reviews'], fail)
     lines, categories = {}, {}
     for item in fragment['line_reviews']:
         sid, number = item.get('scene_id'), item.get('line')
@@ -474,10 +593,28 @@ def merge_fragments(work):
             _transaction({work / 'assets.json': assets, work / 'review.json': review,
                           work / 'team.json': team}, expected)
             return dict(status='merged_pending_bind', submitted_scope={k: list(scenes) for k in KINDS},
-                        pending_scope=pending, issues=[], warnings=warnings, global_complete=False)
+                        pending_scope=pending, issues=[], warnings=warnings, global_complete=False,
+                        audit_backlog=_audit_backlog(data, assets, review))
     except (OSError, ValueError, KeyError, TypeError) as error:
         return dict(status='rejected', submitted_scope={}, pending_scope=pending,
                     issues=[_issue('merge', 'coordinator', 'assets/review', error)])
+
+
+def _audit_backlog(data, assets, review):
+    """合并后提示下一份审核模板的范围，便于把返修攒成一批再审。"""
+    from audit_state import audit_template
+    try:
+        template = audit_template(data, assets, review)
+    except (ValueError, KeyError, TypeError) as error:
+        # 合并已写入；这里只是提示，失败不能把已成功的 merge 报成 rejected。
+        return {'error': f'无法预估审核范围：{error}'}
+    backlog = {'scenes': [r['scene_id'] for r in template['scene_reviews']],
+               'characters': [r['character_id'] for r in template['character_reviews']],
+               'open_issue_ids': template['open_issue_ids']}
+    if any(backlog.values()):
+        backlog['note'] = ('这些范围需重新独立审核。还有返修未做完就先全部改完再 merge、再出模板；'
+                           '审核报告写好后先 submit-audit，再改数据，否则报告随快照作废。')
+    return backlog
 
 
 def check_batch(work, scope, kind=None):

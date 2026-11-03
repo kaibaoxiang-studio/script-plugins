@@ -81,6 +81,10 @@ def prepare(source, work):
     write(work / 'progress.json', {'version': VERSION, 'stage': 'parsed',
                                   'source_sha256': digest(data), 'next': '逐场填写资产及 review.json 空白判读'})
     print('解析通过；已建立空白逐场台账。下一步通读并创建 assets.json，不是已完成提取。')
+    from visual_review import missing_tools, INSTALL_HINT
+    missing = missing_tools()
+    if missing:
+        print('提醒：交付前的 visual-review 需要 ' + '、'.join(missing) + '，现在未安装；可在提取期间先装好（' + INSTALL_HINT + '）。')
 
 
 def check(work):
@@ -394,7 +398,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
     first = commands.add_parser('prepare'); first.add_argument('source', type=Path); first.add_argument('work', type=Path)
-    for name in ('bind', 'export', 'finalize', 'status', 'check', 'visual-review', 'preflight', 'warning-groups', 'warning-draft', 'compare-sources', 'compress-advice', 'impact', 'semantic-audit', 'visual-regression', 'changelog', 'report', 'diagnose-markdown', 'team-init', 'fragment-template', 'submit', 'merge',
+    for name in ('bind', 'export', 'finalize', 'status', 'check', 'visual-review', 'preflight', 'warning-groups', 'warning-draft', 'compare-sources', 'compress-advice', 'impact', 'semantic-audit', 'visual-regression', 'changelog', 'report', 'diagnose-markdown', 'team-init', 'team-upgrade', 'fragment-template', 'submit', 'merge',
                  'check-batch', 'audit-template', 'submit-audit', 'diagnose', 'candidate-groups', 'record-run'):
         command = commands.add_parser(name)
         if name == 'compare-sources':
@@ -487,9 +491,10 @@ def main():
                       'quality_errors': quality_errors(data),
                       'unrecognized': data['parse_report'].get('unrecognized', [])}
             print(json.dumps(report, ensure_ascii=False, indent=2))
-        elif args.command in ('team-init','fragment-template','submit','merge','check-batch'):
+        elif args.command in ('team-init','team-upgrade','fragment-template','submit','merge','check-batch'):
             import team_workflow as team
             if args.command == 'team-init': report=team.init_team(args.work)
+            elif args.command == 'team-upgrade': report=team.upgrade_team(args.work)
             elif args.command == 'fragment-template':
                 report=team.fragment_template(args.work,args.kind,args.scenes)
                 template_output(parser,report,'fragment',args.output,args.work)

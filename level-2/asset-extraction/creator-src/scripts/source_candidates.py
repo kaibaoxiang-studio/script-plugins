@@ -15,7 +15,7 @@ def candidates(data):
         for scene in ep.get('scenes', []):
             sid = scene['scene_id']
             for number, line in enumerate(scene.get('lines', []), 1):
-                if line.get('type') not in ('action', 'other'):
+                if line.get('type') not in ('action', 'cue', 'other'):
                     continue
                 text = line['text']
                 digest = hashlib.sha256(text.encode('utf-8')).hexdigest()[:16]

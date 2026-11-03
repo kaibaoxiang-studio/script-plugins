@@ -23,7 +23,7 @@ INSTRUCTIONS = """# 剧本资产表提取
 def main() -> None:
     spec = {
         "schema_version": "HarnessBlueprintV1",
-        "plugin": {"name": "screenplay-asset-extractor", "version": "0.3.2",
+        "plugin": {"name": "screenplay-asset-extractor", "version": "0.4.0",
                    "description": "从标准剧本 DOCX、结构化 Markdown 或一级标准 JSON 提取经逐场审核并通过交付验收的剧本资产表",
                    "author": {"name": "开宝箱工作室"}},
         "goal": "将一级标准剧本转换为证据可追溯的资产 JSON 和 Excel，独立报告疑点",

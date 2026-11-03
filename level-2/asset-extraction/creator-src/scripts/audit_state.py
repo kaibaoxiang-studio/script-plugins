@@ -112,7 +112,7 @@ def audit_template(data, assets, review, scene_ids=None, character_ids=None):
             'audit_state_sha256': digest(review.get('independent_review')),
             'reviewer_id': '', 'scene_reviews': [{'scene_id': sid, 'conclusion': ''} for sid in sids],
             'character_reviews': [{'character_id': cid, 'conclusion': ''} for cid in cids],
-            'issues': [], 'resolved_issue_ids': [],
+            'issues': [], 'resolved_issue_ids': [], 'removed_asset_resolutions': {},
             'open_issue_ids': [i.get('issue_id') for i in open_issues]}
 
 
@@ -204,7 +204,15 @@ def apply_audit(data, assets, review, document):
         if issue['scene_id'] not in reviewed['scenes']:
             raise ValueError('解决问题必须重新审核问题所在场次')
         if issue.get('owner') == 'characters' and issue.get('asset_id') not in reviewed['characters']:
-            raise ValueError('人物问题解决须完成该人物全剧边界复查')
+            # 人物已在返修中删除（并入其他资产或改归其他类别）时无法再做全剧边界复查；
+            # 只能在复查了问题所在场次、且报告写明去向时关闭，不能借删资产清除问题。
+            removed = issue.get('asset_id') not in snaps['characters']
+            notes = document.get('removed_asset_resolutions')
+            note = notes.get(key) if isinstance(notes, dict) else None
+            if not (removed and concrete(note)):
+                raise ValueError('人物问题解决须完成该人物全剧边界复查'
+                                 + ('；该人物已删除时，须在 removed_asset_resolutions 写明去向及复查结论' if removed else ''))
+            issue['removed_asset_resolution'] = note
         issue['status'] = 'resolved'
         issue['resolved_by'] = reviewer
     seen = set()

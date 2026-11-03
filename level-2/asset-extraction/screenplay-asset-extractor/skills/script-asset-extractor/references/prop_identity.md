@@ -14,7 +14,7 @@
 
 “登记本”等通用物件类别即使在一段中能确定指代，也不因此成为全剧特指异称：保留当地 raw_name，以 contextual/from 和该段引入记录证明实物归属。
 
-同名不同实物使用带原文区别的展示名，如“匕首·凯尔”“匕首·莱拉”；展示限定词不当作原文引文。展示名与原文不同，必须用 source_name 保存未经限定的原文主称呼，如 name="屠龙匕首·凯尔"、source_name="屠龙匕首"。source_name 须关联实际 named/introduced 原文记录；不同实物可以共用 source_name，但不能共用 name/全局 aliases，检索命中仍须逐次判读归属。未设置 source_name 的旧数据默认使用 name，并补查 introduced 中已记录的非泛称；不能靠删记录逃避漏提检查。首次原文只有“匕首”时用 introduced 建立身份。holder 记录当次持有者，owner 记录主要归属；转手不换 ID、不拆状态，断裂等实际外观变化在同一 ID 下拆状态。
+同名不同实物使用带原文区别的展示名，如“匕首·凯尔”“匕首·莱拉”；展示限定词不当作原文引文。展示名与原文不同，必须用 source_name 保存未经限定的原文主称呼，如 name="屠龙匕首·凯尔"、source_name="屠龙匕首"。source_name 须关联实际 named/introduced 原文记录；不同实物可以共用 source_name，但不能共用 name/全局 aliases，检索命中仍须逐次判读归属。两字及以上的称呼回查全剧；单字称呼（如 introduced 的「针」）只在该道具已有 mentions 的场次回查，其他场次的「雨丝如针」「一笔交易」之类不再要求认领，但这些场次里该道具的实际出镜仍须通读补录。未设置 source_name 的旧数据默认使用 name，并补查 introduced 中已记录的非泛称；不能靠删记录逃避漏提检查。首次原文只有“匕首”时用 introduced 建立身份。holder 记录当次持有者，owner 记录主要归属；转手不换 ID、不拆状态，断裂等实际外观变化在同一 ID 下拆状态。
 
 ## 回查与记录
 
@@ -39,9 +39,10 @@ python3 $S/show_prop.py <scenes.json> <assets.json> PRP-001 --json
 | basis=contextual | 泛称/代词的局部指代；from 指向同一道具、同连续段的先前记录，identity_refs 包含该记录 source，identity_reason 解释交接或指代 |
 | visibility=visible | 动作原文确有画面，state_id 必须指向实际外观状态 |
 | visibility=reference | 台词/画外音等仅提及、未展示；state_id=null，note 写排除理由，不计场次 |
+| visibility=unrelated | 同名但不是这件实物，如「一笔交易」里的「笔」、另一处挂的红绸；state_id=null，note 写实际所指，不计场次、不进场次总表 |
 | holder / note | 当次持有者和局部疑点；未知持有者可为空 |
 
-动作行内的“提到”“想起”也可能只是引用，不自动判为 visible。台词伴随可见动作时用独立动作依据记录画面；若解析器把舞台动作混入台词，先人工复核解析结构，不把台词名称命中直接当作出镜。
+动作行内的“提到”“想起”也可能只是引用，不自动判为 visible。台词行里全角括号内的舞台动作描述画面，如「江岁欢：（放下茶杯，无辜摊手）……」，其中的物件可记 visible，字符区间须落在括号内；台词内容里的名称命中仍只能记 reference。
 
 aliases 每项均须有 alias_evidence：alias、basis（explicit / continuity / distinctive）、reason、evidence_refs。explicit 的真实说明须同时包含两个独立称呼；另两类依据至少覆盖两个独立原文字符位置，包含该异称和原文主名/首次实物引入侧。同一行明确交接并改称时可引用该行，但两侧 mentions 必须指向不重叠的字符区间，引文须包含对应称呼。两个称呼出现在同一行本身不证明同物，仍须判读交接或独特特征，不能只用异称自身循环证明身份。
 
@@ -58,7 +59,15 @@ identity_relations 包含 other_id、decision（distinct / uncertain）、reason
   "source_name": "屠龙匕首",
   "aliases": ["龙骨匕首"],
   "owner": "凯尔",
-  "description": "剧本未说明具体材质与尺寸，待设计确认。",
+  "description": "剧本未说明具体材质与尺寸。",
+  "design": {
+    "shape_size": "单刃直匕首，全长约28cm，刃长18cm，刃宽3cm",
+    "material_color": "刃身为乳白色打磨龙骨，带细密骨纹；握柄缠黑色皮革，柄首包暗金色金属",
+    "structure": "无护手，刃背有一道血槽，柄首嵌一颗暗红色龙鳞",
+    "markings": "刃身近柄处刻古龙文符号一行",
+    "usage": "单手正握或反握，可抵喉、可投掷；需配一把同款软胶安全替身"
+  },
+  "design_basis": "别名「龙骨匕首」来自 1-2:L1，据此定材质为龙骨；尺寸、结构、纹饰按奇幻宫廷近身武器推断。",
   "note": "",
   "alias_evidence": [{
     "alias": "龙骨匕首",
@@ -73,7 +82,9 @@ identity_relations 包含 other_id、decision（distinct / uncertain）、reason
     {"id": "M003", "source": {"scene_id": "1-2", "line": 1, "quote": "凯尔把屠龙匕首又称作龙骨匕首。"}, "raw_name": "龙骨匕首", "start_offset": 10, "end_offset": 14, "basis": "named", "timeline": "连续段1", "visibility": "reference", "state_id": null, "note": "同一名称说明，不计画面场次。"},
     {"id": "M004", "source": {"scene_id": "1-3", "line": 1, "quote": "莱拉接过这把匕首。"}, "raw_name": "这把匕首", "start_offset": 4, "end_offset": 8, "basis": "contextual", "timeline": "连续段1", "from": "M001", "identity_refs": [{"scene_id": "1-1", "line": 1, "quote": "凯尔拔出屠龙匕首。"}], "identity_reason": "连续段接过此前凯尔拔出的唯一匕首，未引入另一实物。", "visibility": "visible", "state_id": "S01", "holder": "莱拉", "note": ""}
   ],
-  "states": [{"id": "S01", "name": "常态", "description": "具体外观未说明。", "scenes": ["1-1", "1-3"], "evidence": "1-1:L1 凯尔拔出屠龙匕首。", "note": ""}]
+  "states": [{"id": "S01", "name": "常态", "description": "具体外观未说明。", "scenes": ["1-1", "1-3"], "evidence": "1-1:L1 凯尔拔出屠龙匕首。", "note": "",
+              "design": {"appearance": "刃身干净有光泽，皮革握柄略有使用磨痕", "damage": "完好，无缺口无血迹", "difference": "全剧唯一状态"},
+              "design_basis": "原文未写破损或染血，按常态完好设计。"}]
 }
 ```
 
@@ -88,6 +99,6 @@ python3 $S/build_xlsx.py <scenes.json> <assets.json> --sync-prop-scenes
 python3 $S/build_xlsx.py <scenes.json> <assets.json> --check
 ```
 
-states[].scenes 只从 visible 记录派生，按剧本顺序去重；同场断裂前后可分别有两个状态记录，但每个状态只计该场一次。同步不修改身份判读、不选状态，遇到错误不写回。已确认的非泛称在原文中的每次名称命中均需被实物记录覆盖，或明确记录为 reference；这项检查不等于发现所有未知异称，也不证明某泛称归属正确。
+states[].scenes 只从 visible 记录派生，按剧本顺序去重；同场断裂前后可分别有两个状态记录，但每个状态只计该场一次。同步不修改身份判读、不选状态，遇到错误不写回。已确认的非泛称在原文中的每次名称命中均需被实物记录覆盖，或明确记录为 reference；同名但并非这件实物的命中记为 unrelated 并在 note 写实际所指。这项检查不等于发现所有未知异称，也不证明某泛称归属正确。
 
 Excel 道具表保留统一主名、异称与身份依据及单次备注，场次总表保留当地原文称呼。导出后抽查跨称呼、交接、同名不同物、破损前后和仅提及场次；有疑问先改实物记录、同步校验，再生成。

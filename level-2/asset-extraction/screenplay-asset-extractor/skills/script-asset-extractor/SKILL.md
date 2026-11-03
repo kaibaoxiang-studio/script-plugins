@@ -1,12 +1,12 @@
 ---
 name: script-asset-extractor
 metadata:
-  version: "0.3.2"
+  version: "0.4.0"
 description: 从标准化剧本 docx 提取人物、场景、道具及外观状态，通过逐场审查、原文候选复核和保存后验收交付 Excel 资产表。用户提到剧本资产表、拆资产、提取人物场景道具或制作资产清单时使用。
 ---
 # 剧本资产表提取
 
-插件版本 `0.3.2`；业务兼容规则沿用历史 v0.1.1，运行时只使用插件内置脚本。输入标准 DOCX 或结构化 Markdown，正式交付 `assets.json` 与 `<剧名>-资产表.xlsx`，保持人物、场景、道具、场次总表四张表及原展示模板。正式模板四张表所有单元格统一水平、垂直居中并自动换行。
+插件版本 `0.4.0`；业务兼容规则沿用历史 v0.1.1，运行时只使用插件内置脚本。输入标准 DOCX 或结构化 Markdown，正式交付 `assets.json` 与 `<剧名>-资产表.xlsx`，保持人物、场景、道具、场次总表四张表及原展示模板。正式模板四张表所有单元格统一水平、垂直居中并自动换行。
 
 `$S` 指本 SKILL.md 所在目录下的 `scripts/`，不能使用当前工作目录代替。依赖 `python-docx==1.1.2`、`openpyxl==3.1.5`；PNG 证据校验仅使用标准库；所有脚本使用同一 Python 解释器。
 
@@ -22,6 +22,8 @@ python3 "$S/launch.py" "$S/env_diagnostics.py"
 
 所有诊断必须同时满足：Python 3.12+，并能导入 `jsonschema`、`yaml`、`docx`、`openpyxl`、`lxml`。如果诊断失败，必须停止并报告缺少的解释器或依赖，不能继续生成部分资产表。
 
+交付前的 `visual-review` 还需要 LibreOffice（`soffice`）和 Poppler（`pdftoppm`）。`prepare` 会提示是否缺少；缺少时在提取期间就先征得用户同意并安装（macOS：`brew install --cask libreoffice && brew install poppler`），不要等到最后一步。macOS 上 `soffice` 不在 PATH 时会自动查找 `/Applications/LibreOffice.app`。
+
 所有插件脚本必须通过 `$S/launch.py` 启动，例如：
 
 ```bash
@@ -32,7 +34,7 @@ python3 "$S/launch.py" "$S/workflow.py" prepare "<剧本.docx|剧本.md>" "<arti
 
 ## 启动与恢复
 
-先读 [执行台账与完成标准](../../references/execution_contract.md)。开始资产判断前读 [资产结构](../../references/asset_schema.md) 与 [提取和纠错规则](../../references/asset_judgment.md)。人物还须读 [状态规则](../../references/character_states.md)，道具还须读 [实物身份规则](../../references/prop_identity.md)。
+先读 [执行台账与完成标准](references/execution_contract.md)。开始资产判断前读 [资产结构](references/asset_schema.md) 与 [提取和纠错规则](references/asset_judgment.md)。人物还须读 [状态规则](references/character_states.md)，道具还须读 [实物身份规则](references/prop_identity.md)，填写设计层前读 [设计补全](references/design_completion.md)。用户提供了美术设定、人设图或世界观文件时，开始前一并读取，作为设计补全的首要依据。
 
 首次运行，选择剧本目录下新的 `<剧名>_资产提取/`：
 
@@ -48,7 +50,9 @@ python3 "$S/launch.py" "$S/workflow.py" diagnose-markdown "<剧本.md>"
 
 该命令只生成解析诊断，不建立资产判断。
 
-程序检查零集/零场、超过 5% 未识别段落、连续至少 10 行无法解析及表格正文；不达标时停止，不以失败解析继续。`prepare` 只建立原文结构、空白逐场台账与待复核线索，不进行语义提取，也不代表已读。Markdown 会去除标题标记、引用标记和分隔线，但保留原始文件行号；来源格式写入 `scenes.json.source.format`。
+程序检查零集/零场、某集无场次、超过 5% 未识别段落、连续至少 10 行无法解析及表格正文；不达标时停止，不以失败解析继续。`prepare` 只建立原文结构、空白逐场台账与待复核线索，不进行语义提取，也不代表已读。Markdown 会去除标题标记、引用标记、分隔线和 `**` 粗体，但保留原始文件行号；来源格式写入 `scenes.json.source.format`。
+
+解析器兼容的写法：集标题分隔符可为 `｜`、`・`、`·` 或空格；人物行可写 `人物：` 或 `出场人物：`；单独成行的 `【音效】`、`【配乐】` 等记为 `cue` 行，同样逐行审核。首场之前的设定、人物造型、大纲等段落记为设定区（`preamble`），不计入 5% 和 10 行门槛，但仍须在 `parse_reviews` 中逐条复核；设定区里出现疑似场头（如 `1-1 …`）时报错，须修正场头格式。场次内无法识别的行（例如双语稿的英文译文）照常计入门槛，需要先整理剧本格式。
 
 恢复已有工作时先运行：
 
@@ -60,7 +64,7 @@ python3 "$S/launch.py" "$S/workflow.py" status "<工作目录>"
 
 ## 分工和批次
 
-已获多agent授权时，先读 [分工与独立审核](../../references/agent_workflow.md)，用 `workflow.py team-init`、`fragment-template`、`submit`、`check-batch`、`merge` 管理三类独立片段。人物和道具各有全剧唯一责任人；主agent合并后交独立审核，责任方返修、审核者复查，最后统一绑定。失败执行最多3次、错峰重试，不用旧片段冒充新任务完成。
+已获多agent授权时，先读 [分工与独立审核](references/agent_workflow.md)，用 `workflow.py team-init`、`fragment-template`、`submit`、`check-batch`、`merge` 管理三类独立片段。人物和道具各有全剧唯一责任人；主agent合并后交独立审核，责任方返修、审核者复查，最后统一绑定。失败执行最多3次、错峰重试，不用旧片段冒充新任务完成。旧版本建立的分工目录在原文未变时先运行 `workflow.py team-upgrade`，再由三类 owner 以 `fragments/<kind>.json` 为底稿补齐新规则字段后重新提交。
 
 程序从已审appearances/mentions派生场次、类别和行关联，不生成身份、出镜或排除结论。`candidate-groups`减少重复阅读但保留全部原始线索。`diagnose`输出完整结构化错误及受影响范围，其他批次的待办与当前错误分开。
 
@@ -80,6 +84,10 @@ python3 "$S/launch.py" "$S/show_prop.py" "<工作目录>/scenes.json" "<工作�
 道具按实物身份建立 `mentions`，交接不新建物件；泛称/代词不得成为全局别名。明确拿取、递交、使用、特写任一线索都可登记，不因未知所有者或没有破损而漏提。固定陈设归场景，服装归人物。
 
 逐项填写台账中的独立原文候选：已收录须关联该位置的实际资产与记录；排除须有覆盖线索的原文证据及具体原因；不确定项保留待确认，不能正式交付。扫描不覆盖所有表达，不能用候选数量代替通读。人物多状态、初始重置及继承记录还要完成 `character_reviews` 全阶段复核。
+
+## 设计补全
+
+资产和状态边界确定后，读 [设计补全](references/design_completion.md)，为每个人物及其每个状态、每个子场景（无子场景时为场景本身）、每个道具及其每个状态填写 `design` 和 `design_basis`。原文层可以如实写未说明；设计层必须给出美术和服化道可直接使用的具体设计，出现「未说明」「待设计」「无」等占位会被 `bind`/`export` 拦截。依据优先用用户提供的美术设定文件，其次是剧本首场前的设定区，再次是正文描写，最后按身份、时代和剧本类型推断，并在 `design_basis` 写明来源。设计层不能用来新增资产、拆分状态或分配场次。
 
 ## 同步、校验、生成
 
@@ -110,11 +118,11 @@ python3 "$S/launch.py" "$S/workflow.py" compare-sources "<Markdown或DOCX>" "<Ma
 
 `bind` 在覆盖和证据通过后绑定当前快照，不生成判读或批准结论。改动资产/原文后旧绑定失效；用 diagnose 定位受影响范围，复核再绑定。分工模式的独立审核按范围过期，无关范围可保留；来源或版本变化全部失效。重复bind/export仅在来源、展示计划和工作簿验收均一致时保留视觉记录；变更后重新查看。导出自动重开已保存 Excel，按当前数据验收通过后才保留复核副本；没有通过时不会覆盖已有文件。
 
-有合理但无法消除的弱警告，先读 [警告确认](../../references/warning_approvals.md)，取得用户对具体警告的确认后保存 `warning_approvals.json`。不能自行代用户确认。任何错误或未确认警告阻止交付；已确认警告保留真实数量和内容。workflow 自动读取该确认文件；如单独执行 --check 或 check_workbook.py，须同时传 --warning-approvals "<工作目录>/warning_approvals.json"。
+有合理但无法消除的弱警告，先读 [警告确认](references/warning_approvals.md)，取得用户对具体警告的确认后保存 `warning_approvals.json`。不能自行代用户确认。任何错误或未确认警告阻止交付；已确认警告保留真实数量和内容。workflow 自动读取该确认文件；如单独执行 --check 或 check_workbook.py，须同时传 --warning-approvals "<工作目录>/warning_approvals.json"。
 
 ## 视觉复核与正式交付
 
-先读 [Excel 模板与验收](../../references/excel_output.md)。实际查看 `asset-table.review.xlsx` 四张表，检查分组、合并、长文本截断、阅读密度与实际筛选；将已查看的本地 PNG 预览图片及哈希和具体结论填入 `review.json.delivery_review`。自动检查不替代实际看图和语义判断，不能用占位图伪造证据。
+先读 [Excel 模板与验收](references/excel_output.md)。实际查看 `asset-table.review.xlsx` 四张表，检查分组、合并、长文本截断、阅读密度与实际筛选；将已查看的本地 PNG 预览图片及哈希和具体结论填入 `review.json.delivery_review`。自动检查不替代实际看图和语义判断，不能用占位图伪造证据。
 
 ```bash
 python3 "$S/launch.py" "$S/workflow.py" finalize "<工作目录>" --output "<剧本目录>/<剧名>-资产表.xlsx"
@@ -131,4 +139,8 @@ python3 "$S/launch.py" "$S/workflow.py" finalize "<工作目录>" --output "<剧
 
 ## 插件入口
 
-本插件保留一级 JSON 兼容入口；对 DOCX/Markdown 使用本目录 `scripts/workflow.py` 的 `prepare → 逐场复核 → bind → export → check → visual-review → finalize` 流程。插件包内的 `scripts/` 与 `references/` 是运行时副本，不依赖用户机器上的同名 skill。
+唯一入口是本目录 `scripts/workflow.py` 的 `prepare → 逐场复核 → bind → export → check → visual-review → finalize` 流程，只接受 DOCX/Markdown。旧版 `standardized_screenplay_v1` JSON 流程（`asset_run.py`、`pipeline_gate.py`、`verify_delivery.py`、`work.json`、`semantic_review`、`locations/effects` 数组、对象数组形式的 `evidence`）已移除，不得按其契约编写数据。数据结构只以 `references/` 内文档为准：顶层仅 `characters/scenes/props`，状态 `evidence` 为字符串，由 `evidence_refs` 经同步命令生成。
+
+## 分次执行与续跑
+
+全剧通常无法在一次对话内完成。每次处理一批（约 5 集）并写入 `review.json`/`assets.json` 后，运行 `status` 记录剩余项。上下文或时间不足时停在批次边界，向用户报告已完成集数和下一批起点，不跳过场次、不放宽门禁。下次对同一工作目录先运行 `status`，从首个缺项继续。需要用户确认警告或查看图片时，停下并说明需要的具体操作。

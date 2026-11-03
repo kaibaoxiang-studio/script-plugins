@@ -22,7 +22,10 @@ def main():
     if not args.install:
         print(json.dumps({'status':'install_required','target':str(target),
                           'command':[sys.executable,str(Path(__file__).resolve()),'--install']})); return
-    if not executable.exists(): venv.EnvBuilder(with_pip=True).create(target)
+    # Copied interpreters (e.g. from uv-managed Pythons) cannot locate their stdlib; symlink like `python -m venv`.
+    # Rebuild whenever the venv python is missing, a dangling symlink, or cannot start.
+    works = executable.exists() and not subprocess.run([str(executable),'-c','import encodings'],capture_output=True).returncode
+    if not works: venv.EnvBuilder(clear=True,with_pip=True,symlinks=os.name!='nt').create(target)
     subprocess.run(command,check=True)
     subprocess.run([str(executable),'-c','import yaml,jsonschema,docx,openpyxl,lxml'],check=True)
     print(json.dumps({'status':'ready','python':str(executable)}))

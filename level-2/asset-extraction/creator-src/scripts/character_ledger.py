@@ -1,4 +1,5 @@
 """人物逐场记录校验和派生场次。只验证可计算约束，不替代原文语义复核。"""
+import re
 from collections import defaultdict
 from asset_validation import input_errors
 from character_changes import validate_reviews
@@ -42,6 +43,25 @@ def derive_scenes(character, scenes):
 
 def evidence_text(refs):
     return '\n'.join(f'{r["scene_id"]}:L{r["line"]}：{r["quote"]}' for r in refs)
+
+
+def direction_spans(text):
+    """台词行里全角括号（…）内的舞台动作区间，例如「（推门而入）顾锦……」。"""
+    return [(m.start(1), m.end(1)) for m in re.finditer(r'（([^（）]+)）', text or '')]
+
+
+def in_direction(text, low, high):
+    return any(a <= low and high <= b for a, b in direction_spans(text))
+
+
+def quote_in_direction(text, quote, lower=0, upper=None):
+    upper = len(text) if upper is None else upper
+    start = text.find(quote, lower)
+    while start != -1 and start + len(quote) <= upper:
+        if in_direction(text, start, start + len(quote)):
+            return True
+        start = text.find(quote, start + 1)
+    return False
 
 
 def validate_characters(data, assets, check_derived=True):
@@ -147,15 +167,18 @@ def validate_characters(data, assets, check_derived=True):
                 if check_refs(refs, scenes, rlabel + ' 出镜证据', errors):
                     for ref in refs:
                         line = ref['line']
+                        row = scenes[sid]['lines'][line - 1] if ref['scene_id'] == sid else {}
                         if (ref['scene_id'] != sid or not start <= line <= end
-                                or scenes[sid]['lines'][line - 1].get('type') != 'action'):
-                            errors.append(f'{rlabel} 动作出镜证据必须位于本阶段的动作行')
+                                or row.get('type') not in ('action', 'dialog')):
+                            errors.append(f'{rlabel} 动作出镜证据必须位于本阶段的动作行或台词括注')
                         else:
-                            text = scene['lines'][line - 1].get('text', '')
+                            text = row.get('text', '')
                             lower = start_offset if line == start else 0
                             upper = end_offset if line == end else len(text)
                             if ref['quote'] not in text[lower:upper]:
                                 errors.append(f'{rlabel} 动作出镜证据超出本阶段字符区间')
+                            elif row['type'] == 'dialog' and not quote_in_direction(text, ref['quote'], lower, upper):
+                                errors.append(f'{rlabel} 台词行只能引用全角括号里的舞台动作作出镜证据，台词内容不证明出镜')
             else:
                 errors.append(f'{rlabel} presence.kind 必须为 header/action；台词提及不证明出镜')
 
