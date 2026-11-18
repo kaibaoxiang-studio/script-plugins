@@ -66,7 +66,7 @@ class Executor:
                 task,envelope_schema(capability['output_schema']),directory,
                 writable=execution.get('access','read-only')=='workspace-write',
                 network=execution.get('network',False),timeout=timeout,cancel=canceled,
-                thread_id=thread_id,on_thread=on_thread)
+                on_thread=on_thread)
         write_json(directory/'input.json',task)
         result_path=directory/'result.json'
         result_path.unlink(missing_ok=True)

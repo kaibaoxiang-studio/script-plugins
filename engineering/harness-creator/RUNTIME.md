@@ -10,6 +10,10 @@ python harness.py validate
 
 bootstrap 将独立环境写入用户缓存；harness.py 自动找到这个环境，避免依赖系统 Python 包。它不修改 Codex 配置。已有兼容环境也可直接执行。
 
+## 宿主执行与独立CLI
+
+专业设计/语义工作默认由当前宿主主控调用原生子代理，读取准确Skill和相关知识，主控统一交付；见 [HOST_EXECUTION.md](HOST_EXECUTION.md)。Python运行器没有宿主工具桥。CLI默认 --agent-backend host：Agent节点报告未执行，不启动App Server；Python-only图可照常执行。只有明确选择独立CLI兼容时，才为run/run-capability/resume传 --agent-backend appserver。该分支仅临时会话，拒绝恢复旧持久派发聊天。
+
 ## 调用
 
 输入存为 JSON，使用目标插件的 capability id 或 workflow id：
@@ -27,7 +31,7 @@ python harness.py replay --workspace /absolute/work --run-id RUN_ID
 
 运行数据和最终文件在工作区 `.harness/RUN_ID/NODE/attempt-N/`，run-report.json 汇总实际结果。数据库存于工作区 `.harness/runs.sqlite3`。输入、插件或已完成产物改变时应启动新任务。运行记录包含本地路径和业务输入，默认仅保存在本机，打包不包含它们。
 
-Agent 使用 Codex App Server 的本地 stdio 协议，继承当前模型配置，按节点分配本地写目录。Python 脚本是已审阅的本地程序；任务目录约定和产物路径校验不构成操作系统级进程沙箱。
+显式CLI兼容的Agent 使用 Codex App Server 的本地 stdio 协议，继承当前模型配置，按节点分配本地写目录。Python 脚本是已审阅的本地程序；任务目录约定和产物路径校验不构成操作系统级进程沙箱。
 
 ## 建设过程的功能级验收
 

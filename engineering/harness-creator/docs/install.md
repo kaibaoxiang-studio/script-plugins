@@ -28,13 +28,13 @@ codex plugin add harness-creator@harness-creator-local --json
 
 安装后新建聊天，选择 Harness Creator，或明确调用 `$harness-creator`。补资料时可单独调用 `$harness-knowledge-maintainer`。当前聊天中的 Skill 清单不会因为 CLI 安装而自动刷新。
 
-插件在聊天内直接使用已安装 Skill，也可通过 harness.py 运行显式能力或 DAG。App Server 使用当前 Codex 的模型配置和登录状态；运行器不内置模型名称或密钥。
+插件在聊天内由主控使用宿主原生子代理安排专业工作；Python 确定性能力仍通过 harness.py 运行。旧 Agent 蓝图的独立 CLI 调用须明确选择 `--agent-backend appserver`，每次创建并核验临时会话，不支持时停止，不恢复普通聊天。该兼容分支使用当前 Codex 的模型配置和登录状态；运行器不内置模型名称或密钥。见[宿主执行](../HOST_EXECUTION.md)。
 
 ## 打包与更新
 
 ```sh
 /absolute/path/to/python3.12 harness.py validate
-/absolute/path/to/python3.12 harness.py package --output dist/harness-creator-0.2.0.zip
+/absolute/path/to/python3.12 harness.py package --output dist/harness-creator-0.2.2.zip
 ```
 
 已有文件不会被打包命令覆盖。更新 Creator 时先在独立候选目录完成修改与验证，再交付新包并更新安装。生成插件通过 `revise` 保留用户修改；存在双方修改冲突时给出具体文件，由 Creator 读实际内容后融合。
@@ -46,6 +46,7 @@ codex plugin add harness-creator@harness-creator-local --json
 - Python 过旧：使用 Python 3.12+ 重新执行 bootstrap。
 - 缺少 Codex：将可用 CLI 放入 PATH，或设置 `HARNESS_CODEX_BIN` 为 CLI 的完整路径。
 - 模型调用失败：查看节点失败记录，核对 Codex 登录与当前模型可用性。
+- 默认 CLI Agent 未执行：回到当前宿主按 Skill 委派原生子代理；只有明确要求独立兼容调用时才选择 App Server，不能把“未执行”写成已完成。
 - 恢复被拒绝：插件、输入文件或已完成产物已变化，应按当前版本创建新任务；旧运行记录仍保留。
 - 节点等待业务信息：读取 run-report.json 的 questions，再通过 resume --answers 提供用户真实答案。
 

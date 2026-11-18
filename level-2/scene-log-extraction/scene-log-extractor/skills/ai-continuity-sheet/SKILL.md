@@ -39,6 +39,8 @@ description: "从一级标准化 JSON 一次提取整剧场记表与审查报告
 
 独立插件调用 `extract-scene-log`。需要可恢复的整剧命令时，运行包内 `scripts/run_scene_log.py --source <一级JSON> --workspace <运行目录> --output <交付目录>`；`--episodes 2,3` 仅输出指定集，`--resume <run_id>` 在输入与插件版本未变时续跑。运行使用包内 Harness，不依赖 `jimeng-storyboard-v3`、Skill Orchestrator 或开发机已安装的其他业务 Skill。
 
+**后台会话规则**：逐场分拍、逐场填写和连续性复核属于内部节点，必须以 `ephemeral=true` 启动，不得把调度任务保留为用户聊天。断点续跑以 `.harness/runs.sqlite3` 中的节点结果为准；未完成节点从完整输入与已有答案重新执行，不恢复旧 Agent 会话。不得为了隐藏聊天而删除交付物或运行记录。
+
 原 `scripts/convert_continuity_sheet.py <旧版Markdown> [Excel]` 命令继续可用，供历史表格转换；新流程直接使用结构化 JSON 写工作簿。
 
 ## Packaged references

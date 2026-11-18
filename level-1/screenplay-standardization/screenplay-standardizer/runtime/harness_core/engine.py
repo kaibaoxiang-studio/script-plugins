@@ -46,7 +46,10 @@ def verify_result(result, capability, artifact_dir):
     return artifacts
 
 class Executor:
-    def __init__(self, root):
+    def __init__(self, root, agent_backend='host'):
+        if agent_backend not in {'host', 'appserver'}:
+            raise ValueError('Unknown agent backend')
+        self.agent_backend=agent_backend
         self.root=Path(root).resolve()
         self.client=None
         self.client_lock=threading.Lock()
@@ -58,6 +61,8 @@ class Executor:
         execution=capability['execution']
         timeout=node.get('timeout_seconds',600)
         if execution['kind']=='agent':
+            if self.agent_backend != 'appserver':
+                raise RuntimeError('Agent work requires host-native subagents; this CLI cannot call host tools. Use the plugin Skill in the host, or explicitly opt into temporary compatibility execution with --agent-backend appserver.')
             with self.client_lock:
                 if self.client is None:
                     self.client=AppServer()
@@ -96,13 +101,13 @@ class Executor:
         if self.client: self.client.close()
 
 class Engine:
-    def __init__(self, root, workspace, executor=None):
+    def __init__(self, root, workspace, executor=None, *, agent_backend='host'):
         self.root=Path(root).resolve()
         self.workspace=Path(workspace).resolve()
         self.catalog=read_json(self.root/'capabilities.json')
         self.capabilities={item['id']:item for item in self.catalog['capabilities']}
         self.store=Store(self.workspace/'.harness/runs.sqlite3')
-        self.executor=executor or Executor(self.root)
+        self.executor=executor or Executor(self.root, agent_backend=agent_backend)
 
     def create(self,workflow,inputs):
         graph_order(workflow,self.capabilities)

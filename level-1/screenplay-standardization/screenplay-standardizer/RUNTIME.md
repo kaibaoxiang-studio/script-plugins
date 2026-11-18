@@ -1,3 +1,9 @@
+# 当前宿主执行方式
+
+普通专业设计与语义任务由当前主控按Skill使用宿主原生子代理，Python负责解析、校验、保存和导出。本CLI不能直接调用宿主原生工具；默认遇到Agent节点会明确失败，不创建App Server聊天。旧独立CLI确需执行模型节点时，在run/run-capability/resume中显式传 `--agent-backend appserver`；此兼容模式只新建临时会话，服务未确认临时属性就停止，不恢复旧持久聊天。原生工具不可用时如实报告，不将未执行专项或独立验收伪报完成。Python节点、status/replay/cancel与已有工程文件仍按原合同工作。
+
+以下为保留的独立CLI与历史接口说明，Agent执行需遵守上述显式选择。
+
 # 本地运行说明
 
 需要 Python 3.12+ 和已登录的 Codex CLI。代码使用 `jsonschema` 与 `PyYAML`，全部依赖版本和发行文件哈希锁定在 requirements.lock。

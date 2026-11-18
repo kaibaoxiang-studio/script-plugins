@@ -1,5 +1,8 @@
 # 场记表提取｜二级插件
 
+当前主分支插件为 **v0.1.1**（2026-11-18本机同步），以[`scene-log-extractor/README.md`](scene-log-extractor/README.md)和同目录`.codex-plugin/plugin.json`为准。[同版安装包](https://github.com/kaibaoxiang-studio/script-plugins/releases/tag/scene-log-extractor-v0.1.1)包含当前实现及核对清单。下方保留历史组件说明；旧来源快照与固定标签不自动代表新版。
+
+
 场记表提取与[剧本资产表提取](../asset-extraction/README.md)是并列的二级能力，均读取一级「剧本标准化」交付的 `standardized_screenplay_v1` JSON。场记表承担叙事分拍及逐拍制作信息整理：**一个 P 对应一个叙事拍**，不另设三级节拍插件。场记表与资产表各自从一级输入提取，不要求先运行另一项二级能力。
 
 本目录收录团队源仓库 [kaibaoxiang-studio/ai-continuity-sheet](https://github.com/kaibaoxiang-studio/ai-continuity-sheet) 的固定快照，提交为 [`3724a23`](https://github.com/kaibaoxiang-studio/ai-continuity-sheet/tree/3724a2333ad93aadd8554d54e09155c80d8be54e)。可安装插件 `scene-log-extractor` 当前版本为 **0.1.0**；「剧本插件 1.0」表示这套一级、二级能力的整合发布版本。团队仍可在源仓库维护场记能力，后续同步需记录来源版本。

@@ -54,6 +54,9 @@ def parser():
             cmd.add_argument('--workflow' if name=='run' else '--capability',required=True)
         else: cmd.add_argument('--run-id',required=True)
         if name=='resume': cmd.add_argument('--answers',type=Path)
+        if name in {'run','run-capability','resume'}:
+            cmd.add_argument('--agent-backend',choices=('host','appserver'),default='host',
+                             help='Agent work uses host native delegation by default; appserver explicitly opts into standalone ephemeral compatibility.')
     cmd=commands.add_parser('discover'); cmd.add_argument('--query',required=True); cmd.add_argument('--limit',type=int,default=8)
     cmd=commands.add_parser('fetch-source'); cmd.add_argument('--repo',required=True)
     cmd.add_argument('--revision',required=True); cmd.add_argument('--output',type=Path,required=True)
@@ -118,7 +121,7 @@ def execute(args,root):
         if command!='resume' and not args.confirmed: raise ValueError('Run requires the requested/confirmed task (--confirmed)')
         validation=validate_plugin(plugin)
         if not validation['valid']: raise ValueError('; '.join(validation['errors']))
-        engine=Engine(plugin,args.workspace)
+        engine=Engine(plugin,args.workspace,agent_backend=args.agent_backend)
         if command=='resume':
             return engine.execute(args.run_id,read_json(args.answers) if args.answers else None)
         inputs=read_json(args.inputs)

@@ -45,8 +45,14 @@ def verify_result(result, capability, artifact_dir):
                 raise ValueError(f'Required artifact not declared: {required}')
     return artifacts
 
+class HostDelegationRequired(ValueError):
+    """A semantic task must be delegated by the current host, not Python."""
+
 class Executor:
-    def __init__(self, root):
+    def __init__(self, root, agent_backend="host"):
+        if agent_backend not in {"host", "appserver"}:
+            raise ValueError("Unknown agent backend")
+        self.agent_backend=agent_backend
         self.root=Path(root).resolve()
         self.client=None
         self.client_lock=threading.Lock()
@@ -58,6 +64,11 @@ class Executor:
         execution=capability['execution']
         timeout=node.get('timeout_seconds',600)
         if execution['kind']=='agent':
+            if self.agent_backend != 'appserver':
+                raise HostDelegationRequired(
+                    'Agent task not executed: use the current host native subagent tools with '
+                    'the selected Skill; Python cannot call those tools. An explicitly requested '
+                    'standalone compatibility run may use --agent-backend appserver.')
             with self.client_lock:
                 if self.client is None:
                     self.client=AppServer()
@@ -96,13 +107,13 @@ class Executor:
         if self.client: self.client.close()
 
 class Engine:
-    def __init__(self, root, workspace, executor=None):
+    def __init__(self, root, workspace, executor=None, agent_backend="host"):
         self.root=Path(root).resolve()
         self.workspace=Path(workspace).resolve()
         self.catalog=read_json(self.root/'capabilities.json')
         self.capabilities={item['id']:item for item in self.catalog['capabilities']}
         self.store=Store(self.workspace/'.harness/runs.sqlite3')
-        self.executor=executor or Executor(self.root)
+        self.executor=executor if executor is not None else Executor(self.root, agent_backend=agent_backend)
 
     def create(self,workflow,inputs):
         graph_order(workflow,self.capabilities)
@@ -221,7 +232,8 @@ class Engine:
                             'thread_id':thread_id,'artifacts':artifacts,'finished_at':now()})
                     except Exception as exc:
                         node=nodes[node_id]
-                        retry=node.get('idempotent',False) and attempt<=node.get('retries',1)
+                        retry=(not isinstance(exc,HostDelegationRequired) and
+                               node.get('idempotent',False) and attempt<=node.get('retries',1))
                         self.store.append(run_id,'node',{**prior,'status':'retry' if retry else 'failed',
                             'error':redact(exc),'finished_at':now()})
         result=self.store.get(run_id)

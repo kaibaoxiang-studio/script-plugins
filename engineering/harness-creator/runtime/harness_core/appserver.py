@@ -38,7 +38,7 @@ class AppServer:
         for reader in self.readers:
             reader.start()
         self.request('initialize', {'clientInfo': {'name':'harness-creator', 'title':'Harness Creator',
-                                                 'version':'0.2.0'}})
+                                                 'version':'0.2.2'}})
         self.send({'method':'initialized','params':{}})
 
     def _errors(self):
@@ -107,12 +107,12 @@ class AppServer:
     def run(self, skill_path, task, schema, workdir, writable=False, network=False,
             timeout=600, cancel=None, thread_id=None, on_thread=None):
         self.start()
-        if thread_id:
-            thread = self.request('thread/resume', {'threadId':thread_id})['thread']
-        else:
-            thread = self.request('thread/start', {
-                'cwd':str(Path(workdir).resolve()), 'approvalPolicy':'never',
-                'sandbox':'workspace-write' if writable else 'read-only', 'ephemeral':False})['thread']
+        # Prior IDs are diagnostic only; resume from task inputs/answers, not a saved chat.
+        thread = self.request('thread/start', {
+            'cwd':str(Path(workdir).resolve()), 'approvalPolicy':'never',
+            'sandbox':'workspace-write' if writable else 'read-only', 'ephemeral':True})['thread']
+        if thread.get('ephemeral') is not True:
+            raise RuntimeError('App Server did not confirm an ephemeral dispatcher thread; refusing persistent fallback')
         thread_id = thread['id']
         if on_thread:
             on_thread(thread_id)

@@ -1,5 +1,8 @@
 # 一级 · 剧本标准化
 
+当前主分支插件为 **v0.1.3**（2026-11-18本机同步），以[`screenplay-standardizer/README.md`](screenplay-standardizer/README.md)和同目录`.codex-plugin/plugin.json`为准。[同版安装包](https://github.com/kaibaoxiang-studio/script-plugins/releases/tag/screenplay-standardizer-v0.1.3)包含当前实现及核对清单。下方保留历史组件说明；旧来源快照与固定标签不自动代表新版。
+
+
 展示名「剧本标准化」，组件 screenplay-standardizer 0.1.2。接收 DOCX、TXT、Markdown 剧本或分集细纲，交付两个二级插件共同使用的标准 JSON。
 
 | 入口 | 作用 | 文件 |

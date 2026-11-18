@@ -13,7 +13,7 @@ from .common import inside, files, sha, read_json, write_json, write_text, requi
 from .contracts import graph_order, validate_data
 
 RESERVED = {'capabilities.json','plugin.json','.codex-plugin/plugin.json','harness.py',
-            'requirements.lock','scripts/bootstrap.py','generation-lock.json'}
+            'requirements.lock','scripts/bootstrap.py','generation-lock.json','HOST_EXECUTION.md'}
 
 def skill_metadata(path):
     text=Path(path).read_text(encoding='utf-8')
@@ -137,22 +137,33 @@ def build(spec,output,core_root,confirmed=False):
             catalog['capabilities'].append(item)
             refs='\n'.join(f'- [{path}](../../{path})' for path in item.get('knowledge_refs',[]))
             body=capability['instructions']
+            if item['execution']['kind']=='agent':
+                body=('## Execution in the current host\n\n'
+                      'For this semantic capability, use the current host native subagent tools when '
+                      'professional design or independent analysis is required. Read the exact selected Skill '
+                      'and relevant references; return actual usable content to the parent. Do not create '
+                      'ordinary chats or recursively invoke this capability through the bundled harness. '
+                      'If already assigned as the specialist, or explicitly running CLI compatibility, '
+                      'execute this supplied capability directly rather than delegating the same task again. '
+                      'A request limited to mechanical editing can be handled directly. '
+                      'If native delegation is unavailable, report what was not executed; do not claim specialist participation. '
+                      'See [host execution](../../HOST_EXECUTION.md).\n\n'+body)
             if refs: body+='\n\n## Packaged references\n\n'+refs
             _skill(staging,item['skill_name'],item['description'],body,capability.get('explicit_only',False))
         if plugin['name'] not in {item['skill_name'] for item in spec['capabilities']}:
             routes='\n'.join(f'- `${item["skill_name"]}`: {item["description"]}' for item in spec['capabilities'])
             _skill(staging,plugin['name'],plugin['description'],
                 f'# {plugin["name"]}\n\n{spec["goal"]}\n\nMatch the request to a capability below. Read its SKILL.md and relevant references. '
-                'Ask only for missing consequential inputs; preserve established decisions. Run Python-backed capabilities through the bundled harness. '
+                'Ask only for missing consequential inputs; preserve established decisions. Delegate substantive professional work through the current host native subagent tools, with goals, constraints and exact Skill paths. Keep final integration in this main thread. Do not create ordinary user chats. Run Python-backed capabilities through the bundled harness. '
                 'Use the workspace selected by the user and report actual artifacts and remaining failures.\n\n'+routes+
-                '\n\nSee [runtime instructions](../../RUNTIME.md).',True)
+                '\n\nSee [host execution](../../HOST_EXECUTION.md) and [runtime instructions](../../RUNTIME.md).',True)
         write_json(staging/'capabilities.json',catalog)
         for relative,content in spec.get('files',{}).items():
             if not isinstance(content,str): raise ValueError('Blueprint file contents must be text')
             write_text(inside(staging,relative),content)
         core_root=Path(core_root).resolve()
         shutil.copytree(core_root/'runtime',staging/'runtime',ignore=shutil.ignore_patterns('__pycache__'))
-        for relative in ('harness.py','scripts/bootstrap.py','requirements.lock','RUNTIME.md','THIRD_PARTY_NOTICES.md'):
+        for relative in ('harness.py','scripts/bootstrap.py','requirements.lock','RUNTIME.md','HOST_EXECUTION.md','THIRD_PARTY_NOTICES.md'):
             target=staging/relative; target.parent.mkdir(parents=True,exist_ok=True)
             shutil.copy2(core_root/relative,target)
         shutil.copytree(core_root/'licenses',staging/'licenses')

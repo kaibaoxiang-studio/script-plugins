@@ -25,6 +25,8 @@
 
 必须实际编写 `files["scripts/count.py"]`：解析 input/output 参数，从任务 inputs 取 text，计算 len(text)，向 artifact_dir/report.json 写结果，再向 --output 写结果 envelope。构建前确认输入定义和输出规则，不能用硬编码示例值代替实现。
 
+专业Agent能力在宿主依[宿主执行](../../../HOST_EXECUTION.md)实际调用原生子代理。生成器会附相对路径指导及完整宿主执行文件，Python不会假调用原生工具。旧schema保持兼容。
+
 Agent 能力的 execution 形如 `{"kind":"agent","access":"workspace-write","network":false}`；无需写文件的节点可用 read-only。其 instructions 应包含当前业务方法、证据要求和验收，而不是仅要求模型“专业地完成”。
 
 `files` 包含已写好的 references、scripts 和模板文本；引用根目录资料时 Skill 内链接使用 `../../references/...`。蓝图不会复制开发机 `.venv`、源库、其他业务 Skills 或环境配置。

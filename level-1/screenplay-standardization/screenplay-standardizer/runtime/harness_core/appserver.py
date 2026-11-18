@@ -107,12 +107,12 @@ class AppServer:
     def run(self, skill_path, task, schema, workdir, writable=False, network=False,
             timeout=600, cancel=None, thread_id=None, on_thread=None):
         self.start()
-        if thread_id:
-            thread = self.request('thread/resume', {'threadId':thread_id})['thread']
-        else:
-            thread = self.request('thread/start', {
-                'cwd':str(Path(workdir).resolve()), 'approvalPolicy':'never',
-                'sandbox':'workspace-write' if writable else 'read-only', 'ephemeral':False})['thread']
+        # Old IDs are diagnostics, never resumable ordinary chats.
+        thread = self.request('thread/start', {
+            'cwd':str(Path(workdir).resolve()), 'approvalPolicy':'never',
+            'sandbox':'workspace-write' if writable else 'read-only', 'ephemeral':True})['thread']
+        if thread.get('ephemeral') is not True:
+            raise RuntimeError('App Server did not confirm an ephemeral dispatcher thread; refusing persistent fallback')
         thread_id = thread['id']
         if on_thread:
             on_thread(thread_id)

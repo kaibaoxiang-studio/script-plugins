@@ -29,6 +29,8 @@ python harness.py replay --workspace /absolute/work --run-id RUN_ID
 
 Agent 使用 Codex App Server 的本地 stdio 协议，继承当前模型配置，按节点分配本地写目录。Python 脚本是已审阅的本地程序；任务目录约定和产物路径校验不构成操作系统级进程沙箱。
 
+分拍、逐拍建议和连续性复核等内部 Agent 节点使用临时会话，不进入用户聊天列表。断点续跑读取工作区的结构化运行记录：已完成节点复用校验过的结果，未完成节点在新的临时会话中重做。临时会话的 ID 仅用于当次运行诊断，不可跨进程恢复。
+
 ## 发行
 
 `python harness.py package --output /absolute/plugin-version.zip` 验证并打包。ZIP 内包含一个插件根目录，可解压后作为本地 marketplace 的插件源。包中不包含 `.venv`、`.harness`、Git 历史、测试运行数据或集中原文源库。

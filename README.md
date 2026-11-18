@@ -1,84 +1,88 @@
-# 开宝箱工作室 · 剧本插件 1.0
+# 开宝箱工作室 · 剧本插件
 
-本仓库现已公开，直接提供完整剧本插件与安装包。资产能力请使用公开源仓库 [ZiChan](https://github.com/kaibaoxiang-studio/ZiChan)；公开测试镜像 r4 已撤下。
+三个业务插件分别负责剧本标准化、场记表和资产表；Harness Creator是额外的能力建设工具。两项二级业务读取同一份一级标准JSON，可分别运行。资产能力另见[ZiChan](https://github.com/kaibaoxiang-studio/ZiChan)，其访问权限以该仓库为准。
 
-团队共建的三个业务插件：**剧本标准化（一级）**、**场记表提取（二级）**、**剧本资产表提取（二级）**。两项二级能力直接读取同一份一级标准 JSON，可分别运行；资产提取另支持标准 DOCX 独立入口。节拍归入场记表。
+## 主分支当前组件（2026-11-18）
 
-项目版本为 **1.0.2（2026-10-27）**。剧本标准化组件为 **0.1.2**，资产表提取当前组件版本见[该组件说明](level-2/asset-extraction/README.md)，场记为 **0.1.0**，Harness Creator 为 **0.2.0 候选版**。仓库包含完整插件、维护源码、统一安装目录、独立 ZIP 和脱敏测试证据。
-
-## 功能与交付
-
-| 层级 | 插件 / 入口 | 输入 | 交付 |
+| 组件 | 当前版本 | 用途与入口 | 本次状态 |
 | --- | --- | --- | --- |
-| 一级 | [剧本标准化](level-1/screenplay-standardization/README.md) · standardize-screenplay / review-screenplay | DOCX、TXT、Markdown 剧本；纯细纲需经 Agent 创作 | 标准剧本 JSON / Markdown、独立疑点报告 |
-| 二级 | [场记表提取](level-2/scene-log-extraction/README.md) · extract-scene-log | 完成的 standardized_screenplay_v1 JSON | 按叙事拍组织的 JSON、每集一页的 13 列 Excel、独立审查报告 |
-| 二级 | [剧本资产表提取](level-2/asset-extraction/README.md) · extract-asset-table | 同一份一级 JSON；标准 DOCX 独立入口 | 人物 / 场景 / 道具 / 按需特效资产 JSON、Excel、独立疑点报告 |
-| 额外工程 | [Harness Creator](engineering/README.md) · harness-creator | 业务需求、已有插件或知识 | 能力设计、源码、插件构建、维护与验证 |
+| [剧本标准化](level-1/screenplay-standardization/screenplay-standardizer/README.md) | v0.1.3 | `$standardize-screenplay` / `$review-screenplay` | 同步本机原生语义委派与CLI兼容路线 |
+| [场记表](level-2/scene-log-extraction/scene-log-extractor/README.md) | v0.1.1 | `$ai-continuity-sheet` | 本机原有运行时、临时会话与辅助知识更新的同步补丁 |
+| [资产表](level-2/asset-extraction/screenplay-asset-extractor/README.md) | v0.4.0 | 以该组件当前Skill与README为准 | 保留仓库既有新版；不由本机较旧v0.1.2覆盖 |
+| [Harness Creator](engineering/harness-creator/README.md) | v0.2.2 候选 | `$harness-creator` | 原生专业委派；Grill Me按名使用Skill Orchestrator中的版本 |
 
-**Harness Creator 是额外的通用工程，不属于一级或二级节点。** 三个业务插件均自带运行代码与知识，使用时无需另装 Creator。
+当前版本以各目录的`.codex-plugin/plugin.json`为准。`release.json`及v1.0.2标签保留历史组合发行记录，不代表主分支当前组件版本。本次只同步表中有本机增量的三项，保留资产表v0.4.0及其知识和兼容文件。
+
+## 安装与更新
+
+从仓库主分支注册市场可获取当前组件：
+
+```sh
+codex plugin marketplace add https://github.com/kaibaoxiang-studio/script-plugins.git
+```
+
+在Codex插件目录选择该市场并安装所需插件。若此前安装时固定了`--ref v1.0.2`，该历史标签不会自动变成新版；应切换到主分支或使用下列独立安装包。完整保留插件目录，不只复制Skill正文。
+
+- [剧本标准化v0.1.3](https://github.com/kaibaoxiang-studio/script-plugins/releases/tag/screenplay-standardizer-v0.1.3)
+- [场记表v0.1.1](https://github.com/kaibaoxiang-studio/script-plugins/releases/tag/scene-log-extractor-v0.1.1)
+- [Harness Creator v0.2.2候选](https://github.com/kaibaoxiang-studio/script-plugins/releases/tag/harness-creator-v0.2.2)
+
+独立包附README、逐文件manifest及SHA256校验值。Python与依赖要求以各包RUNTIME.md为准。Creator独立调用Grill Me需安装Skill Orchestrator；未安装时按Creator自身对齐方法处理，不伪报调用。
+
+## 工作流
 
 ```mermaid
 flowchart TD
-    A["原始剧本 / 细纲"] --> B["一级：剧本标准化"]
-    B --> C["标准剧本 JSON"]
-    C --> D["二级：场记表提取（含叙事拍）"]
-    C --> E["二级：剧本资产表提取"]
-    D --> F["场记表 + 独立审查报告"]
-    E --> G["资产表 + 独立疑点报告"]
+    S[原始剧本或细纲] --> A[一级 标准化与独立疑点]
+    A --> J[同一份标准JSON]
+    J --> L[二级 场记表与制作建议]
+    J --> E[二级 人物场景道具资产表]
+    L --> U[人工复核]
+    E --> U
+    C[Harness Creator 候选] -.建设维护.-> A
+    C -.建设维护.-> L
+    C -.建设维护.-> E
 ```
 
-本次修复未完成提取也能导出的漏洞：JSON 与 DOCX 入口都要求覆盖原文的逐场语义审核，正式导出校验来源和资产快照；合法零道具仍可通过。底稿、字段校验与全文提取明确区分，缺审核不能正式交付。内部任务使用临时会话。[补丁验证与兼容说明](docs/validation-v1.0.2.md)。
-
-框架只有一级和二级产物。资产提取以标准剧本原文为依据，不以场记表作为必需输入。
-
-## Harness Creator v0.2.0（候选）
-
-用于创建、吸收和维护独立能力插件。本次增加功能级交付计划、真实检查日志、最终文件指纹及验收证据门槛，并修复真实 Agent 加载已选 Skill 的超时问题。三个业务插件未随本次更新重建，业务项目版本仍为 1.0.2。
-
-- [Creator 能力与工作流](engineering/harness-creator/README.md)
-- [候选安装包与验证附件](https://github.com/kaibaoxiang-studio/script-plugins/releases/tag/harness-creator-v0.2.0)
-- [发布复核与限制](engineering/harness-creator/docs/publication-v0.2.md)
-
-候选通过29项确定性测试及6能力／7 Skills结构检查；历史小型真实调用已成功，尚未完成真实剧本整链和候选自身独立验收。下方固定v1.0.2市场保留历史版本；试用新版Creator请下载上述ZIP，按包内安装说明注册解压目录。
-
-## 安装与使用
-
-添加固定的 1.0 市场：
-
-```sh
-codex plugin marketplace add https://github.com/kaibaoxiang-studio/script-plugins.git --ref v1.0.2
+```mermaid
+sequenceDiagram
+    participant U as 使用者
+    participant P as 对应业务主控
+    participant A as 语义专业执行
+    participant T as 本地脚本
+    U->>P: 剧本及本次处理范围
+    P->>A: 相关原文与处理要求
+    A-->>P: 按来源处理的语义结果
+    P->>T: 当前结构化结果
+    T-->>P: 保存 校验与导出
+    P-->>U: 标准产物与独立疑点
 ```
 
-在 Codex 插件目录选择「开宝箱剧本插件 1.0」，分别安装三个业务插件；维护插件时再选装 Creator。[安装说明](docs/installation.md)包含 CLI 命令、Python 运行时及调用示例。
+```mermaid
+flowchart LR
+    O[原文及来源位置] --> S[标准JSON]
+    S --> L[集场拍与完整对白]
+    S --> E[资产身份 状态与证据]
+    L --> LX[场记JSON Excel与报告]
+    E --> EX[资产JSON Excel与报告]
+```
 
-1. 用「剧本标准化」得到 标准化剧本.json、标准化剧本.md 和独立疑点报告。
-2. 将 **JSON** 分别交给两个二级插件。Markdown 用于阅读；二级正式输入为 JSON。
-3. 复核二级报告。摄影、灯光、表演、时长和制作需求须由制作方确认。
+不同组件保留自身执行合同；图示不代表已实现跨插件自动调度或统一批准数据库。摄影、灯光、表演、时长及创作补全仍需按组件规则人工复核。
 
-## 剧本 1.0 历史测试结果与范围
+## 发行验证与限制
 
-| 测试 | 已交付结果 | 边界 |
-| --- | --- | --- |
-| 一级真实业务样例 | 10 集、28 场、1 条疑点 | 经 Agent 整理和脚本校验，含定点修订 |
-| 场记表第 1–2 集 | 5 场、28 拍、110 个原文单元、43 段对白；2 页各 13 列 | 交付前补记 3 处细节；最终 31 条提示：9 条上游来源提示、22 条制作不确定项 |
-| 资产表全剧 | 28 场；22 人物、17 场景、26 道具、0 单列特效；3 条疑点 | 来源、结构和工作簿核对通过，仍需人工核定资产语义与遗漏 |
-| 三份长稿资产验证 | 整稿结构验证；各前两集真实 Agent 提取 | 未逐集人工核定三部全剧 |
-| 确定性检查 | Creator 历史 24 通过（v0.2.0 发布复核 29 通过）；一级 10 通过 / 1 私有样稿跳过；场记 6 通过；资产验收脚本通过 | 与既有真实模型调用分开记录 |
+2026-11-18同步以本机实装文件为依据，完成元数据、Skill引用、Python语法、源码结构和ZIP逐文件核对；Creator有36项确定性测试通过。具体命令及范围见各发行manifest。未重新付费调用模型处理整剧，也未做Windows真机或图像效果验收。
 
-细节、修正记录、匿名运行编号和产物哈希见[1.0 验证记录](docs/validation-v1.0.md)。真实剧本、完整业务产物和原始日志留在本地；本仓库保存统计证据和合成验收材料。
+剧本标准化与场记表的旧蓝图重建仍会产生入口或界面元数据差异；本次不使用该重建结果替换实装文件，安装包直接保留当前入口，差异明确记入manifest。维护时应先核对当前插件正文与旧生成模板，不能用旧模板无条件回写。历史业务证据仍见[1.0验证](docs/validation-v1.0.md)和[1.0.2验证](docs/validation-v1.0.2.md)，不把历史成绩转记为本次语义验收。
 
 ## 目录与维护
 
 ```text
-level-1/screenplay-standardization/   一级：维护源码 + 独立插件
-level-2/scene-log-extraction/         二级：原仓源码快照 + 独立插件
-level-2/asset-extraction/             二级：维护源码 + 独立插件
-engineering/harness-creator/         额外工程：通用插件建设与维护
-.agents/plugins/marketplace.json     四个插件的统一安装目录
-docs/validation/                     脱敏证据与版本基线
-scripts/                            仓库检查与 ZIP 打包
+level-1/screenplay-standardization/  一级插件及历史维护资料
+level-2/scene-log-extraction/        场记插件及来源快照
+level-2/asset-extraction/            资产表插件及维护资料
+engineering/harness-creator/        通用插件建设候选
+.agents/plugins/marketplace.json    统一市场入口
 ```
 
-creator-src 保存维护脚本、规则、蓝图和测试；同级插件目录是独立安装快照。场记源码来自团队 [ai-continuity-sheet](https://github.com/kaibaoxiang-studio/ai-continuity-sheet) 的固定版本，维护关系见其组件 README。
-
-旧 capabilities/01–05 归档和三级设计保留在 Git 历史中。见 [CHANGELOG](CHANGELOG.md)、[开发说明](docs/development.md)、[贡献指南](CONTRIBUTING.md)和[来源说明](NOTICE.md)。
+当前可安装实现保存在各插件目录。creator-src、历史release.json和旧标签保留其原有版本，修改时先辨明版本归属。来源和许可证见[NOTICE](NOTICE.md)、各插件THIRD_PARTY_NOTICES与随包许可证。

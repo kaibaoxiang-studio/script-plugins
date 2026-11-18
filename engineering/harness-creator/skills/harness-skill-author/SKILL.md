@@ -5,7 +5,7 @@ description: "为 Harness 插件编写和修改聚焦的 Agent Skills、referenc
 
 # Harness Skill Author
 
-读取 [Skill 编写规范](../harness-creator/references/author.md)。依据已确认能力设计编写实际内容，输出可用初版。
+读取 [Skill 编写规范](../harness-creator/references/author.md)。依据已确认能力设计编写实际内容，输出可用初版。按[宿主执行](../../HOST_EXECUTION.md)编写专业委派：子代理读准确Skill及相关知识，返回可直接采用的具体设计/分析，主控统一保存。不要将指令编成主控先完成全部设计、专项只润色，也不强制逐Skill启动子代理。
 
 SKILL.md 使用 YAML name 与 description 描述真实用途和触发条件；正文保留会改变决策的工作方法与边界。具体知识、格式细节和大段示例放 references，说明何时加载。重复的数据转换、文件操作和格式校验由实际可运行的 Python 脚本承担。
 

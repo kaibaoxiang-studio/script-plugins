@@ -8,7 +8,7 @@
 
 | 计划职责 | 入口或内部 Skill | 确定性实现 | 主要知识 |
 | --- | --- | --- | --- |
-| 需求对齐 | harness-creator、grill-me | 需求与蓝图文件 | Grill Me、create.md |
+| 需求对齐 | harness-creator（按名加载外部 `$grill-me`） | 需求与蓝图文件 | Grill Me（由 Skill Orchestrator 提供）、create.md |
 | 业务架构 | harness-architect | Blueprint 与能力契约校验 | standard.md |
 | 来源搜索与评估 | harness-source-integrator | discover、fetch-source、inspect-source | absorb.md |
 | 拆解与吸收 | harness-source-integrator | absorb、来源版本与文件哈希 | absorb.md、许可证 |
@@ -19,7 +19,7 @@
 | 验证修正 | harness-verifier | validate 与真实行为检查 | verify.md |
 | 整合升级与自身演进 | harness-creator | patch、revise、独立候选验证 | update.md |
 
-以上是 6 项可调度能力和 1 项随包需求方法。不同职责可以由当前单个 Agent 完成；只有独立任务的收益明确时才使用并行节点。首版最多同时运行 3 个节点。
+以上是 6 项可调度能力；需求方法 Grill Me 自 0.2.2 起不随包，由 Skill Orchestrator 插件提供。不同职责可以由当前单个 Agent 完成；只有独立任务的收益明确时才使用并行节点。首版最多同时运行 3 个节点。
 
 ## 产物与运行
 

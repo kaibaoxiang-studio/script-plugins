@@ -1,4 +1,4 @@
-"""Build and execute a real Agent plugin with Chinese paths and inputs."""
+"""Explicit standalone App Server smoke. Opens a real ephemeral Agent call."""
 from __future__ import annotations
 
 import argparse
@@ -17,6 +17,8 @@ from harness_core.packages import build
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output-dir', type=Path, required=True)
+    parser.add_argument('--agent-backend', choices=('appserver',), required=True,
+                        help='Explicit opt-in: this smoke invokes a real model through ephemeral App Server.')
     args = parser.parse_args()
     target = args.output_dir.resolve()
     plugin = target / 'echo-plugin'
@@ -44,7 +46,7 @@ def main():
         }]
     }
     built = build(spec, plugin, ROOT, confirmed=True)
-    engine = Engine(plugin, workspace)
+    engine = Engine(plugin, workspace, agent_backend=args.agent_backend)
     workflow = {'id': 'echo-smoke', 'max_concurrency': 1, 'nodes': [{
         'id': 'echo', 'capability': 'echo', 'depends_on': [],
         'idempotent': False, 'retries': 0, 'timeout_seconds': 180,

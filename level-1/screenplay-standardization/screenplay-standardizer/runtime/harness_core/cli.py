@@ -27,6 +27,8 @@ def parser():
     for name in ('run','run-capability','resume','status','replay','cancel'):
         cmd=commands.add_parser(name); cmd.add_argument('--plugin',type=Path)
         cmd.add_argument('--workspace',type=Path,required=True)
+        cmd.add_argument('--agent-backend', choices=('host','appserver'), default='host',
+                         help='Agent work belongs to host-native subagents; appserver explicitly selects temporary CLI compatibility mode')
         if name in {'run','run-capability'}:
             cmd.add_argument('--inputs',type=Path,required=True); cmd.add_argument('--confirmed',action='store_true')
             cmd.add_argument('--workflow' if name=='run' else '--capability',required=True)
@@ -75,7 +77,7 @@ def execute(args,root):
         if command!='resume' and not args.confirmed: raise ValueError('Run requires the requested/confirmed task (--confirmed)')
         validation=validate_plugin(plugin)
         if not validation['valid']: raise ValueError('; '.join(validation['errors']))
-        engine=Engine(plugin,args.workspace)
+        engine=Engine(plugin,args.workspace,agent_backend=args.agent_backend)
         if command=='resume':
             return engine.execute(args.run_id,read_json(args.answers) if args.answers else None)
         inputs=read_json(args.inputs)

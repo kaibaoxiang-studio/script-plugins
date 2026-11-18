@@ -105,14 +105,13 @@ class AppServer:
         return result.get('result')
 
     def run(self, skill_path, task, schema, workdir, writable=False, network=False,
-            timeout=600, cancel=None, thread_id=None, on_thread=None):
+            timeout=600, cancel=None, on_thread=None):
         self.start()
-        if thread_id:
-            thread = self.request('thread/resume', {'threadId':thread_id})['thread']
-        else:
-            thread = self.request('thread/start', {
-                'cwd':str(Path(workdir).resolve()), 'approvalPolicy':'never',
-                'sandbox':'workspace-write' if writable else 'read-only', 'ephemeral':False})['thread']
+        # Agent nodes are self-contained. Their durable state lives in Store, not in Codex chats.
+        # A retry or resumed run starts a fresh ephemeral thread for the unfinished node.
+        thread = self.request('thread/start', {
+            'cwd':str(Path(workdir).resolve()), 'approvalPolicy':'never',
+            'sandbox':'workspace-write' if writable else 'read-only', 'ephemeral':True})['thread']
         thread_id = thread['id']
         if on_thread:
             on_thread(thread_id)

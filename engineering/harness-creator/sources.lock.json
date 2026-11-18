@@ -16,7 +16,7 @@
           "sha256": "d5d18cc4615f8bf46c1c45387fafb47256c448993561a46f7217f79d33642b76"
         }
       ],
-      "adaptation": "Grill Me随包收录；事件存储、DAG和App Server设计改写为通用运行核心，去除业务耦合，增加文件校验与建设维护工具。"
+      "adaptation": "Grill Me在0.2.1及之前随包收录，0.2.2起移除；事件存储、DAG和App Server设计改写为通用运行核心，去除业务耦合，增加文件校验与建设维护工具。"
     },
     {
       "origin": "Codex bundled skill-creator/SKILL.md",
